@@ -30,5 +30,3 @@ Every agent follows this structure:
 ## Worktree Isolation
 
 Review agents (verify-plan, code-reviewer, security-reviewer) use `isolation: worktree` for fresh-context reviews.
-
-<!-- TODO: Add generalized agent files -->

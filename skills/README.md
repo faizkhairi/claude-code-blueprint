@@ -1,6 +1,6 @@
 # Skills
 
-15 domain-specific skills triggered by natural language (no slash commands needed).
+17 domain-specific skills triggered by natural language (no slash commands needed).
 
 ## Skill Categories
 
@@ -12,7 +12,7 @@
 | **Planning** | sprint-plan, elicit-requirements | "let's build", "new feature", multi-step tasks |
 | **Session** | load-session, save-session, session-end, save-diary | Session start/end, "save", "bye", "done" |
 | **Project** | init-project, register-project, status, changelog | "new project", "register project", "status" |
-| **Utilities** | tech-radar, nda-guard | "what's new?", auto-triggers on confidential terms |
+| **Utilities** | tech-radar | "what's new?", "any updates?", "should we upgrade?" |
 
 ## Design Principles
 
@@ -21,4 +21,10 @@
 3. **GO/NO-GO verdicts** — Review and deploy skills end with clear pass/fail decisions
 4. **Multi-agent orchestration** — The review skill spawns code-reviewer + security-reviewer + db-analyst in parallel
 
-<!-- TODO: Add generalized skill files -->
+## Note
+
+This repo currently includes 9 generic skills (Phase 1). The remaining 8 skills that require project-specific customization will be added as generalized templates in a future update.
+
+Skills excluded from this blueprint:
+- **nda-guard** — Personal NDA enforcement (not generalizable — build your own if needed)
+- **team-member-review** — Single-person workflow (specific to one team's process)

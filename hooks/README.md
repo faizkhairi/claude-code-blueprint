@@ -1,6 +1,6 @@
 # Hooks
 
-11 hook scripts covering 10 lifecycle events. Hooks are deterministic (100% compliance) vs CLAUDE.md instructions (~80%).
+10 hook scripts covering 10 lifecycle events. Hooks are deterministic (100% compliance) vs CLAUDE.md instructions (~80%).
 
 ## Hook Lifecycle
 
@@ -23,5 +23,3 @@
 2. **Async for non-blocking** — Post-commit review and file notifications run async to avoid slowing Claude down.
 3. **Sync for critical** — SessionEnd checkpoint is synchronous to guarantee it completes before exit.
 4. **Exit 0 always** — Hook scripts should never block Claude. Even on errors, exit 0 and log the issue.
-
-<!-- TODO: Add generalized hook scripts -->

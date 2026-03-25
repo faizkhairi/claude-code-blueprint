@@ -84,10 +84,10 @@ Session End
 ```
 Auto-Memory (~/.claude/projects/<project>/memory/)
   ├─ MEMORY.md (index, <100 lines)
-  ├─ Topic files (on-demand: nas.md, frameworks.md, etc.)
+  ├─ Topic files (on-demand: project-conventions.md, frameworks.md, etc.)
   └─ Feedback files (learned behaviors)
 
-External Memory (AI-MemoryCore, git-backed)
+External Memory (git-backed repo, see memory-template/)
   ├─ core/session.md (working memory)
   ├─ core/preferences.md (user profile)
   ├─ core/reminders.md (persistent tasks)

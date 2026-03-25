@@ -1,0 +1,265 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+
+  "cleanupPeriodDays": 60,
+
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
+    "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "80",
+    "CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS": "5000"
+  },
+
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  },
+
+  "includeGitInstructions": false,
+
+  "permissions": {
+    "allow": [
+      "__ GIT OPERATIONS __",
+      "Bash(git status *)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git add *)",
+      "Bash(git rm *)",
+      "Bash(git commit *)",
+      "Bash(git branch *)",
+      "Bash(git checkout *)",
+      "Bash(git fetch *)",
+      "Bash(git show *)",
+      "Bash(git clone *)",
+      "Bash(git remote *)",
+      "Bash(git config *)",
+      "Bash(git rebase *)",
+      "Bash(git revert *)",
+      "Bash(git rev-list *)",
+      "Bash(git ls-tree *)",
+      "Bash(git init *)",
+      "Bash(git restore *)",
+      "Bash(git --version *)",
+      "Bash(git grep *)",
+      "Bash(gh *)",
+
+      "__ PACKAGE MANAGERS __",
+      "Bash(npm *)",
+      "Bash(npx *)",
+      "Bash(yarn *)",
+      "Bash(pnpm *)",
+      "Bash(pip *)",
+      "Bash(pip3 *)",
+      "Bash(uv *)",
+      "Bash(composer *)",
+
+      "__ RUNTIMES __",
+      "Bash(node *)",
+      "Bash(python *)",
+      "Bash(python3 *)",
+      "Bash(java *)",
+
+      "__ TESTING + LINTING __",
+      "Bash(pytest *)",
+      "Bash(mypy *)",
+      "Bash(ruff *)",
+      "Bash(./node_modules/.bin *)",
+      "Bash(node_modules/.bin *)",
+
+      "__ BUILD + DEPLOY __",
+      "Bash(docker *)",
+      "Bash(vercel *)",
+      "Bash(./gradlew *)",
+
+      "__ CLI UTILITIES __",
+      "Bash(curl *)",
+      "Bash(ls *)",
+      "Bash(jq *)",
+      "Bash(chmod *)",
+      "Bash(unzip *)",
+      "Bash(echo *)",
+      "Bash(sort *)",
+      "Bash(cut *)",
+      "Bash(tr *)",
+      "Bash(tee *)",
+      "Bash(code *)",
+
+      "__ ENV VARIABLES (prefix patterns) __",
+      "Bash(NODE_OPTIONS *)",
+      "Bash(DATABASE_URL *)",
+      "Bash(NPM_TOKEN *)",
+      "Bash(API_KEY *)",
+
+      "__ WEB ACCESS __",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:api.github.com)",
+      "WebFetch(domain:registry.npmjs.org)",
+      "WebSearch",
+
+      "__ MCP TOOLS __",
+      "mcp__playwright__browser_navigate",
+      "mcp__playwright__browser_snapshot",
+      "mcp__playwright__browser_click",
+      "mcp__playwright__browser_fill_form",
+      "mcp__playwright__browser_take_screenshot",
+      "mcp__playwright__browser_press_key",
+      "mcp__playwright__browser_type",
+      "mcp__playwright__browser_close",
+      "mcp__playwright__browser_console_messages",
+      "mcp__playwright__browser_network_requests",
+      "mcp__context7__resolve-library-id",
+
+      "__ SKILLS __",
+      "Skill(update-config)",
+      "Skill(update-config:*)"
+    ],
+
+    "defaultMode": "dontAsk",
+
+    "additionalDirectories": [
+      "__ ADD YOUR PROJECT DIRECTORIES HERE __",
+      "C:\\Users\\YourUser\\.claude",
+      "C:\\Users\\YourUser\\.claude\\skills",
+      "C:\\Users\\YourUser\\.claude\\plans",
+      "C:\\Users\\YourUser\\.claude\\agents"
+    ]
+  },
+
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"~/.claude/hooks/session-start.sh\""
+          }
+        ]
+      }
+    ],
+
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"~/.claude/hooks/block-git-push.sh\""
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"~/.claude/hooks/protect-config.sh\""
+          }
+        ]
+      }
+    ],
+
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"~/.claude/hooks/notify-file-changed.sh\"",
+            "async": true
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"~/.claude/hooks/post-commit-review.sh\"",
+            "async": true
+          }
+        ]
+      }
+    ],
+
+    "PostToolUseFailure": [
+      {
+        "matcher": "mcp__*",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "An MCP tool call failed. Common causes: 1) MCP server crashed -- try once more. 2) Docker not running (docker MCP). 3) Browser closed (playwright MCP). If retry fails, fall back to non-MCP alternatives (curl for web, docker CLI for containers)."
+          }
+        ]
+      }
+    ],
+
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"~/.claude/hooks/precompact-state.sh\"",
+            "async": false
+          },
+          {
+            "type": "prompt",
+            "prompt": "Compaction is imminent. Ensure your current todo items, active file paths, pending verifications, and current plan step are included in the compacted summary. State snapshot saved at ~/.claude/precompact-state.json -- read it to restore context about the active plan and working state."
+          }
+        ]
+      }
+    ],
+
+    "PostCompact": [
+      {
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "Context was just compacted. CRITICAL: 1) Check your todo list and resume in-progress tasks. 2) Re-read the active plan file if one exists. 3) Key rules from CLAUDE.md still apply -- re-read it if needed. 4) If you lost track, read the session checkpoint at ~/.claude/session-checkpoint.txt. 5) State snapshot at ~/.claude/precompact-state.json -- read it to restore context about the active plan and working state."
+          }
+        ]
+      }
+    ],
+
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "If the last response contained no code, no file edits, no bash commands, and no git operations -- just conversation or explanation -- respond {\"ok\": true} immediately without further analysis. Otherwise, review the last response for these issues: 1) Security vulnerabilities: SQL injection, XSS, command injection, exposed secrets or hardcoded credentials. 2) ORM models referenced that don't exist in the schema. 3) Project-specific violations from CLAUDE.md (check soft-delete patterns, API conventions, navigation patterns). 4) Unauthorized git push commands (check CLAUDE.md for push policy). 5) Verification gap: if code was written or a feature was implemented but NO verification step was performed (no test run, no endpoint check, no file re-read to confirm changes), this is a violation. Respond with JSON only: {\"ok\": true} or {\"ok\": false, \"reason\": \"concise description of the issue\"}",
+            "model": "sonnet"
+          },
+          {
+            "type": "command",
+            "command": "bash \"~/.claude/hooks/session-checkpoint.sh\"",
+            "async": true
+          },
+          {
+            "type": "command",
+            "command": "bash \"~/.claude/hooks/cost-tracker.sh\"",
+            "async": true
+          }
+        ]
+      }
+    ],
+
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"~/.claude/hooks/session-checkpoint.sh\"",
+            "async": false
+          }
+        ]
+      }
+    ]
+  },
+
+  "statusLine": {
+    "type": "command",
+    "command": "bash \"~/.claude/hooks/status-line.sh\""
+  },
+
+  "alwaysThinkingEnabled": true,
+  "effortLevel": "high"
+}
