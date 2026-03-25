@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Code Blueprint — Philosophy</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0a0a0a;
+    color: #e4e4e7;
+    font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 40px;
+  }
+  .card {
+    background: linear-gradient(135deg, #18181b 0%, #1a1a2e 100%);
+    border: 1px solid #27272a;
+    border-radius: 16px;
+    padding: 48px;
+    max-width: 680px;
+    width: 100%;
+    box-shadow: 0 0 80px rgba(139, 92, 246, 0.08), 0 0 40px rgba(59, 130, 246, 0.05);
+  }
+  .badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #7c3aed, #3b82f6);
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    border-radius: 6px;
+    margin-bottom: 24px;
+  }
+  h1 {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    margin-bottom: 32px;
+    background: linear-gradient(135deg, #e4e4e7, #a1a1aa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .principle {
+    margin-bottom: 24px;
+    padding-left: 20px;
+    border-left: 3px solid #7c3aed;
+  }
+  .principle-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #e4e4e7;
+    margin-bottom: 4px;
+  }
+  .principle-desc {
+    font-size: 13px;
+    color: #71717a;
+    line-height: 1.5;
+  }
+  .highlight {
+    color: #a78bfa;
+    font-weight: 600;
+  }
+  .footer {
+    border-top: 1px solid #27272a;
+    padding-top: 20px;
+    margin-top: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .url {
+    color: #7c3aed;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .tag {
+    color: #52525b;
+    font-size: 11px;
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="badge">Philosophy</div>
+  <h1>4 principles that changed everything</h1>
+
+  <div class="principle">
+    <div class="principle-title">1. Hooks for enforcement, CLAUDE.md for guidance</div>
+    <div class="principle-desc">Hooks fire <span class="highlight">100%</span> of the time. Instructions are followed <span class="highlight">~80%</span>. If it MUST happen, make it a hook.</div>
+  </div>
+
+  <div class="principle">
+    <div class="principle-title">2. Agent-scoped knowledge, not global bloat</div>
+    <div class="principle-desc">Security patterns live in the security-reviewer agent. Not in every session's context window.</div>
+  </div>
+
+  <div class="principle">
+    <div class="principle-title">3. Context is currency</div>
+    <div class="principle-desc">Every token loaded into context is a token <span class="highlight">not available</span> for your code. Keep it lean. Load on-demand.</div>
+  </div>
+
+  <div class="principle">
+    <div class="principle-title">4. Battle-tested over theoretical</div>
+    <div class="principle-desc">Every rule exists because <span class="highlight">something went wrong</span> without it. The WHY matters more than the WHAT.</div>
+  </div>
+
+  <div class="footer">
+    <div class="url">github.com/faizkhairi/claude-code-blueprint</div>
+    <div class="tag">Read WHY.md for the full stories</div>
+  </div>
+</div>
+</body>
+</html>

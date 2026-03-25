@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Code Blueprint — Cross-Tool</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0a0a0a;
+    color: #e4e4e7;
+    font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 40px;
+  }
+  .card {
+    background: linear-gradient(135deg, #18181b 0%, #1a1a2e 100%);
+    border: 1px solid #27272a;
+    border-radius: 16px;
+    padding: 48px;
+    max-width: 780px;
+    width: 100%;
+    box-shadow: 0 0 80px rgba(139, 92, 246, 0.08), 0 0 40px rgba(59, 130, 246, 0.05);
+  }
+  .badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #7c3aed, #3b82f6);
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    border-radius: 6px;
+    margin-bottom: 24px;
+  }
+  h1 {
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, #e4e4e7, #a1a1aa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .subtitle {
+    color: #71717a;
+    font-size: 13px;
+    margin-bottom: 28px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+  }
+  th {
+    text-align: left;
+    padding: 10px 12px;
+    color: #a1a1aa;
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid #3f3f46;
+  }
+  td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #27272a;
+    color: #a1a1aa;
+  }
+  tr:last-child td { border-bottom: none; }
+  td:first-child {
+    color: #e4e4e7;
+    font-weight: 600;
+  }
+  .yes { color: #34d399; }
+  .partial { color: #fbbf24; }
+  .no { color: #52525b; }
+  .footer {
+    border-top: 1px solid #27272a;
+    padding-top: 20px;
+    margin-top: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .url { color: #7c3aed; font-size: 13px; font-weight: 600; }
+  .tag { color: #52525b; font-size: 11px; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="badge">Cross-Tool</div>
+  <h1>Not just for Claude Code</h1>
+  <div class="subtitle">The concepts are universal. Here's what translates.</div>
+
+  <table>
+    <tr>
+      <th>Feature</th>
+      <th>Claude Code</th>
+      <th>Cursor</th>
+      <th>Codex CLI</th>
+      <th>Gemini CLI</th>
+      <th>Windsurf</th>
+    </tr>
+    <tr>
+      <td>Rules file</td>
+      <td class="yes">CLAUDE.md</td>
+      <td class="yes">.mdc</td>
+      <td class="yes">AGENTS.md</td>
+      <td class="yes">GEMINI.md</td>
+      <td class="yes">.md rules</td>
+    </tr>
+    <tr>
+      <td>Custom agents</td>
+      <td class="yes">Yes</td>
+      <td class="yes">Yes</td>
+      <td class="yes">Yes</td>
+      <td class="partial">Exp.</td>
+      <td class="no">No</td>
+    </tr>
+    <tr>
+      <td>Lifecycle hooks</td>
+      <td class="yes">Full</td>
+      <td class="yes">Full</td>
+      <td class="partial">Limited</td>
+      <td class="partial">Exp.</td>
+      <td class="partial">Enterprise</td>
+    </tr>
+    <tr>
+      <td>MCP servers</td>
+      <td class="yes">Yes</td>
+      <td class="yes">Yes</td>
+      <td class="yes">Yes</td>
+      <td class="yes">Yes</td>
+      <td class="yes">Yes</td>
+    </tr>
+    <tr>
+      <td>Native memory</td>
+      <td class="yes">Yes</td>
+      <td class="no">Removed</td>
+      <td class="partial">Transcript</td>
+      <td class="yes">Yes</td>
+      <td class="yes">Auto</td>
+    </tr>
+    <tr>
+      <td>Model tiering</td>
+      <td class="yes">Per-agent</td>
+      <td class="no">Global</td>
+      <td class="yes">Per-config</td>
+      <td class="no">Global</td>
+      <td class="no">Global</td>
+    </tr>
+  </table>
+
+  <div class="footer">
+    <div class="url">github.com/faizkhairi/claude-code-blueprint</div>
+    <div class="tag">See CROSS-TOOL-GUIDE.md for full details</div>
+  </div>
+</div>
+</body>
+</html>

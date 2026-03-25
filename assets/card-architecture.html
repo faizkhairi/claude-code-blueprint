@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Code Blueprint — Architecture</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0a0a0a;
+    color: #e4e4e7;
+    font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 40px;
+  }
+  .card {
+    background: linear-gradient(135deg, #18181b 0%, #1a1a2e 100%);
+    border: 1px solid #27272a;
+    border-radius: 16px;
+    padding: 48px;
+    max-width: 720px;
+    width: 100%;
+    box-shadow: 0 0 80px rgba(139, 92, 246, 0.08), 0 0 40px rgba(59, 130, 246, 0.05);
+  }
+  .badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #7c3aed, #3b82f6);
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    border-radius: 6px;
+    margin-bottom: 24px;
+  }
+  h1 {
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    margin-bottom: 28px;
+    background: linear-gradient(135deg, #e4e4e7, #a1a1aa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  pre {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid #27272a;
+    border-radius: 10px;
+    padding: 24px;
+    font-size: 12.5px;
+    line-height: 1.7;
+    overflow-x: auto;
+    color: #a1a1aa;
+  }
+  .hl { color: #a78bfa; }
+  .hl2 { color: #60a5fa; }
+  .hl3 { color: #34d399; }
+  .dim { color: #52525b; }
+  .footer {
+    border-top: 1px solid #27272a;
+    padding-top: 20px;
+    margin-top: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .url {
+    color: #7c3aed;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .tag {
+    color: #52525b;
+    font-size: 11px;
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="badge">Architecture</div>
+  <h1>Hook lifecycle — what fires when</h1>
+
+<pre><span class="hl">Session Start</span>
+  <span class="dim">|</span>
+  <span class="dim">|--</span> <span class="hl2">SessionStart hook</span> --> inject workspace context
+  <span class="dim">|--</span> <span class="hl2">session-lifecycle rule</span> --> reads memory files
+  <span class="dim">|--</span> <span class="hl2">load-session skill</span> --> full context restore
+  <span class="dim">|</span>
+<span class="hl">Active Session</span>
+  <span class="dim">|</span>
+  <span class="dim">|--</span> <span class="hl3">PreToolUse</span>  (Bash) --> <span class="hl2">block-git-push.sh</span>
+  <span class="dim">|--</span> <span class="hl3">PreToolUse</span>  (Write) --> <span class="hl2">protect-config.sh</span>
+  <span class="dim">|--</span> <span class="hl3">PostToolUse</span> (Write) --> <span class="hl2">notify-file-changed.sh</span>
+  <span class="dim">|--</span> <span class="hl3">PostToolUse</span> (Bash) --> <span class="hl2">post-commit-review.sh</span>
+  <span class="dim">|--</span> <span class="hl3">PreCompact</span>  --> <span class="hl2">precompact-state.sh</span>
+  <span class="dim">|--</span> <span class="hl3">PostCompact</span> --> restore awareness prompt
+  <span class="dim">|--</span> <span class="hl3">Stop</span>        --> security check <span class="dim">(sonnet)</span>
+  <span class="dim">|               </span> + session-checkpoint + cost-tracker
+  <span class="dim">|</span>
+<span class="hl">Session End</span>
+  <span class="dim">|--</span> <span class="hl2">session-checkpoint.sh</span> <span class="dim">(sync, guaranteed)</span></pre>
+
+  <div class="footer">
+    <div class="url">github.com/faizkhairi/claude-code-blueprint</div>
+    <div class="tag">10 hooks across 10 lifecycle events</div>
+  </div>
+</div>
+</body>
+</html>

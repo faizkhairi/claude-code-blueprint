@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Code Blueprint — Overview</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0a0a0a;
+    color: #e4e4e7;
+    font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 40px;
+  }
+  .card {
+    background: linear-gradient(135deg, #18181b 0%, #1a1a2e 100%);
+    border: 1px solid #27272a;
+    border-radius: 16px;
+    padding: 48px;
+    max-width: 680px;
+    width: 100%;
+    box-shadow: 0 0 80px rgba(139, 92, 246, 0.08), 0 0 40px rgba(59, 130, 246, 0.05);
+  }
+  .badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #7c3aed, #3b82f6);
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    border-radius: 6px;
+    margin-bottom: 24px;
+  }
+  h1 {
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, #e4e4e7, #a1a1aa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .subtitle {
+    color: #71717a;
+    font-size: 14px;
+    margin-bottom: 36px;
+    line-height: 1.5;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+  .item {
+    background: rgba(39, 39, 42, 0.6);
+    border: 1px solid #3f3f46;
+    border-radius: 10px;
+    padding: 16px;
+  }
+  .item-count {
+    font-size: 28px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #7c3aed, #3b82f6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .item-label {
+    font-size: 13px;
+    color: #a1a1aa;
+    margin-top: 2px;
+  }
+  .item-desc {
+    font-size: 11px;
+    color: #52525b;
+    margin-top: 4px;
+  }
+  .footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid #27272a;
+    padding-top: 20px;
+  }
+  .url {
+    color: #7c3aed;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .tag {
+    color: #52525b;
+    font-size: 11px;
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="badge">Open Source</div>
+  <h1>Claude Code Blueprint</h1>
+  <div class="subtitle">A battle-tested reference architecture for Claude Code.<br>Not a plugin to install — a blueprint to learn from and adapt.</div>
+
+  <div class="grid">
+    <div class="item">
+      <div class="item-count">11</div>
+      <div class="item-label">Agents</div>
+      <div class="item-desc">Model tiering: opus / sonnet / haiku</div>
+    </div>
+    <div class="item">
+      <div class="item-count">17</div>
+      <div class="item-label">Skills</div>
+      <div class="item-desc">Natural language triggers, no slash commands</div>
+    </div>
+    <div class="item">
+      <div class="item-count">10</div>
+      <div class="item-label">Hooks</div>
+      <div class="item-desc">Deterministic lifecycle automation</div>
+    </div>
+    <div class="item">
+      <div class="item-count">13</div>
+      <div class="item-label">Battle Stories</div>
+      <div class="item-desc">Every rule exists because something broke</div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="url">github.com/faizkhairi/claude-code-blueprint</div>
+    <div class="tag">MIT License</div>
+  </div>
+</div>
+</body>
+</html>
