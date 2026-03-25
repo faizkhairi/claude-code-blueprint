@@ -23,7 +23,6 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 - Benchmarks template ([BENCHMARKS.md](BENCHMARKS.md)) with token, cost, and quality metrics
 - Model routing decision guide in [ARCHITECTURE.md](ARCHITECTURE.md#when-to-use-each-model)
 - Japanese, Korean, and Chinese README translations
-- NestJS + Nuxt/Vue framework-specific guide ([guides/nestjs-nuxt.md](guides/nestjs-nuxt.md))
 - Community battle story issue template
 
 ### Changed
