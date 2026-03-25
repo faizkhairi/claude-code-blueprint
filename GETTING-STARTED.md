@@ -4,6 +4,46 @@ This guide is for developers who are new to Claude Code or want to understand ho
 
 ---
 
+## Prerequisites
+
+Before you begin, make sure you have:
+
+| Requirement | Minimum | Check With | Install |
+|------------|---------|------------|---------|
+| **Node.js** | v18+ | `node --version` | [nodejs.org](https://nodejs.org) |
+| **npm** | v9+ (ships with Node) | `npm --version` | Included with Node.js |
+| **Git** | v2.30+ | `git --version` | [git-scm.com](https://git-scm.com) |
+| **Bash shell** | Any | `bash --version` | macOS/Linux: built-in. Windows: see [Windows Notes](#windows-notes) |
+| **Anthropic API key** | With active billing | — | See below |
+
+### API Key Setup
+
+1. Sign up or log in at [console.anthropic.com](https://console.anthropic.com)
+2. Navigate to **API Keys** and create a new key
+3. **Enable billing** under the Billing section -- Claude Code requires an active billing plan
+4. Set the key in your environment:
+   ```bash
+   # Add to your shell profile (~/.bashrc, ~/.zshrc, etc.)
+   export ANTHROPIC_API_KEY="sk-ant-..."
+   ```
+5. Verify by running `claude` -- it should start without asking for a key
+
+### Enable Agent Teams (Required for Agents)
+
+If you plan to use any of the [11 agents](agents/) in this blueprint, you must enable the agent teams feature. Add this to your `~/.claude/settings.json`:
+
+```json
+{
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  }
+}
+```
+
+Without this, the Agent tool is unavailable and all multi-agent workflows (parallel reviews, sprint planning, specialist agents) are non-functional. See [SETTINGS-GUIDE.md](SETTINGS-GUIDE.md#claude_code_experimental_agent_teams) for the full explanation.
+
+---
+
 ## What is Claude Code?
 
 Claude Code is Anthropic's **command-line interface (CLI)** for Claude. Unlike the web chat at claude.ai, Claude Code:
@@ -292,6 +332,95 @@ Read [WHY.md](WHY.md) to understand why each component exists. This is where the
 
 ---
 
+## Windows Notes
+
+Claude Code works well on Windows. These notes cover the platform differences you'll encounter.
+
+### Shell: Use Git Bash
+
+All hook scripts in this blueprint are bash (`.sh`) files. On Windows, you need a bash-compatible shell:
+
+- **Git Bash** (recommended): Installs automatically with [Git for Windows](https://git-scm.com/download/win). Available in VS Code's integrated terminal (select "Git Bash" as the default shell).
+- **WSL**: Works but adds latency for hooks due to the Windows/Linux file system bridge.
+- **PowerShell**: Won't run `.sh` files directly. Not compatible with this blueprint's hooks.
+
+### Path Formats
+
+| Context | Format | Example |
+|---------|--------|---------|
+| Windows Explorer / CMD | Backslash | `C:\Users\YourUser\.claude\hooks\` |
+| Git Bash / hook scripts | Forward slash | `/c/Users/YourUser/.claude/hooks/` |
+| settings.json `command` | Tilde or forward slash | `bash "~/.claude/hooks/protect-config.sh"` |
+
+In `settings.json`, tilde (`~`) expansion depends on the shell. If hooks aren't found, try absolute paths: `bash "/c/Users/YourUser/.claude/hooks/script.sh"`.
+
+### Line Endings: LF, Not CRLF
+
+Hook scripts must use LF (Unix) line endings. Git for Windows may auto-convert to CRLF, which causes `\r` errors in bash. Configure git to keep LF for shell scripts:
+
+```bash
+git config --global core.autocrlf input
+```
+
+Or add a `.gitattributes` file to force LF for hooks:
+```
+*.sh text eol=lf
+```
+
+### File Permissions
+
+`chmod +x` is a no-op on NTFS. This is fine -- the blueprint invokes hooks via `bash "path/to/script.sh"` in settings.json, which doesn't require execute permission.
+
+### CLI Tools You May Need to Install
+
+| Tool | Used By | Install on Windows |
+|------|---------|-------------------|
+| `jq` | `cost-tracker.sh`, `precompact-state.sh` | `winget install jqlang.jq` or `choco install jq` |
+| `python` | Most hook scripts | `winget install Python.Python.3` or [python.org](https://python.org) |
+
+**Note on `python3` vs `python`:** Three hooks in this blueprint use `python3` (`protect-config.sh`, `cost-tracker.sh`, `verify-mcp-sync.sh`), while others use `python`. On Windows, the command is typically `python`, not `python3`. Fix by editing the scripts to use `python`, or add `alias python3=python` to your `~/.bashrc` in Git Bash.
+
+For more Windows-specific issues, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md#windows-specific).
+
+---
+
+## Setting Up for Teams
+
+If you're adopting this blueprint across a team (startup, company, open source project), here's how the pieces split.
+
+### What's Shared vs Personal
+
+| Scope | Location | Commit to Repo? | Contains |
+|-------|----------|-----------------|----------|
+| **Project** | `.claude/` in project root | Yes | Agents, skills, rules specific to this project |
+| **Project** | `CLAUDE.md` in project root | Yes | Behavioral rules the whole team follows |
+| **Personal** | `~/.claude/settings.json` | No (per-user) | Hooks, permissions, API key, env vars |
+| **Personal** | `~/.claude/projects/*/memory/` | No (per-user) | Auto-memory (learned preferences, gotchas) |
+
+### Onboarding a New Developer
+
+1. **Fork this blueprint** (or your team's adapted version) as a reference
+2. **Copy hooks** from the blueprint to `~/.claude/hooks/` on the developer's machine
+3. **Copy settings-template.json** to `~/.claude/settings.json` and customize paths (especially `additionalDirectories`)
+4. **Set the API key** -- each developer needs their own Anthropic API key with billing enabled
+
+### Permission Modes for Teams
+
+| Developer Level | Recommended defaultMode | Why |
+|----------------|------------------------|-----|
+| New to Claude Code | (default -- not set) | Asks permission for every tool, helps build understanding |
+| Comfortable with hooks | `"dontAsk"` | Efficient workflow, hooks catch dangerous actions |
+
+Start new developers on the default (ask) mode. Graduate to `dontAsk` only after they've set up and tested the hook guardrails (especially `protect-config.sh` and `block-git-push.sh`).
+
+### Memory for Teams
+
+- **Auto-memory** (`~/.claude/projects/*/memory/`) is per-user and cannot be shared. Each developer builds their own memory over time.
+- **External memory** ([memory-template/](memory-template/)) can be team-shared (one repo everyone reads) or per-user (each developer has their own memory repo). Team-shared works well for architectural decisions and conventions. Per-user works better for personal preferences and session history.
+- **CLAUDE.md** is the primary mechanism for sharing team conventions. If everyone on the team should follow a rule, it belongs in CLAUDE.md, not in personal memory.
+
+---
+
 ## What to Learn Next
 
 Once you're comfortable with the basics:
@@ -299,9 +428,11 @@ Once you're comfortable with the basics:
 1. **Agents** — Read [agents/README.md](agents/README.md) to understand model tiering and permission modes
 2. **Skills** — Read [skills/README.md](skills/README.md) to see how multi-step workflows are built
 3. **Hooks deep dive** — Read [hooks/README.md](hooks/README.md) for the full lifecycle and design principles
-4. **Memory system** — Read [memory-template/README.md](memory-template/README.md) when you need cross-session persistence
-5. **Architecture** — Read [ARCHITECTURE.md](ARCHITECTURE.md) for how everything connects
-6. **Cross-tool** — Read [CROSS-TOOL-GUIDE.md](CROSS-TOOL-GUIDE.md) if you also use Cursor, Codex, or Gemini
+4. **Settings deep dive** — Read [SETTINGS-GUIDE.md](SETTINGS-GUIDE.md) for every env var, permission, and cost implication explained
+5. **Memory system** — Read [memory-template/README.md](memory-template/README.md) when you need cross-session persistence
+6. **Architecture** — Read [ARCHITECTURE.md](ARCHITECTURE.md) for how everything connects
+7. **Cross-tool** — Read [CROSS-TOOL-GUIDE.md](CROSS-TOOL-GUIDE.md) if you also use Cursor, Codex, or Gemini
+8. **Troubleshooting** — Read [TROUBLESHOOTING.md](TROUBLESHOOTING.md) if something isn't working as expected
 
 ---
 

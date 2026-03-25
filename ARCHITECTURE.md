@@ -94,3 +94,7 @@ External Memory (git-backed repo, see memory-template/)
   ├─ core/decisions.md (architectural log)
   └─ diary/ (session narratives)
 ```
+
+---
+
+See [SETTINGS-GUIDE.md](SETTINGS-GUIDE.md) for a walkthrough of the settings that wire these components together.

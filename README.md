@@ -51,9 +51,23 @@ Browse the repo on GitHub and copy only the specific files you need. No installa
 4. **Add agents** as your workflow matures — start with `verify-plan` and `code-reviewer`.
 5. **Set up the [memory system](memory-template/)** when you need cross-session persistence.
 
+### Who is this for?
+
+| You Are | Start Here | Adopt |
+|---------|-----------|-------|
+| **Solo dev, small project** | [CLAUDE.md](CLAUDE.md) + 2 hooks | Enough. Don't over-engineer. |
+| **Small startup (2-5 devs)** | Above + shared rules + 2-3 agents | See [Team Setup](GETTING-STARTED.md#setting-up-for-teams) |
+| **Established team (5+ devs)** | Full blueprint, adapted | Fork, customize, commit shared config |
+| **Learning to code** | [GETTING-STARTED.md](GETTING-STARTED.md) only | Ignore agents/skills/memory until comfortable |
+| **Coming from another tool** | [CROSS-TOOL-GUIDE.md](CROSS-TOOL-GUIDE.md) | Concepts transfer; adapt what you need |
+
 ## Architecture
 
 See [ARCHITECTURE.md](ARCHITECTURE.md) for the full system design, component relationships, and hook lifecycle diagram.
+
+## Settings
+
+See [SETTINGS-GUIDE.md](SETTINGS-GUIDE.md) for a complete explanation of every environment variable, permission, and hook in [settings-template.json](examples/settings-template.json) -- including cost implications and the `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` flag required for multi-agent workflows.
 
 ## Battle Stories
 
@@ -62,6 +76,10 @@ See [WHY.md](WHY.md) for the incidents and lessons behind every component. This 
 ## Using with Other AI Coding Tools
 
 While this blueprint is built for Claude Code, the **concepts are universal**. See [CROSS-TOOL-GUIDE.md](CROSS-TOOL-GUIDE.md) for a mapping of how each concept translates to Cursor, Codex CLI, Gemini CLI, and Windsurf.
+
+## Troubleshooting
+
+See [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for solutions to common issues -- hooks not firing, agents failing, MCP crashes, cost surprises, and Windows-specific problems.
 
 ## Plugin Compatibility
 
