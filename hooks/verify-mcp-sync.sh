@@ -4,7 +4,7 @@
 # Run manually: bash ~/.claude/hooks/verify-mcp-sync.sh
 
 # Use Windows-style paths for Python compatibility
-USERPROFILE="${USERPROFILE:-C:\\Users\\User}"
+USERPROFILE="${USERPROFILE:-$HOME}"
 CLI_CONFIG="$USERPROFILE/.claude.json"
 EXT_CONFIG="$USERPROFILE/.claude/mcp.json"
 CURSOR_CONFIG="$USERPROFILE/.cursor/mcp.json"

@@ -12,15 +12,17 @@ This repository documents a production Claude Code setup built over numerous ses
 
 ## What's Inside
 
-| Component | Count | Purpose |
-|-----------|-------|---------|
-| [**Agents**](agents/) | 11 | Specialized subagents with model tiering (opus/sonnet/haiku) |
-| [**Skills**](skills/) | 17 | Natural-language-triggered workflows (no slash commands needed) |
+| Component | Shipped | Purpose |
+|-----------|---------|---------|
+| [**Agents**](agents/) | 6 generic | Specialized subagents with model tiering (opus/sonnet/haiku) |
+| [**Skills**](skills/) | 9 generic | Natural-language-triggered workflows (no slash commands needed) |
 | [**Hooks**](hooks/) | 10 | Deterministic lifecycle automation (10 hook events) |
-| [**Rules**](rules/) | 4 | Path-scoped behavioral constraints |
+| [**Rules**](rules/) | 1 | Path-scoped behavioral constraints |
 | [**Memory System**](memory-template/) | Dual | Auto-memory + external git-backed persistence |
 | [**CLAUDE.md**](CLAUDE.md) | Template | Battle-tested behavioral rules |
 | [**Settings**](examples/settings-template.json) | Template | Full hook + permission configuration |
+
+> **Phase 2 coming soon:** 5 more agents (frontend-specialist, security-reviewer, code-reviewer, db-analyst, devops-engineer), 8 more skills, and 3 more rules — currently being sanitized and generalized from a production setup.
 
 ## Philosophy
 
