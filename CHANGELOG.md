@@ -9,6 +9,8 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 ## 2026-03-26
 
 ### Added
+- Complete beginner onboarding section in [GETTING-STARTED.md](GETTING-STARTED.md#new-to-claude-code-start-here) (model recommendations, 1-minute setup, `~/.claude/` explained, self-setup prompt)
+- "Complete beginner" row in README.md adoption table
 - ADR template ([memory-template/templates/adr-template.md](memory-template/templates/adr-template.md)) for structured architectural decision records
 - Category-based stack rule templates in [PRESETS.md](PRESETS.md#stack-rule-templates) (Backend API, Full-Stack App, Database + ORM)
 - Skill customization guide in [skills/README.md](skills/README.md#extending-skills-for-your-stack) with 4 extension examples

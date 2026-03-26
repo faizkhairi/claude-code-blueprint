@@ -1,6 +1,115 @@
 # Getting Started — From Zero to Productive
 
-This guide is for developers who are new to Claude Code or want to understand how all the pieces fit together. No prior experience required.
+This guide is for anyone who wants to get more out of Claude Code — whether you're a complete beginner or an experienced developer looking to level up your setup. No prior experience required.
+
+---
+
+## New to Claude Code? Start Here
+
+If you've never configured Claude Code before, this section is for you. Skip to [Prerequisites](#prerequisites) if you already know the basics.
+
+### What Is This Repository?
+
+This is a collection of configuration files that make Claude Code smarter, safer, and more consistent. Think of it as a recipe book — you pick the recipes you need and add them to your own kitchen. The most important file is **CLAUDE.md**, which tells Claude Code how to behave (like a set of house rules it follows every session).
+
+### How to Access Claude Code
+
+There are multiple ways to use Claude Code. Pick the one that fits you:
+
+| Method | Best For | How to Get It |
+|--------|----------|---------------|
+| **Desktop App** (Mac/Windows) | Easiest start — no terminal needed | Download from [claude.ai/code](https://claude.ai/code) |
+| **VS Code Extension** | If you already use VS Code | Search "Claude Code" in the Extensions panel |
+| **Web App** | Try it without installing anything | Visit [claude.ai/code](https://claude.ai/code) in your browser |
+| **CLI (Terminal)** | Power users, scripting, automation | `npm install -g @anthropic-ai/claude-code` |
+
+All methods support CLAUDE.md, agents, skills, and hooks. The CLI gives the most control, but you don't need it to get started.
+
+### Which Model Should I Use?
+
+Claude Code can use different AI models. Here's what to pick:
+
+| If You Are | Recommended Model | Why |
+|------------|-------------------|-----|
+| Just starting out | **Claude Sonnet** | Best balance of speed, quality, and cost. Handles 90% of tasks well. |
+| Building complex features / architecture | **Claude Opus** | Deepest reasoning. Use for system design, hard debugging, multi-file refactors. |
+| Quick edits, docs, simple tasks | **Claude Haiku** | Fastest and cheapest. Great for straightforward work. |
+
+You don't need to pick one forever — switch anytime by typing `/model` in Claude Code. **Start with Sonnet** and move to Opus only when a task clearly needs deeper reasoning.
+
+### The 1-Minute Setup (Easiest Possible Start)
+
+You can improve Claude Code in under a minute by adding just one file:
+
+**Step 1.** Open the [CLAUDE.md](CLAUDE.md) file in this repository. Click **"Raw"** (top-right of the file view), then **select all** and **copy** the entire contents.
+
+**Step 2.** Go to your project folder (the folder where your code lives). Create a new file called `CLAUDE.md` in the root of that folder. Paste the contents you copied and save.
+
+**Step 3.** Start Claude Code in that folder. It automatically reads CLAUDE.md and follows the rules inside it.
+
+**That's it.** You just gave Claude Code three behavioral rules that prevent the most common AI coding mistakes:
+- **Verify-After-Complete** — Claude must prove its work before saying "done"
+- **Diagnose-First** — Claude investigates before jumping to fixes
+- **Plan-First** — Claude designs an approach before making changes
+
+### The 5-Minute Setup (Recommended)
+
+For a more complete setup, **fork** this repository so you have your own copy to customize.
+
+> **What is forking?** When you "fork" a repository on GitHub, you create your own copy of it under your account. This lets you customize everything without affecting the original. You can also pull updates later as the blueprint evolves.
+
+1. Click the **Fork** button (top-right corner of this GitHub page)
+2. GitHub creates your copy at `github.com/YOUR-USERNAME/claude-code-blueprint`
+3. Open a terminal and clone your fork:
+   ```bash
+   git clone https://github.com/YOUR-USERNAME/claude-code-blueprint.git
+   ```
+4. Copy `CLAUDE.md` into each of your project folders
+5. *(Optional)* Copy hook scripts into your `~/.claude/hooks/` folder — see below for what this means
+
+### Where Is `~/.claude/`?
+
+You'll see `~/.claude/` referenced throughout this guide. This is Claude Code's configuration folder. The `~` symbol means "your home folder":
+
+| Your Computer | The Full Path |
+|--------------|---------------|
+| **Mac** | `/Users/yourname/.claude/` |
+| **Linux** | `/home/yourname/.claude/` |
+| **Windows** | `C:\Users\yourname\.claude\` |
+
+If this folder doesn't exist yet, that's normal — Claude Code creates it the first time you run it. You can also create it manually.
+
+Inside `~/.claude/` you'll find (or create):
+- `settings.json` — Claude Code's main configuration (hooks, permissions, environment variables)
+- `hooks/` — Shell scripts that run automatically on specific events
+- `agents/` — Specialized sub-assistants you can invoke
+- `skills/` — Multi-step workflows triggered by natural language
+- `rules/` — Path-scoped instruction files
+
+### What Is settings.json?
+
+`settings.json` is Claude Code's main configuration file at `~/.claude/settings.json`. It controls hooks (automatic behaviors), permissions (what Claude can and can't do), and environment variables.
+
+If you don't have one yet, that's normal — Claude Code works fine without it. You only need it when you want to add hooks or customize permissions. See [SETTINGS-GUIDE.md](SETTINGS-GUIDE.md) for a complete reference.
+
+### Let Claude Code Set Up for You
+
+Here's a shortcut — you can ask Claude Code to configure itself. Paste this prompt into a Claude Code session:
+
+```
+I want to set up the Claude Code Blueprint from github.com/faizkhairi/claude-code-blueprint.
+Please help me:
+1. Copy the CLAUDE.md behavioral rules into my current project
+2. Set up the protect-config hook so you can't weaken my linter/build settings
+3. Set up the cost-tracker hook so I can see how much each session costs
+Show me what you're doing at each step so I can learn.
+```
+
+Claude Code will walk you through the setup interactively — creating files, explaining what each one does, and wiring everything together.
+
+### Ready for More?
+
+The rest of this guide covers the full Claude Code ecosystem — prerequisites, MCP servers, agents, skills, hooks, and memory systems. Continue to [Prerequisites](#prerequisites) when you're ready to go deeper.
 
 ---
 

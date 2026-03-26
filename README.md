@@ -63,6 +63,7 @@ Browse the repo on GitHub and copy only the specific files you need. No installa
 
 | You Are | Start Here | Adopt |
 |---------|-----------|-------|
+| **Complete beginner** | [Start Here](GETTING-STARTED.md#new-to-claude-code-start-here) | 1-minute setup: just copy CLAUDE.md |
 | **Solo dev, small project** | [CLAUDE.md](CLAUDE.md) + 2 hooks | Enough. Don't over-engineer. |
 | **Small startup (2-5 devs)** | Above + shared rules + 2-3 agents | See [Team Setup](GETTING-STARTED.md#setting-up-for-teams) |
 | **Established team (5+ devs)** | Full blueprint, adapted | Fork, customize, commit shared config |
