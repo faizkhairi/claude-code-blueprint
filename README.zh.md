@@ -34,7 +34,9 @@
 
 3. **上下文是货币** — 加载到上下文的每个 token 都是无法用于代码的 token。保持 MEMORY.md 在 100 行以下。提取到专题文件。使用路径作用域规则，使无关规则不会加载。
 
-4. **实战验证优于理论** — 本仓库的每条规则都存在，因为某个事件说明它是必需的。"为什么"比"是什么"重要得多。
+4. **Hook 免费，上下文便宜** — 10 个 hook 脚本零 token 成本（在 Claude 上下文外部运行）。CLAUDE.md 每个会话增加约 2,300 个 token — 大约是典型会话的 1-5%。蓝图通过防止重做循环节省的 token 超过其成本。参见 [BENCHMARKS.md](BENCHMARKS.md#token-cost-per-component)。
+
+5. **实战验证优于理论** — 本仓库的每条规则都存在，因为某个事件说明它是必需的。"为什么"比"是什么"重要得多。
 
 ## 快速开始
 
@@ -59,6 +61,7 @@ Clone 仓库，然后有选择地将组件复制到你的 `~/.claude/` 目录。
 
 | 你的身份 | 从这里开始 | 采用 |
 |---------|----------|------|
+| **完全新手** | [Start Here](GETTING-STARTED.md#new-to-claude-code-start-here) | 1 分钟设置：只需复制 CLAUDE.md |
 | **独立开发者，小项目** | [CLAUDE.md](CLAUDE.md) + 2 个 hook | 足够了。不要过度设计。 |
 | **小初创（2-5 人）** | 上述 + 共享规则 + 2-3 个 agents | 参见 [Team Setup](GETTING-STARTED.md#setting-up-for-teams) |
 | **成熟团队（5+ 人）** | 完整蓝图，根据需要改进 | Fork、定制、提交共享配置 |
