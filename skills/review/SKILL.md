@@ -1,6 +1,6 @@
 ---
 name: review
-description: "Run a comprehensive multi-perspective code review on recent changes. Also triggers on 'is this secure?', 'security review', 'check for vulnerabilities', 'could this be exploited?' for security-focused review."
+description: "Runs a multi-perspective code review covering code quality, security vulnerabilities (OWASP Top 10), and database query analysis on recent changes. Spawns parallel review agents and produces a severity-rated findings table with a GO/NO-GO verdict. Use when the user asks for 'code review', 'is this secure?', 'security review', 'check for vulnerabilities', or 'could this be exploited?'."
 user-invocable: true
 argument-hint: "[file, branch, git-range, or 'security' for security-only]"
 ---

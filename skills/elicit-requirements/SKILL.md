@@ -1,6 +1,6 @@
 ---
 name: elicit-requirements
-description: Structured pre-feature requirements gathering. Run before writing any new feature or API endpoint to clarify scope, acceptance criteria, and technical constraints.
+description: "Gathers pre-feature requirements through structured questions, producing a scoped summary with acceptance criteria, technical constraints, dependencies, and out-of-scope items. Use when the user says 'spec out', 'plan a feature', 'define requirements', 'new endpoint', 'before I start coding', or before writing any new feature or API endpoint."
 user-invocable: true
 argument-hint: "[feature or integration name]"
 ---
@@ -114,5 +114,7 @@ After elicitation, produce a structured summary:
 ### Open Questions
 - ...
 ```
+
+Present the summary to the user and confirm all sections are accurate before saving. If the user identifies gaps, return to the relevant section and re-elicit.
 
 Then save the requirements to a structured markdown file the user can reference during implementation.

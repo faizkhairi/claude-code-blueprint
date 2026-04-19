@@ -1,40 +1,27 @@
 ---
 name: tech-radar
-description: "MUST use when user asks 'what's new?', 'any updates?', 'latest versions?', 'breaking changes?', 'should we upgrade?', 'what changed in X?', or when starting a new project to check if dependencies are current. Also trigger proactively at the start of major upgrade sessions."
+description: "Scans project dependencies for available upgrades, breaking changes, security advisories (CVEs), and deprecations by reading package.json and searching release notes. Produces a prioritised upgrade report. Use when the user asks 'what's new?', 'any updates?', 'latest versions?', 'breaking changes?', 'should we upgrade?', 'what changed in X?', or at the start of a new project or major upgrade session."
 user-invocable: true
 argument-hint: "[optional: specific package or framework name]"
 ---
 
 # Tech Radar — Stack Update Scanner
 
-Checks for latest versions, breaking changes, deprecations, and security advisories across the user's core stack.
-
-## Core Stack to Monitor
-
-| Category | Packages |
-|----------|----------|
-| **Frontend** | nuxt, vue, next, react, tailwindcss, formkit, pinia |
-| **Backend** | @nestjs/core, express, fastify |
-| **Database** | prisma, @prisma/client, knex, better-auth |
-| **Testing** | vitest, @vue/test-utils, @testing-library/react |
-| **Mobile** | expo, react-native, nativewind |
-| **AI** | ai (vercel ai-sdk), @ai-sdk/openai, @ai-sdk/anthropic |
-| **CLI** | commander, chalk, ora, inquirer |
-| **Build** | typescript, tsup, turbo, vite |
-| **Cloud** | @aws-sdk/client-s3, @aws-sdk/client-ec2 |
+Scans project dependencies for latest versions, breaking changes, deprecations, and security advisories. Reads `package.json` to detect the actual stack — no hardcoded package list.
 
 ## Execution Steps
 
-1. **Parse arguments**: If user specified a package/framework, focus on that. Otherwise scan full stack.
+1. **Detect stack**: Read `package.json` (or `package.json` files in monorepo workspaces). Build a list of dependencies and their installed versions. If `$ARGUMENTS` names a specific package, focus on that one only.
 
 2. **Check latest versions** using WebSearch:
    - Search: `"{package} latest version {current_year}"`
-   - Compare against currently installed version (check `package.json` in active project)
+   - Compare against installed version
    - Flag major version bumps (potential breaking changes)
+   - If search returns no results or stale data, fall back to `npm view {package} version` or the package's GitHub releases page.
 
-3. **Check for breaking changes**:
-   - For major version bumps: search `"{package} v{new_major} migration guide"`
-   - Summarize key breaking changes that affect our patterns
+3. **Check for breaking changes** (major bumps only):
+   - Search: `"{package} v{new_major} migration guide"`
+   - Summarize key breaking changes that affect patterns in the current project
    - Cross-reference against known patterns in MEMORY.md
 
 4. **Check security advisories**:
@@ -43,7 +30,9 @@ Checks for latest versions, breaking changes, deprecations, and security advisor
 
 5. **Check deprecations**:
    - Search: `"{package} deprecated features {current_year}"`
-   - Note any APIs we currently use that are deprecated
+   - Note any APIs the project currently uses that are deprecated
+
+6. **Validate findings**: Cross-check at least one version number against `npm view {package} version` to confirm search results are current.
 
 ## Output Format
 
@@ -71,7 +60,7 @@ Checks for latest versions, breaking changes, deprecations, and security advisor
 
 ## Smart Filtering
 
-- Only report packages actually used in the active project (check package.json)
+- Only report packages actually used in the active project (from package.json)
 - Skip patch/minor version bumps unless they contain security fixes
 - Prioritize: Security > Breaking Changes > Major Upgrades > Minor Upgrades
 - If checking all projects: deduplicate (report each package once with all affected projects)
