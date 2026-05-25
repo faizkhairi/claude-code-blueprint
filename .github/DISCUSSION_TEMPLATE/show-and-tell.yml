@@ -1,0 +1,61 @@
+title: "[Show & Tell] "
+labels: ["show-and-tell"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Tell the community what you built or adapted from the blueprint. Show & Tell posts help others see real-world adoption — even small wins are valuable.
+
+        Don't worry about polish. Half a story honestly told beats a marketing-style post.
+
+  - type: input
+    id: what-you-built
+    attributes:
+      label: What did you build or adapt?
+      description: One-line summary.
+      placeholder: "e.g., Added a custom hook that blocks dependency installs without an approved security review"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: components-used
+    attributes:
+      label: Which blueprint components did you adopt?
+      multiple: true
+      options:
+        - CLAUDE.md (behavioral rules)
+        - Hooks
+        - Agents
+        - Skills
+        - Rules (path-scoped)
+        - Memory system
+        - Settings template
+        - Other (describe below)
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-you-changed
+    attributes:
+      label: What did you change from the original?
+      description: Forking and adapting is the whole point — share what you customized and why.
+      placeholder: "e.g., Replaced the example Prisma rules with our own Drizzle conventions. Removed the QA-tester agent since our test suite is too slow for it to be useful."
+
+  - type: textarea
+    id: what-worked
+    attributes:
+      label: What worked well?
+      placeholder: "e.g., The verify-plan agent caught a missing migration step before we shipped."
+
+  - type: textarea
+    id: what-didnt-work
+    attributes:
+      label: What didn't work, or what would you do differently?
+      description: Equally valuable. Failed experiments help others avoid the same dead-end.
+      placeholder: "e.g., The cost-tracker hook ran too often on our long sessions and the log file grew to 50MB. We replaced it with a sampled version."
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots or links (optional)
+      description: Drag-and-drop images, paste links to a public branch / gist / blog post.

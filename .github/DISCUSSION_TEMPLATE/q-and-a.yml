@@ -1,0 +1,53 @@
+title: "[Q&A] "
+labels: ["question"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Got a question about the blueprint? Use this template so people can answer efficiently.
+
+        Before posting: check the [FAQ](https://github.com/faizkhairi/claude-code-blueprint/blob/main/FAQ.md) and [TROUBLESHOOTING.md](https://github.com/faizkhairi/claude-code-blueprint/blob/main/TROUBLESHOOTING.md) — your question may already be answered.
+
+  - type: input
+    id: question
+    attributes:
+      label: Your question
+      description: One-line summary.
+      placeholder: "e.g., How do I make the verify-plan agent run on every plan automatically?"
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-you-tried
+    attributes:
+      label: What you tried
+      description: Commands, config changes, or docs you already checked. Helps people skip past dead-ends you've already ruled out.
+      placeholder: "e.g., Added `verify-plan` to my agents folder, copied the entry from agents/README.md into ~/.claude/agents/, restarted Claude Code. Agent appears in /agents list but doesn't auto-trigger."
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-you-expected
+    attributes:
+      label: What you expected to happen
+      placeholder: "e.g., Whenever Claude enters plan mode, the verify-plan agent should be spawned automatically before ExitPlanMode."
+
+  - type: textarea
+    id: what-actually-happened
+    attributes:
+      label: What actually happened
+      placeholder: "e.g., Plans complete normally but the verification subagent is never invoked. No errors in the log."
+
+  - type: input
+    id: environment
+    attributes:
+      label: Environment (optional)
+      description: OS, shell, Claude Code version, and which tool you're using (Claude Code, Cursor + Claude, Copilot, etc.)
+      placeholder: "e.g., macOS 14.5, zsh, Claude Code 2.1.150"
+
+  - type: textarea
+    id: relevant-context
+    attributes:
+      label: Relevant blueprint components (optional)
+      description: Which agents, skills, hooks, or rules from the blueprint are involved?
+      placeholder: "e.g., verify-plan agent, the Plan-First rule in CLAUDE.md"
