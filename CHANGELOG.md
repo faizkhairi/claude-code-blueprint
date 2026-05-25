@@ -6,6 +6,46 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## 2026-05-26 (final audit)
+
+### Final comprehensive audit — repo at "stable and ready" status
+
+Three parallel Explore subagents + my own surgical greps did a comprehensive final audit after the 9-commit wrap-up. Results converged on: **the repo is in good shape, with one minor framing ambiguity resolved.**
+
+**Regression audit on the 9 wrap-up commits** — 8/8 areas CLEAN:
+- No dangling references after frontend-specialist Design Thinking removal
+- bash 3.2 compat fix in `hooks/session-start.sh` preserves semantics (lexical YYYY-MM-DD comparison)
+- Skill descriptions within practical length limits after capability statements added
+- `elicit-requirements` new Step 7 flows logically after Step 6
+- CHANGELOG (wrap-up) entry's major claims spot-checked accurate vs commits
+- Cursor 3 note in `docs/CROSS-TOOL-GUIDE.md` integrates naturally with surrounding bullets
+- README hero "copy only what you need" coherent with surrounding text
+- All 3 i18n hero propagations idiomatic in their respective languages
+
+**Never-audited surfaces** — 8/8 areas CLEAN:
+- `.github/PULL_REQUEST_TEMPLATE.md` aligned with CONTRIBUTING.md (NDA sweep, sanitization checklist)
+- 3 issue templates (bug_report, feature_request, battle_story) all match their downstream consumers
+- `hooks/test-hooks.sh` accurately runs 35 tests across 4 categories on 9 hook files
+- `hooks/README.md` lifecycle table correct, no stale CI references
+- 4 non-session-lifecycle rules (api-endpoints, database-schema, testing, memory-session) — path globs accurate, content practical
+- `assets/walkthrough.gif` present (referenced from README)
+- `.gitignore` appropriately scoped for a reference-config repo
+- `LICENSE` valid MIT, current year/holder
+
+**Cross-file consistency** — 9/10 areas CLEAN, 1 ambiguity resolved:
+- Asset counts (11 agents · 17 skills · 5 rules) consistent across README, AGENTS.md, all i18n
+- Path references all resolve (no broken cross-doc links)
+- Identity framing ("Claude Harness", "library of ready-to-copy files") consistent across README/AGENTS/ROADMAP/FAQ
+- All 3 i18n READMEs structurally parallel with English
+- Skill description tone — minor variance between updated and not-updated skills, intentional design choice (high-impact skills get more detail), acceptable
+- CHANGELOG (wrap-up) claims spot-checked against commits, all accurate
+- `memory/` Quick Reference table files all exist
+- Sponsors profile active, Discussion templates wired correctly
+
+**The one ambiguity (now resolved)**: "10 hooks" claim vs `ls hooks/*.sh = 11`. Resolved by clarifying in README.md and AGENTS.md that the 11th file is `test-hooks.sh`, the local test harness (not deployed to `~/.claude/hooks/`, not counted in the "10 hooks" total).
+
+**This is the closing audit.** The blueprint is at confirmed "stable and ready" status. Future blueprint work shifts to community contributions (issues #6/#7/#8 i18n polish stay open for native speakers) and reactive maintenance (responding to PRs and Discussion posts).
+
 ## 2026-05-26 (wrap-up)
 
 ### Comprehensive audit fixes + community-issue closure + final polish
