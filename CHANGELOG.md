@@ -6,6 +6,24 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## 2026-05-25
+
+### Maintenance & Community Updates
+
+**Updated**
+- **Version badges**: Claude Code 2.1.91 → 2.1.150 across all 4 README translations (en, ja, ko, zh)
+
+**Added**
+- **SELF-MONITORING.md**: Lean introduction to two community-applicable patterns — gitleaks pre-commit secret scanning + memory-curator agent template for setup drift detection. Linked from README Deep Dives.
+- New issue (community-pickable): skill description capability-statement improvements (extracted from a vendor-attached PR; the underlying observations are sound even though the PR itself was a promo).
+
+**Community**
+- Closed issue #3 (harixth): redirected to upstream Claude Code repo (Stop hook UX labeling is an upstream concern, not a blueprint code change). Filed upstream with credit. Invited harixth to contribute a CLAUDE.md template for his stack.
+- Closed PR #2 (yogesh-tessl): vendor-attached benchmark + bundled Tessl-specific GitHub Action conflicts with the cross-tool philosophy. Technical observations extracted into a community issue for organic contribution.
+
+**Audit**
+- Meta-commentary scan: no chat-residue or private-workflow leaks found in public docs.
+
 ## 2026-04-04
 
 ### Added

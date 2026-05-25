@@ -7,7 +7,7 @@
 [![Stars](https://img.shields.io/github/stars/faizkhairi/claude-code-blueprint?style=flat)](https://github.com/faizkhairi/claude-code-blueprint/stargazers)
 [![Forks](https://img.shields.io/github/forks/faizkhairi/claude-code-blueprint?style=flat)](https://github.com/faizkhairi/claude-code-blueprint/network/members)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Claude Code](https://img.shields.io/badge/Claude%20Code-2.1.91-blueviolet)](https://docs.anthropic.com/en/docs/claude-code)
+[![Claude Code](https://img.shields.io/badge/Claude%20Code-2.1.150-blueviolet)](https://docs.anthropic.com/en/docs/claude-code)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
 **11 agents** · **17 skills** · **10 hooks** · **5 rules** -- every one battle-tested
@@ -244,6 +244,8 @@ Run `./setup.sh` from a cloned or forked copy. Choose a preset (minimal/standard
 | Top community questions answered | From zero to productive in 30 minutes | Common issues and fixes |
 | **[Setup Guide](SETUP.md)** | **[Examples](examples/)** | **[Roadmap](ROADMAP.md)** |
 | Automated installer + verification checklist | Framework-specific CLAUDE.md templates | Project direction and what's next |
+| **[Self-Monitoring](SELF-MONITORING.md)** | | |
+| Optional patterns: gitleaks pre-commit + memory-curator agent | | |
 
 ---
 
