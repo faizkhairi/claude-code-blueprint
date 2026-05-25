@@ -242,8 +242,8 @@ Clone 仓库，然后有选择地将组件复制到你的 `~/.claude/` 目录。
 | Token 节省、成本影响、质量指标 | 为独立开发者、团队和 CI/CD 提供的现成配置 | Copilot、Cursor、Cline、Roo Code、OpenCode 等10个工具 |
 | **[FAQ](FAQ.md)** | **[Getting Started](GETTING-STARTED.md)** | **[Troubleshooting](TROUBLESHOOTING.md)** |
 | 社区常见问题解答 | 从零到高效 30 分钟 | 常见问题与解决方案 |
-| **[Setup Guide](SETUP.md)** | **[Examples](examples/)** | **[Roadmap](../docs/ROADMAP.md)** |
-| 自动安装程序 + 验证清单 | 框架特定 CLAUDE.md 模板 | 项目方向和后续计划 |
+| **[Setup Guide](SETUP.md)** | **[Case Studies](../docs/CASE-STUDIES.md)** | **[Roadmap](../docs/ROADMAP.md)** |
+| 自动安装程序 + 验证清单 | 采用者故事和前后对比指标 | 项目方向和后续计划 |
 
 ---
 
