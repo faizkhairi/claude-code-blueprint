@@ -1,8 +1,24 @@
 # Memory System — Built-in Opt-in Persistent Memory
 
-**Privacy Notice:** This folder will contain your work history, preferences, and project context once you enable memory. The `.gitignore` shipped here keeps personal content (session.md, reminders.md, diary, projects) **out of git by default** — your fork can stay public without leaking personal data. If you accidentally remove the `.gitignore` and push personal content, treat it as a data exposure: review what was published and rotate any credentials that might have been captured in diary entries or session notes.
+Gives your AI assistant persistent context across sessions, IDE reinstalls, and (with optional cross-machine sync) machine changes. Enabled via `./setup.sh` — no separate repo required.
 
-A built-in opt-in memory system that gives your AI assistant persistent context across sessions, IDE reinstalls, and (with optional cross-machine sync) machine changes. Enabled via `./setup.sh` — no separate repo required.
+> **Privacy by default:** The `.gitignore` shipped in this folder keeps personal content (session, preferences, diary, projects) **out of git** — your blueprint fork can stay public without leaking your work history. Templates and this README stay tracked.
+
+## Quick Reference
+
+| File | What it holds | Updated when |
+|------|---------------|--------------|
+| `core/session.md` | What happened this session, current state, next steps | Session end + significant milestones |
+| `core/preferences.md` | Your work style and communication preferences | Additively, when new patterns observed |
+| `core/identity.md` | AI personality config (how Claude should behave) | Once during setup; rarely after |
+| `core/reminders.md` | Persistent reminders that survive session changes | When user mentions deadlines or follow-ups |
+| `core/decisions.md` | **Append-only** architectural decision log | When non-obvious technical decisions are made |
+| `diary/current/YYYY-MM-DD.md` | What happened on this date, lessons learned | End of significant sessions |
+| `projects/active/{name}.md` | Per-project context (max ~10 active) | When user registers a project, session-end |
+| `templates/adr-template.md` | Reusable ADR scaffold | Never (read-only template) |
+| `templates/coding-template.md` | Per-project context scaffold | Never (read-only template) |
+
+Files in `core/` and `diary/` and `projects/active/` are **git-ignored** — they hold your personal data. Templates and this README are tracked so they survive `git clean` and travel with the blueprint.
 
 ## Why This Exists
 
