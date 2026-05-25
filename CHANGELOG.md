@@ -6,6 +6,38 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## 2026-05-25 (late late night)
+
+### Audit bundle: memory/ docs reframe + cross-tool currency + community-standards verification
+
+**Verified**
+- **GitHub Community Standards: 100% health.** `gh api repos/faizkhairi/claude-code-blueprint/community/profile` returned `health_percentage: 100`. CODE_OF_CONDUCT.md, SECURITY.md, CONTRIBUTING.md, .github/PULL_REQUEST_TEMPLATE.md, and 3 issue templates (battle_story, bug_report, feature_request) all in place and current. Repo description, license (MIT), homepage, and 15 well-chosen topics (`agents`, `ai-coding`, `claude`, `claude-code`, `codex`, `cursor`, `developer-tools`, `gemini-cli`, `hooks`, `mcp`, `productivity`, `reference-architecture`, `windsurf`, `beginner-friendly`, `framework-agnostic`) all confirmed.
+- **Cross-tool currency claims WebFetch-verified** before applying any edit. Sources: TechCrunch (Windsurf-OpenAI deal status, 2025-07-11), AWS DevOps Blog (Amazon Q end-of-support, 2026-04-30), GitHub Changelog (Copilot Memory default-on, 2026-03-04). Each verified claim is now cited in the file's footer.
+
+**Fixed (memory/README.md surgical fixes for 3 HIGH audit findings)**
+- **HIGH-1 (opening framing)**: Reframed from pre-Path-A "Git-Backed Persistent Memory" + "external memory system" + "Fork this template, or create a new private repo" to "Built-in Opt-in Persistent Memory" + "enabled via `./setup.sh` -- no separate repo required". Brings memory/README.md in line with GETTING-STARTED.md and AGENTS.md framing.
+- **HIGH-2 (setup instructions duplicated setup.sh)**: Rewrote Setup section to lead with "The easy way: `./setup.sh`" (single Y/n prompt handles everything). Moved the path-scoped-rule and skills-wiring instructions to a labelled "Advanced: manual setup (skip if you used `setup.sh`)" subsection. Added an "Optional: cross-machine sync" section for users who want a separate private memory repo.
+- **HIGH-3 (.gitignore guidance contradicted actual file)**: Removed the "Recommended .gitignore" section that listed IDE/OS artifacts (`.DS_Store`, `.vscode/`, `.tmp`, etc.). The shipped `memory/.gitignore` covers only personal content (`core/session.md`, `core/preferences.md`, `core/reminders.md`, `core/identity.md`, `diary/`, `projects/active/`). Replaced with a 2-line clarification: machine-level patterns belong at project-root or global `.gitignore`, not in memory's.
+
+**Fixed (docs/CROSS-TOOL-GUIDE.md currency: 2 CRITICAL + 1 HIGH, all WebFetch-verified)**
+- **CRITICAL: Windsurf ownership status (factual error).** Was "Note: Windsurf was acquired by OpenAI in 2025." Now reflects the verified reality: OpenAI's $3B acquisition (announced May 2025) fell through in July 2025; Google then hired Windsurf's CEO and key researchers via a ~$2.4B license deal (no ownership stake). Windsurf operates independently.
+- **CRITICAL: Amazon Q Developer sunset callout.** Added a prominent blockquote callout right after the main capability table: Amazon Q Developer IDE plugins reach end-of-support April 30, 2027; new signups have been blocked since May 15, 2026; AWS is transitioning to Kiro. Visitors comparing tools today would otherwise have evaluated Amazon Q without knowing they can't actually sign up.
+- **HIGH: Copilot Memory status updated** from "public preview" generic to "Public preview, enabled by default for Copilot Pro and Pro+ users as of March 2026" (per GitHub's official Changelog).
+- **HIGH-4 (Cursor v3): DROPPED.** The doc never mentioned any specific Cursor version, so there was no factual error to fix. Adding a v3 mention would be new content, not a fix. Skipped per honest-scope principle.
+- **Verification footer** added at the bottom: "Last verified: 2026-05-25" + citation list + invitation to open a PR or Discussion if anything is stale. Makes future rot-audits easier and sets reader expectations.
+
+**Did NOT**
+- Restructure memory/README.md (surgical edits only per scope; existing structure preserved).
+- Apply unverified cross-tool claims. The audit's Cursor v3 finding was dropped because the doc never claimed any Cursor version.
+- Add new community-standards files (all already present, health already 100%; no edits expected per plan).
+- Modify CHANGELOG history.
+
+**Personal memory state (NOT in this repo; written to `~/.claude/projects/c--Repo/memory/`)**:
+- New: `project_claude_code_blueprint.md` (identity, Not-Planned boundaries, conventions, community surfaces)
+- New: `project_blueprint_memory_path_a.md` (Path A migration details, skill paths, Kiyoraka attribution)
+- New: `feedback_subagent_audit_verification.md` (parallel-grep pattern for subagent audit false negatives)
+- Updated: `MEMORY.md` index with 3 new entries (now 204 lines — pre-existing condition flagged for a future memory-curator pass; the over-limit lines are external-reference index entries which are read-on-demand anyway).
+
 ## 2026-05-25 (late night)
 
 ### Post-cleanup health pass
