@@ -34,7 +34,7 @@ The user typically does one of three things:
 | `skills/` | 17 reusable skill templates for `~/.claude/skills/` |
 | `hooks/` | 10 hook scripts for `~/.claude/hooks/` |
 | `rules/` | 5 example rule files for `~/.claude/rules/` |
-| `examples/` | Framework-specific CLAUDE.md examples (React, Rails, Python, Go) |
+| `examples/` | Reference `settings.json` template (framework-agnostic) |
 | `memory/` | Built-in memory system: enabled via setup.sh (Y/n), git-ignored by default for privacy |
 | `docs/` | Deep reference docs (architecture, benchmarks, settings, etc.) |
 | `i18n/` | Translated READMEs (ja, ko, zh) |

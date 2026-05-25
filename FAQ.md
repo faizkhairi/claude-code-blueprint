@@ -14,7 +14,6 @@ These are the questions we hear most from the community. If yours isn't here, [o
 - Works with any language Claude Code supports: JavaScript/TypeScript, Python, Rust, Go, Java, C#, Ruby, PHP, Swift, and more.
 - The battle stories in [WHY.md](docs/WHY.md) come from a production NestJS/Nuxt/Prisma system, but the patterns (verify your work, diagnose before fixing, plan before executing) apply universally.
 - Path-scoped rules (e.g., `**/prisma/**`) activate by file pattern, not framework. Swap `prisma` for `drizzle`, `sqlalchemy`, or `migrations` by changing the glob.
-- See [PRESETS.md](docs/PRESETS.md#stack-rule-templates) for optional framework-specific CLAUDE.md snippets you can add to your project.
 
 ---
 

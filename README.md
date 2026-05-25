@@ -176,7 +176,7 @@ See [hooks/README.md](hooks/README.md) for the full lifecycle, testing guide, an
 | database-schema | `**/prisma/**`, `**/drizzle/**`, `**/migrations/**` | Schema design patterns |
 | testing | `**/*.test.*`, `**/*.spec.*` | Test writing conventions |
 | session-lifecycle | Always | Session start/end behaviors |
-| memorycore-session | `**/memory-core/**` | External memory integration |
+| memory-session | `**/memory/**` | Memory repository session management |
 
 See [rules/README.md](rules/README.md) for creating custom rules.
 
@@ -226,7 +226,7 @@ Run `./setup.sh` from a cloned or forked copy. Choose a preset (minimal/standard
 2. **Add 2-3 hooks** -- [`protect-config.sh`](hooks/protect-config.sh) + [`notify-file-changed.sh`](hooks/notify-file-changed.sh) + [`cost-tracker.sh`](hooks/cost-tracker.sh). Copy to `~/.claude/hooks/` and wire into [`settings.json`](examples/settings-template.json).
 3. **Read [WHY.md](docs/WHY.md)** to understand the reasoning -- adapt, don't blindly copy.
 4. **Add agents** as your workflow matures -- start with `verify-plan` and `code-reviewer`.
-5. **Set up the [memory system](memory-template/)** when you need cross-session persistence.
+5. **Set up the [memory system](memory/)** when you need cross-session persistence — opt-in during `./setup.sh` (answer Y).
 
 ---
 
@@ -237,11 +237,11 @@ Run `./setup.sh` from a cloned or forked copy. Choose a preset (minimal/standard
 | **[Architecture](docs/ARCHITECTURE.md)** | **[Settings Guide](docs/SETTINGS-GUIDE.md)** | **[Battle Stories](docs/WHY.md)** |
 | System design, hook lifecycle, component relationships | Every env var, permission, and hook explained with rationale | The incidents and lessons behind every component |
 | **[Benchmarks](docs/BENCHMARKS.md)** | **[Presets](docs/PRESETS.md)** | **[Cross-Tool Guide](docs/CROSS-TOOL-GUIDE.md)** |
-| Token savings, cost impact, quality metrics | Ready-to-copy configs for solo, team, and CI/CD | Copilot, Cursor, Cline, Roo Code, OpenCode, and 5 more |
+| Token savings, cost impact, quality metrics | Ready-to-copy configs for solo, team, and CI/CD | Copilot, Cursor, Cline, Roo Code, OpenCode, and 5 more (10 tools total) |
 | **[FAQ](FAQ.md)** | **[Getting Started](GETTING-STARTED.md)** | **[Troubleshooting](TROUBLESHOOTING.md)** |
 | Top community questions answered | From zero to productive in 30 minutes | Common issues and fixes |
-| **[Setup Guide](SETUP.md)** | **[Examples](examples/)** | **[Roadmap](docs/ROADMAP.md)** |
-| Automated installer + verification checklist | Framework-specific CLAUDE.md templates | Project direction and what's next |
+| **[Setup Guide](SETUP.md)** | **[Case Studies](docs/CASE-STUDIES.md)** | **[Roadmap](docs/ROADMAP.md)** |
+| Automated installer + verification checklist | Adopter stories and before/after metrics | Project direction and what's next |
 | **[Self-Monitoring](docs/SELF-MONITORING.md)** | | |
 | Optional patterns: gitleaks pre-commit + memory-curator agent | | |
 
