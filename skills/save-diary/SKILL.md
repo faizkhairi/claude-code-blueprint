@@ -4,6 +4,8 @@ description: MUST use when user says 'save diary', 'write diary', 'diary entry',
 user-invocable: true
 ---
 
+**Prerequisite check (run first)**: if `./memory/diary/current/` does not exist OR `~/.claude/.memory-disabled` marker file is present, this skill is a no-op. Output: "Memory persistence is disabled. Run `./setup.sh` and choose to enable memory if you want diary entries to be saved."
+
 # Dev Diary — Session Documentation Skill
 
 *Today's story takes shape.*
@@ -25,15 +27,15 @@ When this skill activates, output: "Dev Diary — documenting today's session."
 
 ### Step 1: Monthly Archive Check
 
-- Scan `{MEMORYCORE_PATH}/diary/current/` for files from previous months
+- Scan `./memory/diary/current/` for files from previous months
 - For each file where month != current month:
-  - Create `{MEMORYCORE_PATH}/diary/archived/YYYY-MM/` folder if not exists
+  - Create `./memory/diary/archived/YYYY-MM/` folder if not exists
   - Move the file from `current/` to `archived/YYYY-MM/`
 - Continue with diary write
 
 ### Step 2: Find or Create Today's File
 
-- Check if `{MEMORYCORE_PATH}/diary/current/YYYY-MM-DD.md` exists
+- Check if `./memory/diary/current/YYYY-MM-DD.md` exists
 - If exists: use it (will append new entry)
 - If not: create new file with header:
 ```
@@ -56,7 +58,7 @@ When this skill activates, output: "Dev Diary — documenting today's session."
 
 ### Step 4: Update Session Memory
 
-- Update `{MEMORYCORE_PATH}/core/session.md` with:
+- Update `./memory/core/session.md` with:
   - Session recap and key achievements
   - Current working state for continuity
   - Next steps identified

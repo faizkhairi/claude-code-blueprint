@@ -1,0 +1,24 @@
+# Personal memory content — git-ignored to prevent accidental publication.
+# If you push your fork of this blueprint publicly, your memory stays local.
+#
+# To enable cross-machine memory sync, see memory/README.md.
+# Short version: fork the blueprint to a PRIVATE repo, comment out the lines
+# below, and push memory/ explicitly.
+
+# Session-scoped + personal:
+core/session.md
+core/reminders.md
+diary/current/*.md
+diary/archived/**/*.md
+projects/active/*.md
+projects/archived/**/*.md
+
+# Kept tracked by default (append-only / structural; lower sensitivity):
+#   core/decisions.md     -- architectural decision records
+#   core/identity.md      -- general role/role-context (safe to share if generic)
+#   core/preferences.md   -- coding preferences (review before pushing publicly)
+#
+# Want stricter privacy? Uncomment these too:
+# core/decisions.md
+# core/identity.md
+# core/preferences.md

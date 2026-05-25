@@ -36,7 +36,7 @@ Verified measurements from actual blueprint files (March 2026). Token estimates 
 | **rules/database-schema.md** | 4.4 KB | ~1,100 tokens | Editing schema files only | 0-1 per session |
 | **rules/api-endpoints.md** | 3.4 KB | ~850 tokens | Editing API route files only | 0-1 per session |
 | **rules/session-lifecycle.md** | 2.8 KB | ~700 tokens | Always active | Once per session |
-| **rules/memorycore-session.md** | 0.7 KB | ~185 tokens | Editing memory files only | Rare |
+| **rules/memory-session.md** | 0.7 KB | ~185 tokens | Editing memory files only | Rare |
 | **skills/review** | 4.3 KB | ~1,070 tokens | When you ask for a review | 0-1 per session |
 | **skills/deploy-check** | 1.9 KB | ~480 tokens | When you mention deploying | 0-1 per session |
 | **skills/test-check** | 1.9 KB | ~480 tokens | When you mention testing | 0-1 per session |

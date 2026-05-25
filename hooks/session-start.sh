@@ -13,7 +13,7 @@ if [ -z "$PYTHON" ]; then
 fi
 
 # Path to your session memory file (set to your memory repo path)
-SESSION_FILE="${MEMORYCORE_PATH:-$HOME/memory-core}/core/session.md"
+SESSION_FILE="${MEMORY_PATH:-$HOME/memory-core}/core/session.md"
 CHECKPOINT_FILE="$HOME/.claude/session-checkpoint.txt"
 
 # Detect stale session (session.md older than last checkpoint)

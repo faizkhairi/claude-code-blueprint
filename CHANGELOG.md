@@ -6,6 +6,65 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## 2026-05-25 (evening)
+
+### i18n Translation Sync (ja/ko/zh → parity with restructured English README)
+
+**Synced**
+- All 3 translation READMEs (`i18n/README.ja.md`, `README.ko.md`, `README.zh.md`) updated to match the restructured English README from the same-day afternoon entry.
+- New hero framing translated: "library of ready-to-copy files (CLAUDE.md, hooks, agents)" wording in all 3 languages, replacing the older aspirational "smarter / safer / more consistent" tagline.
+- "Before You Start" safety warning moved ABOVE Quick Start in all 3 (was a sub-section after Quick Start). Wording rewritten as a blockquote matching the English version. Stale `{MEMORYCORE_PATH}` / `{PROJECTS_ROOT}` placeholder mention removed (placeholders no longer exist).
+- `memory-template/` → `memory/` references updated across What's Inside table and adoption-path step. Adoption-path memory step rewritten to reflect Path A opt-in framing ("answer Y during `./setup.sh`").
+- `memorycore-session` rule filename → `memory-session` in What's Inside Rules table; glob `**/memory-core/**` → `**/memory/**`; description updated to "memory repository session management".
+- Memory System row description updated: "dual: auto memory + external git-based persistence" → "built-in opt-in: Claude remembers preferences and session context across runs (git-ignored for privacy)".
+- AGENTS.md cross-reference added to all 3 translations (links to `../AGENTS.md`), placed in the safety-warning blockquote so AI assistants reading translated entry points find it immediately.
+- Acknowledgements wording adjusted from "minimal scaffold" / "lightweight scaffold" → "lean built-in version"; clarified that this blueprint now ships built-in opt-in memory in `memory/`. Kiyoraka credit + Project-AI-MemoryCore link preserved verbatim.
+- Language-switcher English link corrected from `README.md` → `../README.md` (translations now live in `i18n/`).
+
+**Parity verification**
+- All 3 translations have identical `##` section count (16, matching English).
+- Zero stale references (`memory-template`, `memorycore-session`, `MEMORYCORE_PATH`) remain in any translation.
+- Safety warning at line 25 / Quick Start at line 31 across all 3 (structural parity preserved).
+
+**Honest disclosure**: translations were produced by mirroring established patterns in the existing high-quality translation content + careful word choice against the new English source. They are functionally accurate but may not match native-speaker quality. Opening 3 community issues (one per language) inviting native speakers to polish wording via PRs (labels: `good first issue`, `documentation`, `help wanted`, `i18n`).
+
+**Not translated yet** (deferred to community contribution): AGENTS.md, docs/README.md, GETTING-STARTED.md additions ("How Memory Works" section). These are larger separate efforts.
+
+## 2026-05-25 (afternoon)
+
+### Structural Optimization for Newcomers and AI Assistants + Built-in Memory (Path A)
+
+**Restructured**
+- Moved 8 deep-reference docs to `docs/` (ARCHITECTURE, BENCHMARKS, CROSS-TOOL-GUIDE, PRESETS, ROADMAP, SELF-MONITORING, SETTINGS-GUIDE, WHY)
+- Moved 3 translation READMEs to `i18n/` (ja, ko, zh). English README stays at root.
+- Root markdown file count: 21 → 11 (added AGENTS.md to root; net cleanup is significant)
+- New `docs/README.md` index explains the docs folder
+- Updated 60 cross-references across 9 files to point to new paths
+
+**Rewritten**
+- README hero: concrete framing ("library of ready-to-copy files") replaces aspirational tagline. Explicitly names what the repo IS and how to use it in the first 3 lines.
+- "Before You Start" safety warning moved ABOVE Quick Start (was below). Prevents the #1 newcomer mistake of running Claude Code inside the blueprint repo.
+
+**Added**
+- `AGENTS.md` at root (67 lines) — AI-assistant orientation file. Gives downstream users' AI tools (Claude, Cursor, Codex, Gemini) a fast accurate read on what this repo is and how to help the user.
+- New `## How Memory Works` section in `GETTING-STARTED.md` — explains the built-in memory system, privacy guard, opt-in flow, optional sync, and Kiyoraka inspiration credit.
+- `memory/.gitignore` — privacy guard preventing accidental fork-publication of personal memory content (session.md, reminders.md, diary/, projects/).
+
+**Memory: now a built-in feature, no external repo needed (Path A)**
+- Folder `memory-template/` renamed to `memory/` — this is now the WORKING memory location, ready to use.
+- `setup.sh` adds hybrid prompt: "Enable persistent memory? [Y/n]" (default Y). When enabled, Claude remembers preferences, decisions, and session context across sessions on this machine.
+- `{MEMORYCORE_PATH}` placeholder eliminated entirely — skills use relative `./memory/` paths now.
+- Privacy: personal content `.gitignore`d by default. Optional cross-machine sync documented for advanced users.
+- Operational `MemoryCore` references → `memory` across 16 files. Kiyoraka credit in all 4 README acknowledgements **preserved verbatim** — rename is operational-only, not attributional.
+- File `rules/memorycore-session.md` → `rules/memory-session.md`.
+- Skills (`load-session`, `save-session`, `save-diary`, `session-end`) now fail gracefully with a clear "memory persistence is disabled" message when user opts out at setup.
+
+**Tone audit**
+- Replaced "auto-memory" → "session memory" / "what Claude remembers" in user-facing docs (Anthropic uses "auto-memory" internally; "session memory" is clearer for newcomers).
+- Other technical terms (hook, skill, agent) kept since they're load-bearing Claude Code concepts.
+
+**Why this matters**: claude-code-blueprint is now a true one-stop tool. Fork the repo, run `./setup.sh`, choose Y on memory, and Claude has persistent session memory immediately — no external repository to create, no path placeholders to fill, no second tool to learn. A non-powerful AI model that a downstream user prompts about this repo can answer accurately from the first 67 lines of AGENTS.md alone. For humans, the root browser is no longer overwhelming, and memory is honestly described as a real built-in feature.
+
 ## 2026-05-25
 
 ### Maintenance & Community Updates
@@ -107,15 +166,15 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 ## 2026-03-26
 
 ### Added
-- Token cost per component breakdown with verified file measurements in [BENCHMARKS.md](BENCHMARKS.md#token-cost-per-component)
-- Subscription plan recommendations, upgrade guide, and Pro user's blueprint journey in [BENCHMARKS.md](BENCHMARKS.md#subscription-plans--the-blueprint)
+- Token cost per component breakdown with verified file measurements in [BENCHMARKS.md](docs/BENCHMARKS.md#token-cost-per-component)
+- Subscription plan recommendations, upgrade guide, and Pro user's blueprint journey in [BENCHMARKS.md](docs/BENCHMARKS.md#subscription-plans--the-blueprint)
 - API billing cost analysis with per-session overhead calculations in BENCHMARKS.md
 - "Will This Affect My Token Usage?" FAQ in [GETTING-STARTED.md](GETTING-STARTED.md#will-this-affect-my-token-usage) beginner section
 - Token cost philosophy point (#4: "Hooks are free, context is cheap") in README.md
 - Complete beginner onboarding section in [GETTING-STARTED.md](GETTING-STARTED.md#new-to-claude-code-start-here) (model recommendations, 1-minute setup, `~/.claude/` explained, self-setup prompt)
 - "Complete beginner" row in README.md adoption table
 - ADR template ([memory-template/templates/adr-template.md](memory-template/templates/adr-template.md)) for structured architectural decision records
-- Category-based stack rule templates in [PRESETS.md](PRESETS.md#stack-rule-templates) (Backend API, Full-Stack App, Database + ORM)
+- Category-based stack rule templates in [PRESETS.md](docs/PRESETS.md#stack-rule-templates) (Backend API, Full-Stack App, Database + ORM)
 - Skill customization guide in [skills/README.md](skills/README.md#extending-skills-for-your-stack) with 4 extension examples
 - Stack rules placeholder section in [CLAUDE.md](CLAUDE.md) template for project-specific framework rules
 - ADR template and stack rule templates references in [GETTING-STARTED.md](GETTING-STARTED.md#what-to-learn-next)
@@ -126,7 +185,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 - Testing rule template now framework-agnostic (was Vitest/Vue-specific)
 
 ### Previously added
-- Auto permission mode documentation with comparison table of all 4 modes ([SETTINGS-GUIDE.md](SETTINGS-GUIDE.md#defaultmode))
+- Auto permission mode documentation with comparison table of all 4 modes ([SETTINGS-GUIDE.md](docs/SETTINGS-GUIDE.md#defaultmode))
 - `autoMode.environment` configuration guide for classifier context
 - `CLAUDE_CODE_SUBPROCESS_ENV_SCRUB` environment variable documentation
 - `managed-settings.d/` team policy drop-in directory documentation
@@ -136,9 +195,9 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 - Auto mode classifier troubleshooting to [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
 - Deprecated colon wildcard syntax warning (`Bash(npm:*)` to `Bash(npm *)`)
 - Version badge: "Last verified with Claude Code 2.1.83"
-- Starter presets guide ([PRESETS.md](PRESETS.md)) with 4 adoption tiers
-- Benchmarks template ([BENCHMARKS.md](BENCHMARKS.md)) with token, cost, and quality metrics
-- Model routing decision guide in [ARCHITECTURE.md](ARCHITECTURE.md#when-to-use-each-model)
+- Starter presets guide ([PRESETS.md](docs/PRESETS.md)) with 4 adoption tiers
+- Benchmarks template ([BENCHMARKS.md](docs/BENCHMARKS.md)) with token, cost, and quality metrics
+- Model routing decision guide in [ARCHITECTURE.md](docs/ARCHITECTURE.md#when-to-use-each-model)
 - Japanese, Korean, and Chinese README translations
 - Community battle story issue template
 
@@ -151,7 +210,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 ## 2026-03-25
 
 ### Added
-- [SETTINGS-GUIDE.md](SETTINGS-GUIDE.md): every environment variable, setting, and permission explained with rationale
+- [SETTINGS-GUIDE.md](docs/SETTINGS-GUIDE.md): every environment variable, setting, and permission explained with rationale
 - [TROUBLESHOOTING.md](TROUBLESHOOTING.md): 16 common issues across 7 categories (hooks, agents, MCP, rules, settings, cost, Windows)
 - [GETTING-STARTED.md](GETTING-STARTED.md): prerequisites, Windows notes, team onboarding, permission modes
 - [README.md](README.md): "Who is this for?" scaling table with 5 adoption personas
@@ -174,9 +233,9 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 - Memory system template (AI-MemoryCore compatible)
 - Complete [settings-template.json](examples/settings-template.json) with categorized permissions
 - [CLAUDE.md](CLAUDE.md) behavioral rules template
-- [ARCHITECTURE.md](ARCHITECTURE.md) with component relationship and agent ecosystem diagrams
-- [WHY.md](WHY.md) with 13 battle stories explaining the reasoning behind every component
-- [CROSS-TOOL-GUIDE.md](CROSS-TOOL-GUIDE.md) mapping patterns to Cursor, Codex CLI, Gemini CLI, Windsurf
+- [ARCHITECTURE.md](docs/ARCHITECTURE.md) with component relationship and agent ecosystem diagrams
+- [WHY.md](docs/WHY.md) with 13 battle stories explaining the reasoning behind every component
+- [CROSS-TOOL-GUIDE.md](docs/CROSS-TOOL-GUIDE.md) mapping patterns to Cursor, Codex CLI, Gemini CLI, Windsurf
 - [GETTING-STARTED.md](GETTING-STARTED.md) beginner walkthrough (30-minute onboarding)
 - [CONTRIBUTING.md](CONTRIBUTING.md) with PR guidelines, NDA requirements, and file naming conventions
 - [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) (Contributor Covenant)

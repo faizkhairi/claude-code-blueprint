@@ -105,7 +105,7 @@ Inside `~/.claude/` you'll find (or create):
 
 `settings.json` is Claude Code's main configuration file at `~/.claude/settings.json`. It controls hooks (automatic behaviors), permissions (what Claude can and can't do), and environment variables.
 
-If you don't have one yet, that's normal — Claude Code works fine without it. You only need it when you want to add hooks or customize permissions. See [SETTINGS-GUIDE.md](SETTINGS-GUIDE.md) for a complete reference.
+If you don't have one yet, that's normal — Claude Code works fine without it. You only need it when you want to add hooks or customize permissions. See [SETTINGS-GUIDE.md](docs/SETTINGS-GUIDE.md) for a complete reference.
 
 ### Let Claude Code Set Up for You
 
@@ -145,11 +145,11 @@ For perspective: a typical 30-turn coding session uses 50,000-200,000+ tokens. T
 
 **Budget-conscious?** Hooks give the most value per token spent (literally free). CLAUDE.md is the second-best ROI. Agents are the most expensive — add them one at a time, starting with `verify-plan`.
 
-See [BENCHMARKS.md](BENCHMARKS.md#token-cost-per-component) for the complete breakdown, including subscription plan recommendations and an upgrade guide.
+See [BENCHMARKS.md](docs/BENCHMARKS.md#token-cost-per-component) for the complete breakdown, including subscription plan recommendations and an upgrade guide.
 
 ### Important: Placeholder Variables
 
-Several files in this blueprint contain placeholder variables like `{MEMORYCORE_PATH}`, `{PROJECTS_ROOT}`, and `{CLAUDE_CONFIG_PATH}`. You must replace these with your actual paths before use. See [skills/README.md](skills/README.md#required-replace-placeholder-variables) for the full list and platform-specific examples.
+Several files in this blueprint contain placeholder variables like `./memory`, `{PROJECTS_ROOT}`, and `{CLAUDE_CONFIG_PATH}`. You must replace these with your actual paths before use. See [skills/README.md](skills/README.md#required-replace-placeholder-variables) for the full list and platform-specific examples.
 
 ### Ready for More?
 
@@ -195,7 +195,7 @@ If you plan to use any of the [11 agents](agents/) in this blueprint, you must e
 }
 ```
 
-Without this, the Agent tool is unavailable and all multi-agent workflows (parallel reviews, sprint planning, specialist agents) are non-functional. See [SETTINGS-GUIDE.md](SETTINGS-GUIDE.md#claude_code_experimental_agent_teams) for the full explanation.
+Without this, the Agent tool is unavailable and all multi-agent workflows (parallel reviews, sprint planning, specialist agents) are non-functional. See [SETTINGS-GUIDE.md](docs/SETTINGS-GUIDE.md#claude_code_experimental_agent_teams) for the full explanation.
 
 ---
 
@@ -249,7 +249,7 @@ You type a message
   │
   ├─ CLAUDE.md rules loaded (behavioral guidelines)
   ├─ Rules loaded (path-scoped, based on files being edited)
-  ├─ Memory loaded (auto-memory + external if configured)
+  ├─ Memory loaded (session memory + memory/ folder if enabled)
   │
   ├─ Claude processes your request
   │   ├─ May spawn Agents (specialized subagents)
@@ -481,7 +481,7 @@ Copy [hooks/cost-tracker.sh](hooks/cost-tracker.sh) to `~/.claude/hooks/` and ad
 
 ### Minute 20-30: Read WHY.md
 
-Read [WHY.md](WHY.md) to understand why each component exists. This is where the real value is — not in copying files, but in understanding the thinking behind them.
+Read [WHY.md](docs/WHY.md) to understand why each component exists. This is where the real value is — not in copying files, but in understanding the thinking behind them.
 
 ---
 
@@ -614,6 +614,30 @@ When you fork this blueprint for a team, follow these rules to protect shared co
 
 ---
 
+## How Memory Works
+
+The blueprint includes an opt-in memory system that gives Claude persistent context across sessions on this machine.
+
+**What gets remembered**:
+- Your coding preferences (style, tools, conventions)
+- Architectural decisions (why you chose pattern X over Y)
+- Active project context (what you're working on, what's blocked)
+- Session continuity (pick up where you left off after a break)
+
+**Where it lives**: `./memory/` folder inside your fork of this blueprint.
+
+**Privacy**: personal content is `.gitignore`d by default — if you push your fork publicly, your memory stays local. The `memory/.gitignore` excludes `core/session.md`, `core/reminders.md`, `diary/`, and `projects/active/`. Append-only structural files (`core/decisions.md`, `core/identity.md`, `core/preferences.md`) are tracked by default since they're less sensitive — review them before pushing if you want stricter privacy.
+
+**How to enable**: just run `./setup.sh` and answer **Y** when prompted "Enable persistent memory? [Y/n]". The setup wizard handles the rest.
+
+**How to disable**: re-run `./setup.sh` and answer **n** to the memory prompt. The memory skills (`load-session`, `save-session`, `save-diary`, `session-end`) become no-ops with a clear "memory disabled" message. Your data is not deleted — `memory/` stays on disk unchanged in case you re-enable later.
+
+**Optional cross-machine sync**: the default setup gives you memory on this machine only. For cross-machine sync, see `memory/README.md` — short version: fork the blueprint to a **private** repo, comment out the `.gitignore` entries, and push. Treat the fork as private since it now contains your personal memory content.
+
+> **Credit**: the memory pattern in this blueprint was inspired by [Project-AI-MemoryCore](https://github.com/Kiyoraka/Project-AI-MemoryCore) by Kiyoraka. The blueprint ships a lean built-in version; for a deeper memory architecture with LRU project management, echo recall, and 11 feature extensions, check out the original project — it's the more comprehensive option for users who want full memory architecture.
+
+---
+
 ## Setting Up for Teams
 
 If you're adopting this blueprint across a team (startup, company, open source project), here's how the pieces split.
@@ -625,7 +649,7 @@ If you're adopting this blueprint across a team (startup, company, open source p
 | **Project** | `.claude/` in project root | Yes | Agents, skills, rules specific to this project |
 | **Project** | `CLAUDE.md` in project root | Yes | Behavioral rules the whole team follows |
 | **Personal** | `~/.claude/settings.json` | No (per-user) | Hooks, permissions, API key, env vars |
-| **Personal** | `~/.claude/projects/*/memory/` | No (per-user) | Auto-memory (learned preferences, gotchas) |
+| **Personal** | `~/.claude/projects/*/memory/` | No (per-user) | Session memory (what Claude learns per-user over time) |
 
 ### Onboarding a New Developer
 
@@ -642,11 +666,11 @@ If you're adopting this blueprint across a team (startup, company, open source p
 | Comfortable with hooks | `"auto"` | AI classifier evaluates safety contextually; hooks catch the rest |
 | CI/CD pipelines | `"dontAsk"` | Predictable allow-list behavior, no classifier overhead |
 
-Start new developers on the default (ask) mode. Graduate to `"auto"` once they've set up and tested the hook guardrails (especially `protect-config.sh` and `block-git-push.sh`). Use `"dontAsk"` only for CI/CD where you want rigid, predictable behavior. See [SETTINGS-GUIDE.md](SETTINGS-GUIDE.md#defaultmode) for full details on all four modes.
+Start new developers on the default (ask) mode. Graduate to `"auto"` once they've set up and tested the hook guardrails (especially `protect-config.sh` and `block-git-push.sh`). Use `"dontAsk"` only for CI/CD where you want rigid, predictable behavior. See [SETTINGS-GUIDE.md](docs/SETTINGS-GUIDE.md#defaultmode) for full details on all four modes.
 
 ### Memory for Teams
 
-- **Auto-memory** (`~/.claude/projects/*/memory/`) is per-user and cannot be shared. Each developer builds their own memory over time.
+- **Session memory** (`~/.claude/projects/*/memory/`) is per-user and cannot be shared. Each developer builds their own memory over time.
 - **External memory** ([memory-template/](memory-template/)) can be team-shared (one repo everyone reads) or per-user (each developer has their own memory repo). Team-shared works well for architectural decisions and conventions. Per-user works better for personal preferences and session history.
 - **CLAUDE.md** is the primary mechanism for sharing team conventions. If everyone on the team should follow a rule, it belongs in CLAUDE.md, not in personal memory.
 
@@ -659,12 +683,12 @@ Once you're comfortable with the basics:
 1. **Agents** — Read [agents/README.md](agents/README.md) to understand model tiering and permission modes
 2. **Skills** — Read [skills/README.md](skills/README.md) to see how multi-step workflows are built
 3. **Hooks deep dive** — Read [hooks/README.md](hooks/README.md) for the full lifecycle and design principles
-4. **Settings deep dive** — Read [SETTINGS-GUIDE.md](SETTINGS-GUIDE.md) for every env var, permission, and cost implication explained
+4. **Settings deep dive** — Read [SETTINGS-GUIDE.md](docs/SETTINGS-GUIDE.md) for every env var, permission, and cost implication explained
 5. **Memory system** — Read [memory-template/README.md](memory-template/README.md) when you need cross-session persistence
 6. **ADR template** — Use [memory-template/templates/adr-template.md](memory-template/templates/adr-template.md) when documenting architectural decisions
-7. **Architecture** — Read [ARCHITECTURE.md](ARCHITECTURE.md) for how everything connects
-8. **Stack rule templates** — See [PRESETS.md](PRESETS.md#stack-rule-templates) for framework-agnostic CLAUDE.md snippets by project type
-9. **Cross-tool** — Read [CROSS-TOOL-GUIDE.md](CROSS-TOOL-GUIDE.md) if you also use Copilot, Cursor, Cline, Roo Code, OpenCode, or other AI tools
+7. **Architecture** — Read [ARCHITECTURE.md](docs/ARCHITECTURE.md) for how everything connects
+8. **Stack rule templates** — See [PRESETS.md](docs/PRESETS.md#stack-rule-templates) for framework-agnostic CLAUDE.md snippets by project type
+9. **Cross-tool** — Read [CROSS-TOOL-GUIDE.md](docs/CROSS-TOOL-GUIDE.md) if you also use Copilot, Cursor, Cline, Roo Code, OpenCode, or other AI tools
 10. **FAQ** — See [FAQ.md](FAQ.md) for answers to the most common community questions
 11. **Troubleshooting** — Read [TROUBLESHOOTING.md](TROUBLESHOOTING.md) if something isn't working as expected
 

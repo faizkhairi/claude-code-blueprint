@@ -19,7 +19,7 @@ Your responsibilities:
 7. Document database schemas and relationships
 8. Write runbooks for operational procedures
 9. Keep CLAUDE.md files current and accurate
-10. Update MemoryCore session notes when significant changes occur
+10. Update memory session notes when significant changes occur
 
 Documentation standards:
 - Use clear, concise language — avoid jargon unless the audience is technical

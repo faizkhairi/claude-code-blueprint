@@ -1,6 +1,6 @@
 # Setup Guide
 
-Action-focused setup for the Claude Code Blueprint. For explanations and background, see [GETTING-STARTED.md](GETTING-STARTED.md). For preset details, see [PRESETS.md](PRESETS.md).
+Action-focused setup for the Claude Code Blueprint. For explanations and background, see [GETTING-STARTED.md](GETTING-STARTED.md). For preset details, see [PRESETS.md](docs/PRESETS.md).
 
 ---
 
@@ -79,7 +79,7 @@ After any setup method, verify these items:
 - [ ] `~/.claude/settings.json` exists and is valid JSON
 - [ ] `~/.claude/agents/` contains agent definitions (Standard/Full)
 - [ ] `~/.claude/skills/` contains skill directories (Full only)
-- [ ] Placeholder variables are replaced (`grep -r '{MEMORYCORE_PATH}' ~/.claude/`)
+- [ ] Placeholder variables are replaced (`grep -r './memory' ~/.claude/`)
 - [ ] Hooks pass syntax check (see Verify section below)
 
 ---
@@ -97,7 +97,7 @@ for f in ~/.claude/hooks/*.sh; do bash -n "$f" && echo "OK: $f"; done
 python3 -m json.tool ~/.claude/settings.json > /dev/null && echo "settings.json: valid"
 
 # Check for unreplaced placeholders
-grep -r '{MEMORYCORE_PATH}\|{PROJECTS_ROOT}' ~/.claude/ 2>/dev/null || echo "No placeholders remaining"
+grep -r './memory\|{PROJECTS_ROOT}' ~/.claude/ 2>/dev/null || echo "No placeholders remaining"
 
 # Run the full hook test suite (from the blueprint repo)
 cd claude-code-blueprint && bash hooks/test-hooks.sh

@@ -12,9 +12,9 @@ These are the questions we hear most from the community. If yours isn't here, [o
 
 - The rules ([CLAUDE.md](CLAUDE.md)), hooks (`.sh` scripts), and agents (`.md` files) contain zero framework-specific code.
 - Works with any language Claude Code supports: JavaScript/TypeScript, Python, Rust, Go, Java, C#, Ruby, PHP, Swift, and more.
-- The battle stories in [WHY.md](WHY.md) come from a production NestJS/Nuxt/Prisma system, but the patterns (verify your work, diagnose before fixing, plan before executing) apply universally.
+- The battle stories in [WHY.md](docs/WHY.md) come from a production NestJS/Nuxt/Prisma system, but the patterns (verify your work, diagnose before fixing, plan before executing) apply universally.
 - Path-scoped rules (e.g., `**/prisma/**`) activate by file pattern, not framework. Swap `prisma` for `drizzle`, `sqlalchemy`, or `migrations` by changing the glob.
-- See [PRESETS.md](PRESETS.md#stack-rule-templates) for optional framework-specific CLAUDE.md snippets you can add to your project.
+- See [PRESETS.md](docs/PRESETS.md#stack-rule-templates) for optional framework-specific CLAUDE.md snippets you can add to your project.
 
 ---
 
@@ -23,7 +23,7 @@ These are the questions we hear most from the community. If yours isn't here, [o
 **Yes.** The blueprint has a graduated adoption path -- you don't need to understand all 11 agents on day one.
 
 - **Level 1 (60 seconds):** Copy [CLAUDE.md](CLAUDE.md) into your project root. This single file gives Claude Code three behavioral rules that prevent the most common AI coding mistakes. No configuration, no terminal commands, no dependencies.
-- **Level 2 (5 minutes):** Add 2-3 hooks for automated safety (config protection, edit verification). See [PRESETS.md](PRESETS.md#minimal) for the minimal preset.
+- **Level 2 (5 minutes):** Add 2-3 hooks for automated safety (config protection, edit verification). See [PRESETS.md](docs/PRESETS.md#minimal) for the minimal preset.
 - **Level 3 (ongoing):** Add agents, skills, rules, and memory as your workflow matures. You'll know when you need them.
 - The [Getting Started guide](GETTING-STARTED.md#new-to-claude-code-start-here) assumes zero prior experience and walks you through everything step by step.
 - The **Diagnose-First** rule in CLAUDE.md specifically forces Claude to explain its reasoning before fixing things -- that's where you learn, not just get code handed to you.
@@ -38,7 +38,7 @@ These are the questions we hear most from the community. If yours isn't here, [o
 - **Hooks** cost zero tokens on any plan -- they run outside Claude's context as shell scripts.
 - **Agents** use different models (Opus, Sonnet, Haiku). Sonnet handles 90% of tasks and is available on all plans. Opus agents (like `project-architect`) benefit from Pro or Max plans.
 - The total token overhead of the full blueprint is ~1-5% per session. For most sessions, it's **net token-negative** because it prevents redo cycles that waste far more tokens.
-- See [BENCHMARKS.md](BENCHMARKS.md#subscription-plans--the-blueprint) for a detailed plan-by-plan breakdown.
+- See [BENCHMARKS.md](docs/BENCHMARKS.md#subscription-plans--the-blueprint) for a detailed plan-by-plan breakdown.
 
 ---
 
@@ -48,10 +48,10 @@ These are the questions we hear most from the community. If yours isn't here, [o
 
 - Start with [CLAUDE.md](CLAUDE.md) only -- it's the single highest-impact component. Copy it into your project root. Done.
 - Don't add anything else until you feel the need. You might never need all 11 agents.
-- When ready, add hooks next (zero token cost, automated safety). See [PRESETS.md](PRESETS.md#minimal) for the minimal 3-file setup.
+- When ready, add hooks next (zero token cost, automated safety). See [PRESETS.md](docs/PRESETS.md#minimal) for the minimal 3-file setup.
 - Then add agents one at a time. Start with `verify-plan` (catches plan mistakes) or `code-reviewer` (catches code mistakes).
 - The [recommended adoption path](README.md#recommended-adoption-path) lays out the progression in 5 steps.
-- Read [WHY.md](WHY.md) to understand which components solve problems you actually have -- skip the ones that don't apply.
+- Read [WHY.md](docs/WHY.md) to understand which components solve problems you actually have -- skip the ones that don't apply.
 
 ---
 
@@ -61,7 +61,7 @@ These are the questions we hear most from the community. If yours isn't here, [o
 
 **The concepts transfer. The implementation files are Claude Code-specific.**
 
-- [CROSS-TOOL-GUIDE.md](CROSS-TOOL-GUIDE.md) maps every blueprint concept to its equivalent in 10 other tools: Copilot, Cursor, Cline, Roo Code, OpenCode, Codex CLI, Gemini CLI, Amazon Q, Windsurf, and Aider.
+- [CROSS-TOOL-GUIDE.md](docs/CROSS-TOOL-GUIDE.md) maps every blueprint concept to its equivalent in 10 other tools: Copilot, Cursor, Cline, Roo Code, OpenCode, Codex CLI, Gemini CLI, Amazon Q, Windsurf, and Aider.
 - The behavioral rules philosophy (verify, diagnose, plan) works in any AI coding tool -- you just express them differently.
 - **Cursor users:** Dual config is supported. The Cross-Tool Guide has a dedicated "Cursor in depth" section covering `hooks.json`, `permissions.json`, `.cursorignore`, and the `cli-config` bridge.
 - **Copilot users:** Copilot now has hooks (8 events, Preview), custom agents (`.agent.md`), and memory. The Cross-Tool Guide has a dedicated "Copilot in depth" section.
@@ -101,7 +101,7 @@ No installation required. No dependencies. No package manager. Just one markdown
 
 - The **Diagnose-First** rule forces Claude to investigate errors before jumping to fixes. You see the diagnosis process, not just the result.
 - The **Plan-Before-Execute** rule makes Claude explain its approach before writing code. You review and approve the plan, which builds your understanding of the architecture.
-- The battle stories in [WHY.md](WHY.md) teach you what goes wrong in real software projects -- these are learning opportunities, not black boxes.
+- The battle stories in [WHY.md](docs/WHY.md) teach you what goes wrong in real software projects -- these are learning opportunities, not black boxes.
 - The "Learning to code" persona is explicitly supported in the [adoption table](README.md#who-is-this-for). The recommendation is to start with CLAUDE.md and GETTING-STARTED.md only, ignoring agents/skills/memory until you're comfortable.
 - AI helps you move faster, but understanding what you're building and why is still your responsibility.
 
@@ -117,7 +117,7 @@ No installation required. No dependencies. No package manager. Just one markdown
 - **CLAUDE.md adds ~2,300 tokens per session** -- roughly 1-5% overhead. That's less than a single medium-sized source file.
 - **Net impact is token-negative** for sessions longer than a few turns. One prevented redo cycle (fixing a mistake Claude made because it didn't verify) saves 5,000-20,000 tokens -- far more than the blueprint costs.
 - **Agents use model tiering** to control costs: Opus for complex planning (rare), Sonnet for most work, Haiku for docs (cheapest). Average cost multiplier is ~1.1x baseline.
-- See [BENCHMARKS.md](BENCHMARKS.md#token-cost-per-component) for the full cost-per-component breakdown and [GETTING-STARTED.md](GETTING-STARTED.md#will-this-affect-my-token-usage) for the beginner-friendly cost FAQ.
+- See [BENCHMARKS.md](docs/BENCHMARKS.md#token-cost-per-component) for the full cost-per-component breakdown and [GETTING-STARTED.md](GETTING-STARTED.md#will-this-affect-my-token-usage) for the beginner-friendly cost FAQ.
 
 ---
 
@@ -125,6 +125,6 @@ No installation required. No dependencies. No package manager. Just one markdown
 
 - **Technical issues:** [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
 - **Full beginner guide:** [GETTING-STARTED.md](GETTING-STARTED.md)
-- **Cost and performance data:** [BENCHMARKS.md](BENCHMARKS.md)
-- **Using other AI tools:** [CROSS-TOOL-GUIDE.md](CROSS-TOOL-GUIDE.md)
+- **Cost and performance data:** [BENCHMARKS.md](docs/BENCHMARKS.md)
+- **Using other AI tools:** [CROSS-TOOL-GUIDE.md](docs/CROSS-TOOL-GUIDE.md)
 - **Community discussion:** [GitHub Discussions](https://github.com/faizkhairi/claude-code-blueprint/discussions)

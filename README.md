@@ -2,7 +2,9 @@
 
 # Claude Code Blueprint
 
-**Make Claude Code smarter, safer, and more consistent -- for any project, at any skill level. Not a plugin to install -- a blueprint to learn from and adapt.**
+**A library of ready-to-copy files (CLAUDE.md, hooks, agents) you mix into your own project to make Claude Code more reliable.**
+
+Copy one file in 60 seconds. Copy more as your project grows. Works with any language, any framework, any skill level.
 
 [![Stars](https://img.shields.io/github/stars/faizkhairi/claude-code-blueprint?style=flat)](https://github.com/faizkhairi/claude-code-blueprint/stargazers)
 [![Forks](https://img.shields.io/github/forks/faizkhairi/claude-code-blueprint?style=flat)](https://github.com/faizkhairi/claude-code-blueprint/network/members)
@@ -10,13 +12,17 @@
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-2.1.150-blueviolet)](https://docs.anthropic.com/en/docs/claude-code)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
-**11 agents** · **17 skills** · **10 hooks** · **5 rules** -- every one battle-tested
+**11 agents** · **17 skills** · **10 hooks** · **5 rules** — verified in real projects
 
-[English](README.md) | [日本語](README.ja.md) | [한국어](README.ko.md) | [简体中文](README.zh.md)
+[English](README.md) | [日本語](i18n/README.ja.md) | [한국어](i18n/README.ko.md) | [简体中文](i18n/README.zh.md)
 
 <img src="assets/walkthrough.gif" alt="Claude Code Blueprint Walkthrough" width="680">
 
 </div>
+
+---
+
+> **Before you start:** This is a reference repo, not a project template. Do **not** run Claude Code inside this repository — it will read the blueprint's own CLAUDE.md instead of your project's rules. Fork or copy individual files into your own project. See [GETTING-STARTED.md](GETTING-STARTED.md) for the full setup walkthrough.
 
 ---
 
@@ -48,14 +54,6 @@ See [SETUP.md](SETUP.md) for all setup options including a verification checklis
 
 ---
 
-### Before You Start
-
-> **Important:** This is a reference architecture, not a project template. Do **not** run Claude Code inside this repository -- it will read the blueprint's own CLAUDE.md instead of your project's rules. Fork or cherry-pick files into your own project.
->
-> Several files contain placeholder variables (`{MEMORYCORE_PATH}`, `{PROJECTS_ROOT}`) that you must replace with your actual paths. Hooks and settings belong in your **user-level** config (`~/.claude/`), not in your project directory. See [GETTING-STARTED.md](GETTING-STARTED.md) for the full setup guide.
-
----
-
 ## Who Is This For?
 
 **Any developer, any framework, any skill level.** The blueprint configures Claude Code's behavior -- it doesn't care what language or framework your project uses.
@@ -67,7 +65,7 @@ See [SETUP.md](SETUP.md) for all setup options including a verification checklis
 | **Small startup (2-5 devs)** | Above + shared rules + 2-3 agents | See [Team Setup](GETTING-STARTED.md#setting-up-for-teams) |
 | **Established team (5+ devs)** | Full blueprint, adapted | Fork, customize, commit shared config |
 | **Learning to code** | [GETTING-STARTED.md](GETTING-STARTED.md) only | Ignore agents/skills/memory until comfortable |
-| **Coming from another tool** | [CROSS-TOOL-GUIDE.md](CROSS-TOOL-GUIDE.md) | Concepts transfer; see *Copilot/Cursor in depth* sections |
+| **Coming from another tool** | [CROSS-TOOL-GUIDE.md](docs/CROSS-TOOL-GUIDE.md) | Concepts transfer; see *Copilot/Cursor in depth* sections |
 
 ### Your Progression
 
@@ -78,7 +76,7 @@ Copy CLAUDE.md into your project. Three behavioral rules. Immediate impact.
 Add 2-3 hooks. Zero token cost. Automated config protection and edit verification.
 
 **Level 3 -- Customize as you grow (ongoing)**
-Add agents, skills, rules, and memory as your workflow matures. See [Presets](PRESETS.md) for ready-to-copy configurations.
+Add agents, skills, rules, and memory as your workflow matures. See [Presets](docs/PRESETS.md) for ready-to-copy configurations.
 
 ---
 
@@ -88,9 +86,9 @@ Other repos give you **135 agents**. We give you **11** -- and explain why each 
 
 | This Blueprint | Generic Config Repos |
 |---------------|---------------------|
-| Every component has a [battle story](WHY.md) explaining why it exists | Configs without context |
+| Every component has a [battle story](docs/WHY.md) explaining why it exists | Configs without context |
 | [3 behavioral rules](CLAUDE.md) that prevent AI coding mistakes | Lists of settings to copy |
-| [Cross-tool guide](CROSS-TOOL-GUIDE.md) for 10 tools (Copilot, Cursor, Cline, Roo Code, OpenCode, and more) | Single-tool only |
+| [Cross-tool guide](docs/CROSS-TOOL-GUIDE.md) for 10 tools (Copilot, Cursor, Cline, Roo Code, OpenCode, and more) | Single-tool only |
 | [Beginner-friendly](GETTING-STARTED.md) with 6 adoption personas | Assumed expertise |
 | [Smoke-tested hooks](hooks/test-hooks.sh) with 35 automated tests | Untested scripts |
 | Safety-first: [config placement guide](GETTING-STARTED.md#where-config-belongs-project-vs-personal), privacy warnings, [graceful degradation](agents/README.md#agents-are-not-infallible) | No safety guidance |
@@ -190,7 +188,7 @@ See [rules/README.md](rules/README.md) for creating custom rules.
 |-----------|---------|
 | [**CLAUDE.md**](CLAUDE.md) | Battle-tested behavioral rules template |
 | [**Settings Template**](examples/settings-template.json) | Full hook + permission configuration |
-| [**Memory System**](memory-template/) | Dual: auto-memory + external git-backed persistence |
+| [**Memory System**](memory/) | Built-in opt-in: Claude remembers preferences and session context across runs (git-ignored for privacy) |
 
 ---
 
@@ -202,7 +200,7 @@ See [rules/README.md](rules/README.md) for creating custom rules.
 
 3. **Context is currency** -- Every token loaded into context is a token not available for your code. Keep MEMORY.md under 100 lines. Extract to topic files. Use path-scoped rules so irrelevant rules don't load.
 
-4. **Hooks are free, context is cheap** -- The 10 hook scripts cost zero tokens (they run outside Claude's context). CLAUDE.md adds ~2,300 tokens per session -- roughly 1-5% of a typical session. The blueprint saves more tokens than it costs by preventing redo cycles. See [BENCHMARKS.md](BENCHMARKS.md#token-cost-per-component).
+4. **Hooks are free, context is cheap** -- The 10 hook scripts cost zero tokens (they run outside Claude's context). CLAUDE.md adds ~2,300 tokens per session -- roughly 1-5% of a typical session. The blueprint saves more tokens than it costs by preventing redo cycles. See [BENCHMARKS.md](docs/BENCHMARKS.md#token-cost-per-component).
 
 5. **Battle-tested over theoretical** -- Every rule in this repo exists because something went wrong without it. The "WHY" matters more than the "WHAT".
 
@@ -226,7 +224,7 @@ Run `./setup.sh` from a cloned or forked copy. Choose a preset (minimal/standard
 
 1. **Start with [CLAUDE.md](CLAUDE.md)** -- the behavioral rules template. Biggest impact with zero setup.
 2. **Add 2-3 hooks** -- [`protect-config.sh`](hooks/protect-config.sh) + [`notify-file-changed.sh`](hooks/notify-file-changed.sh) + [`cost-tracker.sh`](hooks/cost-tracker.sh). Copy to `~/.claude/hooks/` and wire into [`settings.json`](examples/settings-template.json).
-3. **Read [WHY.md](WHY.md)** to understand the reasoning -- adapt, don't blindly copy.
+3. **Read [WHY.md](docs/WHY.md)** to understand the reasoning -- adapt, don't blindly copy.
 4. **Add agents** as your workflow matures -- start with `verify-plan` and `code-reviewer`.
 5. **Set up the [memory system](memory-template/)** when you need cross-session persistence.
 
@@ -236,15 +234,15 @@ Run `./setup.sh` from a cloned or forked copy. Choose a preset (minimal/standard
 
 | | | |
 |:--|:--|:--|
-| **[Architecture](ARCHITECTURE.md)** | **[Settings Guide](SETTINGS-GUIDE.md)** | **[Battle Stories](WHY.md)** |
+| **[Architecture](docs/ARCHITECTURE.md)** | **[Settings Guide](docs/SETTINGS-GUIDE.md)** | **[Battle Stories](docs/WHY.md)** |
 | System design, hook lifecycle, component relationships | Every env var, permission, and hook explained with rationale | The incidents and lessons behind every component |
-| **[Benchmarks](BENCHMARKS.md)** | **[Presets](PRESETS.md)** | **[Cross-Tool Guide](CROSS-TOOL-GUIDE.md)** |
+| **[Benchmarks](docs/BENCHMARKS.md)** | **[Presets](docs/PRESETS.md)** | **[Cross-Tool Guide](docs/CROSS-TOOL-GUIDE.md)** |
 | Token savings, cost impact, quality metrics | Ready-to-copy configs for solo, team, and CI/CD | Copilot, Cursor, Cline, Roo Code, OpenCode, and 5 more |
 | **[FAQ](FAQ.md)** | **[Getting Started](GETTING-STARTED.md)** | **[Troubleshooting](TROUBLESHOOTING.md)** |
 | Top community questions answered | From zero to productive in 30 minutes | Common issues and fixes |
-| **[Setup Guide](SETUP.md)** | **[Examples](examples/)** | **[Roadmap](ROADMAP.md)** |
+| **[Setup Guide](SETUP.md)** | **[Examples](examples/)** | **[Roadmap](docs/ROADMAP.md)** |
 | Automated installer + verification checklist | Framework-specific CLAUDE.md templates | Project direction and what's next |
-| **[Self-Monitoring](SELF-MONITORING.md)** | | |
+| **[Self-Monitoring](docs/SELF-MONITORING.md)** | | |
 | Optional patterns: gitleaks pre-commit + memory-curator agent | | |
 
 ---
@@ -287,9 +285,9 @@ Custom setup > generic plugins, because your setup encodes YOUR project's domain
 
 ## Acknowledgments
 
-The memory system pattern in this blueprint was inspired by [Project-AI-MemoryCore](https://github.com/Kiyoraka/Project-AI-MemoryCore) by Kiyoraka -- a comprehensive AI memory architecture with 11 feature extensions (LRU project management, memory consolidation, echo recall, and more). If you want a deeper, more feature-rich memory system than the minimal scaffold included here, check out that project.
+The memory system pattern in this blueprint was inspired by [Project-AI-MemoryCore](https://github.com/Kiyoraka/Project-AI-MemoryCore) by Kiyoraka — a comprehensive AI memory architecture with 11 feature extensions (LRU project management, memory consolidation, echo recall, and more). If you want a deeper, more feature-rich memory system than the lean built-in version here, check out that project.
 
-**How they differ:** This blueprint covers the *full Claude Code configuration* (agents, skills, hooks, rules, settings). The `memory-template/` here is a lightweight scaffold. Project-AI-MemoryCore goes deep on the memory layer specifically -- they're complementary, not competing.
+**How they differ:** This blueprint covers the *full Claude Code configuration* (agents, skills, hooks, rules, settings) and ships a built-in opt-in memory in `memory/`. Project-AI-MemoryCore goes deep on the memory layer specifically — they're complementary, not competing.
 
 ## License
 
