@@ -18,6 +18,8 @@ While this blueprint is built for Claude Code, the **principles are universal**.
 | **Windsurf** | `.windsurf/rules/*.md` + `AGENTS.md` | `~/.codeium/windsurf/` | `~/.codeium/windsurf/` | Not supported | `mcp_config.json` |
 | **Aider** | `CONVENTIONS.md` (via `--read`) | `~/.aider.conf.yml` | `~/.aider.conf.yml` | Not supported | Not supported |
 
+> **⚠ Amazon Q Developer sunset:** IDE plugins and paid subscriptions reach end-of-support **April 30, 2027**. New signups have been blocked since **May 15, 2026**. AWS is transitioning to [Kiro](https://kiro.dev), a new agentic IDE. The Amazon Q content below is preserved for users mid-migration; if you're starting today, consider Kiro instead. (AWS Console / Documentation / Slack & Teams chat surfaces of Amazon Q are unaffected by this sunset.)
+
 **Copilot notes:**
 
 - **Three rule layers**: Personal (`~/.copilot/instructions/`), repository (`.github/`), and organization (org's `.github` repo). Priority: personal > repo > org.
@@ -119,6 +121,8 @@ Configured in `.github/hooks/*.json` (workspace) or `~/.copilot/hooks/` (user-le
 | `Stop` | No | Session ends |
 
 ### Copilot Memory
+
+**Status (as of March 2026):** Public preview, **enabled by default** for Copilot Pro and Pro+ users. Opt-out available in personal Copilot settings → Features → Copilot Memory.
 
 - **Repo-scoped**: memories are tied to a repository, shared across all users with access
 - **Auto-validated**: before reuse, Copilot checks each memory against the current branch
@@ -242,7 +246,7 @@ Similar directory walk from `~/.gemini/GEMINI.md` (global) to project root (`.gi
 Markdown files in `.amazonq/rules/` with subdirectory support. Priority levels (Critical/High/Medium/Low) expressed in markdown body. **No global rules yet** (feature request open).
 
 **Windsurf** -> `.windsurf/rules/*.md` + `AGENTS.md`
-Rules use frontmatter with `trigger` field (`glob`, `always_on`, `manual`). Root `AGENTS.md` files are always-on. Subdirectory `AGENTS.md` files auto-scope to that directory. Note: Windsurf was acquired by OpenAI in 2025.
+Rules use frontmatter with `trigger` field (`glob`, `always_on`, `manual`). Root `AGENTS.md` files are always-on. Subdirectory `AGENTS.md` files auto-scope to that directory. Note: A proposed OpenAI acquisition (announced May 2025) fell through in July 2025; Google then hired Windsurf's CEO and key researchers via a ~$2.4B license deal (no ownership stake). Windsurf operates independently.
 
 **Aider** -> `CONVENTIONS.md` loaded via `--read CONVENTIONS.md` or `/read` in-chat. Marked as read-only and cached with prompt caching. Config hierarchy: `~/.aider.conf.yml` (global) -> repo root -> CWD, with later files taking priority. No native auto-discovery of rules files.
 
@@ -409,4 +413,6 @@ Regardless of which tool you use, these principles from the blueprint apply ever
 
 ---
 
-*This guide reflects the state of these tools as of April 2026. AI coding tools evolve rapidly -- features marked "experimental" or "Preview" may stabilize or change. Always confirm hook names, skill folders, and Settings paths against the vendor docs for your installed version.*
+*This guide reflects the state of these tools as of **2026-05-25**. AI coding tools evolve rapidly -- features marked "experimental" or "Preview" may stabilize or change. Always confirm hook names, skill folders, and Settings paths against the vendor docs for your installed version.*
+
+*Verified tool-status claims in this revision: Windsurf ownership (TechCrunch, 2025-07-11), Amazon Q Developer end-of-support (AWS DevOps Blog, 2026-04-30), Copilot Memory default-on (GitHub Changelog, 2026-03-04). If you spot stale content, please open a PR or [Discussion](https://github.com/faizkhairi/claude-code-blueprint/discussions).*
