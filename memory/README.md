@@ -1,81 +1,74 @@
-# Memory System — Git-Backed Persistent Memory
+# Memory System — Built-in Opt-in Persistent Memory
 
-**Privacy Notice:** This memory system will contain your work history, preferences, and project context. **Keep your memory repository private** (this is a separate repo from the blueprint -- your fork of claude-code-blueprint should stay public). If you accidentally push memory files to a public repo, treat it as a data exposure -- review what was published and rotate any credentials that may have been captured in diary entries or session notes.
+**Privacy Notice:** This folder will contain your work history, preferences, and project context once you enable memory. The `.gitignore` shipped here keeps personal content (session.md, reminders.md, diary, projects) **out of git by default** — your fork can stay public without leaking personal data. If you accidentally remove the `.gitignore` and push personal content, treat it as a data exposure: review what was published and rotate any credentials that might have been captured in diary entries or session notes.
 
-A structured, git-backed memory system that gives your AI assistant persistent context across sessions, IDE reinstalls, and machine changes.
+A built-in opt-in memory system that gives your AI assistant persistent context across sessions, IDE reinstalls, and (with optional cross-machine sync) machine changes. Enabled via `./setup.sh` — no separate repo required.
 
 ## Why This Exists
 
-Claude Code's built-in auto-memory (`~/.claude/projects/*/memory/`) is powerful but session-scoped — it can be lost on IDE reinstalls or machine changes. This external memory system:
+Claude Code's built-in auto-memory (`~/.claude/projects/*/memory/`) is powerful but session-scoped — it can be lost on IDE reinstalls or machine changes. The blueprint's memory system:
 
-- **Survives anything** — it's a git repo, so it's backed up and versioned
+- **Survives reinstalls** — lives in this folder, not in `~/.claude/projects/`
 - **Separates concerns** — auto-memory stores technical facts, this stores relational context
 - **Enables session continuity** — pick up exactly where you left off, even weeks later
 - **Tracks decisions** — append-only decision log prevents "why did we do it this way?" moments
+- **Private by default** — personal content is git-ignored; you control what (if anything) gets committed
 
 ## Setup
 
-### 1. Create your memory repo
+### The easy way: `./setup.sh`
+
+From your fork of the blueprint, run:
 
 ```bash
-# Fork this template, or create a new private repo
-git init my-memory
-cd my-memory
-# Copy these template files into it
+./setup.sh
 ```
 
-### 2. Wire into Claude Code
+When it asks **"Enable persistent memory? [Y/n]"**, answer **Y** (the default). That single answer wires everything: this folder becomes Claude's memory location, the `memory-session` rule activates so Claude knows the conventions for reading/writing here, and the session-lifecycle skills (`load-session`, `save-session`, `session-end`, `save-diary`) become available.
 
-Add a path-scoped rule at `~/.claude/rules/memory-session.md`:
+If you've already run `setup.sh` without enabling memory, re-run it — it's idempotent and will prompt again.
 
-```markdown
----
-paths:
-  - "**/my-memory/**"
----
+### Optional: cross-machine sync
 
-# Memory Session Rules
+By default, memory lives in this folder on one machine, git-ignored for privacy. If you want your context to follow you across machines:
 
-When working with memory files:
-1. Never delete diary entries — they form the session history
-2. Never store sensitive data (API keys, passwords, PII, tokens)
-3. Update core/session.md at the end of significant work sessions
-4. Changes to core/preferences.md should be additive, not destructive
-5. Project entries should use the template from templates/
-6. Diary entries go in diary/current/YYYY-MM-DD.md
-7. Don't store code — this is for context and memory only
-```
+1. Create a **separate private** git repo for your memory data.
+2. Replace this `memory/` folder with a clone of that private repo, OR symlink it.
+3. Commit only the parts you want synced (e.g., `core/decisions.md`, `core/preferences.md`) — keep diary/projects local if they contain sensitive context.
 
-### 3. Add session lifecycle (optional)
+This is advanced and most users don't need it. Single-machine setup is the default and works for the majority of adopters.
 
-Create a rule at `~/.claude/rules/session-lifecycle.md` that reads your memory files at session start and updates them at session end. See the `skills/` directory in the blueprint for `load-session`, `save-session`, and `session-end` skills that automate this.
+### Advanced: manual setup (skip if you used `setup.sh`)
 
-### 4. Keep your memory repo private
+If you prefer to set things up by hand (or you forked just `memory/` without the blueprint's setup.sh), wire it like this:
 
-Your memory repo contains personal context -- keep it as a **private** repository. This is separate from your fork of the blueprint itself, which should remain **public** (to contribute back, receive updates, and support the community). The blueprint teaches the *pattern*; your personal data stays in your private memory repo.
+1. **Path-scoped rule** — add `~/.claude/rules/memory-session.md` (the blueprint ships one at `rules/memory-session.md` you can copy):
 
-## Recommended .gitignore
+   ```markdown
+   ---
+   paths:
+     - "**/memory/**"
+   ---
 
-Add this to your memory repository's `.gitignore`:
+   # Memory Session Rules
 
-```
-# Never commit secrets or credentials
-.env
-.env.*
-*.key
-*.pem
+   When working with memory files:
+   1. Never delete diary entries — they form the session history
+   2. Never store sensitive data (API keys, passwords, PII, tokens)
+   3. Update core/session.md at the end of significant work sessions
+   4. Changes to core/preferences.md should be additive, not destructive
+   5. Project entries should use the template from templates/
+   6. Diary entries go in diary/current/YYYY-MM-DD.md
+   7. Don't store code — this is for context and memory only
+   ```
 
-# IDE and OS artifacts
-.DS_Store
-Thumbs.db
-.vscode/
-.idea/
+2. **Session lifecycle skills** — copy `skills/load-session/`, `skills/save-session/`, `skills/session-end/`, `skills/save-diary/` from the blueprint into `~/.claude/skills/`. They reference `./memory/` directly — no path substitution needed.
 
-# Temporary files
-*.tmp
-*.bak
-*.swp
-```
+## What's git-ignored here
+
+The `.gitignore` in this folder is managed by `setup.sh` and covers only personal-content files (`core/session.md`, `core/preferences.md`, `core/reminders.md`, `core/identity.md`, the entire `diary/` and `projects/active/` folders). Templates and this README stay tracked.
+
+Machine-level patterns (`.DS_Store`, `.vscode/`, etc.) belong in your project root's `.gitignore` or your global `~/.gitignore`, not here. Memory holds structured data only.
 
 ## File Structure
 
