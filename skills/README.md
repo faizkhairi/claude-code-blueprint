@@ -28,20 +28,21 @@ Before using skills that reference external paths, you **must** replace these pl
 
 | Variable | Replace With | Example (macOS/Linux) | Example (Windows) |
 |----------|-------------|----------------------|-------------------|
-| `./memory` | Path to your memory repo | `~/memory-core` | `C:/Users/you/memory-core` |
 | `{CLAUDE_CONFIG_PATH}` | Path to your Claude config | `~/.claude` | `C:/Users/you/.claude` |
 | `{PROJECTS_ROOT}` | Path to your projects directory | `~/projects` | `C:/Users/you/projects` |
 | `{MEMORY_MD_PATH}` | Path to your auto-memory MEMORY.md | `~/.claude/projects/*/memory/MEMORY.md` | `C:/Users/you/.claude/projects/*/memory/MEMORY.md` |
 | `{BOILERPLATE_NAME}` | Name of your boilerplate template directory | `nuxt-boilerplate` | `nuxt-boilerplate` |
 | `{USER_NAME}` | Your name (used in skill descriptions) | `Jane` | `Jane` |
 
-**Skills that need replacement:** load-session, save-session, session-end, save-diary, register-project, init-project
+> **Note on memory paths**: skills like `load-session`, `save-session`, `session-end`, `save-diary`, and `register-project` reference `./memory/` directly — that's the built-in opt-in memory folder shipped with the blueprint, not a placeholder you substitute. If you enabled memory via `./setup.sh`, those paths already work. No replacement needed.
 
-**How to check:** Search your skills directory for unreplaced variables:
+**Skills that need placeholder replacement:** init-project (uses `{PROJECTS_ROOT}` and `{BOILERPLATE_NAME}`), plus any skill that references `{CLAUDE_CONFIG_PATH}`, `{MEMORY_MD_PATH}`, or `{USER_NAME}`.
+
+**How to check:** Search your skills directory for unreplaced `{NAME}`-style variables:
 ```bash
-grep -r './memory\|{CLAUDE_CONFIG_PATH}\|{PROJECTS_ROOT}\|{MEMORY_MD_PATH}\|{BOILERPLATE_NAME}\|{USER_NAME}' ~/.claude/skills/
+grep -rE '\{CLAUDE_CONFIG_PATH\}|\{PROJECTS_ROOT\}|\{MEMORY_MD_PATH\}|\{BOILERPLATE_NAME\}|\{USER_NAME\}' ~/.claude/skills/
 ```
-If you see results with curly braces still present, those variables haven't been replaced yet. Claude will try to read literal paths containing `./memory`, which fails with a "file not found" error.
+If you see results with curly braces still present, those variables haven't been replaced yet — Claude will try to read literal paths and fail with "file not found."
 
 ## Extending Skills for Your Stack
 

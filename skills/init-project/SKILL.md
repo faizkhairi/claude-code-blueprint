@@ -5,7 +5,7 @@ user-invocable: true
 argument-hint: "[project-name] [type: nuxt|next|vue-springboot|expo|node|library]"
 ---
 
-> **Before using:** Replace `{PROJECTS_ROOT}`, `{BOILERPLATE_NAME}`, and `./memory` with your actual paths in your copy of this skill.
+> **Before using:** Replace `{PROJECTS_ROOT}` and `{BOILERPLATE_NAME}` with your actual paths in your copy of this skill. (`./memory/` is the built-in memory folder — no replacement needed.)
 
 Initialize a new project at {PROJECTS_ROOT}/$ARGUMENTS:
 
