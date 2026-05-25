@@ -6,6 +6,29 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## 2026-05-25 (late evening)
+
+### Editorial polish pass on ja/ko/zh translations + PR #5 merge
+
+**Polished**
+- All 3 translated READMEs (`i18n/README.ja.md`, `README.ko.md`, `README.zh.md`) given an editor-pass to fix mechanical defects an editor (not native speaker) can catch.
+- **Section headers normalized to English across all 3 translations.** zh's previously-translated headers (`## 快速开始`, `## 哲学`, `## 致谢`, etc.) reverted to English. ja/ko headers were already English. Reason: avoids in-file anchor-link breakage; all 3 translations now reference the same English-derived anchor slugs as the source (`#recommended-adoption-path`, `#who-is-this-for`) — cross-translation anchor parity achieved.
+- **Calques and forced English-as-transliteration fixed.** ja: `セーフティ優先` → `安全性優先`, `ビルトイン opt-in` → `組み込みのオプトイン式`, `グローバルブロート` → `グローバルな肥大化`. ko: `Safety-first:` → `안전 우선:`, `내장 opt-in` → `내장 옵트인`, awkward `전역 복잡성 아니오` → `전역적 비대화가 아닌`. zh: minor brevity polish `你将其混合到自己的项目中` → `你可以混入自己的项目`.
+- **Hero block rhythm refinement** in ja and ko — restructured to put the noun phrase (library) first and the benefit second, matching the English rhythm. zh hero already read naturally; light touch only.
+- **Terminology rule applied with judgment, not blanket replacement.** Product-term references in tables and headers (e.g., `スキル` table header → `Skill`) switched to English. General-Japanese/Korean phrasings like `スキルレベル` (skill level, user's general skill) and `ルール` in non-product contexts kept as-is. Same rule applied across all 3 languages.
+- **Punctuation normalized** to `--` for emphasis dashes (matches English source). Em-dash (`—`) count in all 3 translations is now 0.
+- **Sub-agent** kept in English (was `サブエージェント` in ja and `서브 에이전트` in ko) for terminology consistency with `agent`.
+
+**Honest disclosure** — this is editor-pass quality, NOT native-speaker authorship. I am not a native ja/ko/zh speaker. Community issues #6/#7/#8 remain open as lower-priority — native-speaker PRs still very welcome.
+
+**Translation style policy logged as ADR** in personal memory (decisions.md, AI-MemoryCore commit `443070e`).
+
+**Merged**
+- [PR #5](https://github.com/faizkhairi/claude-code-blueprint/pull/5) (@liziyuan10): expanded `skills/review/SKILL.md` description with output-shape metadata (GO/NO-GO + severity-grouped findings). Author corrected `MODERATE` → `MEDIUM` per review feedback to stay consistent with the skill body's severity ladder. Squash-merged as `4949a05`.
+
+**Issue housekeeping**
+- Issues #6/#7/#8 body trimmed: removed redundant attribution-requirement reminder line (contributors already understand not to remove credit).
+
 ## 2026-05-25 (evening)
 
 ### i18n Translation Sync (ja/ko/zh → parity with restructured English README)
