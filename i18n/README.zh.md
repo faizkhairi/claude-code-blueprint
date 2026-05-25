@@ -2,7 +2,7 @@
 
 # Claude Code 蓝图
 
-**一个可直接复制的文件库（CLAUDE.md、hooks、agents），你可以混入自己的项目，让 Claude Code 更加可靠。**
+**防止最常见的 AI 编码错误 -- 一个可直接复制的文件库（CLAUDE.md、hooks、agents），你可以混入自己的项目，让 Claude Code 更加可靠。**
 
 60 秒复制一个文件。随项目成长复制更多。适用于任何语言、任何框架、任何技能水平。
 
@@ -88,9 +88,9 @@ curl -o CLAUDE.md https://raw.githubusercontent.com/faizkhairi/claude-code-bluep
 
 | 本蓝图 | 通用配置仓库 |
 |------------|------------|
-| 每个组件都有 [战斗故事](../docs/WHY.md)解释为什么存在 | 没有背景的配置 |
+| 每个组件都有 [战斗故事](../docs/WHY.md) 解释为什么存在 | 没有背景的配置 |
 | [3 条行为规则](CLAUDE.md)防止 AI 编码错误 | 要复制的设置列表 |
-| [跨工具指南](../docs/CROSS-TOOL-GUIDE.md)覆盖 Copilot、Cursor、Cline、Roo Code、OpenCode 等10个工具 | 仅单一工具 |
+| [跨工具指南](../docs/CROSS-TOOL-GUIDE.md) 覆盖 Copilot、Cursor、Cline、Roo Code、OpenCode 等10个工具 | 仅单一工具 |
 | [初学者友好的](GETTING-STARTED.md)包含 6 个采用角色 | 假设具有专业知识 |
 | [烟雾测试的 hooks](hooks/test-hooks.sh)包含 35 个自动化测试 | 未测试的脚本 |
 | 安全优先：[配置放置指南](GETTING-STARTED.md#where-config-belongs-project-vs-personal)、隐私警告、[优雅降级](agents/README.md#agents-are-not-infallible) | 无安全指导 |
@@ -200,7 +200,7 @@ curl -o CLAUDE.md https://raw.githubusercontent.com/faizkhairi/claude-code-bluep
 
 2. **Agent 范围的知识，不是全局臃肿** -- 设计原则放在 frontend agent，而不是每次会话的上下文。安全模式放在 security-reviewer，而不是 CLAUDE.md。
 
-3. **上下文是货币** -- 加载到上下文的每个 token 都是无法用于代码的 token。保持 MEMORY.md 在 100 行以下。提取到专题文件。使用路径作用域规则，使无关规则不会加载。
+3. **上下文是货币** -- 加载到上下文的每个 token 都是无法用于代码的 token。让 MEMORY.md 保持在 100 行以下。提取到专题文件。使用路径作用域规则，防止无关规则加载。
 
 4. **Hooks 免费，上下文便宜** -- 10 个 hook 脚本零 token 成本（在 Claude 上下文外部运行）。CLAUDE.md 每个会话增加约 2,300 个 token -- 大约是典型会话的 1-5%。蓝图通过防止重做循环节省的 token 超过其成本。参见 [BENCHMARKS.md](../docs/BENCHMARKS.md#token-cost-per-component)。
 
