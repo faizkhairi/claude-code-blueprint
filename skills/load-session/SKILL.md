@@ -4,15 +4,17 @@ description: "Restore session context at the start of every new conversation. Au
 user-invocable: true
 ---
 
+**Prerequisite check (run first)**: if `./memory/` does not exist OR `~/.claude/.memory-disabled` marker file is present, this skill is a no-op. Output: "Memory persistence is disabled. Run `./setup.sh` and choose to enable memory if you want this skill to work."
+
 Restore context from the memory system:
 
-1. Read `{MEMORYCORE_PATH}/core/session.md` for where we left off
-2. Read `{MEMORYCORE_PATH}/core/preferences.md` for user preferences
+1. Read `./memory/core/session.md` for where we left off
+2. Read `./memory/core/preferences.md` for user preferences
 3. Read `{MEMORY_MD_PATH}` for technical context and project conventions
-4. Read `{MEMORYCORE_PATH}/core/reminders.md` for active reminders
-5. Read `{MEMORYCORE_PATH}/core/decisions.md` for architectural decision context
-6. Check `{MEMORYCORE_PATH}/diary/current/` for the most recent diary entry (if any)
-7. Check `{MEMORYCORE_PATH}/projects/active/` for active project files (scan directory)
+4. Read `./memory/core/reminders.md` for active reminders
+5. Read `./memory/core/decisions.md` for architectural decision context
+6. Check `./memory/diary/current/` for the most recent diary entry (if any)
+7. Check `./memory/projects/active/` for active project files (scan directory)
 8. **Read relevant topic files** based on project context:
    - Check CLAUDE.md for topic file references relevant to the current project
    - Only load topic files related to the current working directory

@@ -5,7 +5,7 @@ user-invocable: true
 argument-hint: "[project-name] [type: nuxt|next|vue-springboot|expo|node|library]"
 ---
 
-> **Before using:** Replace `{PROJECTS_ROOT}`, `{BOILERPLATE_NAME}`, and `{MEMORYCORE_PATH}` with your actual paths in your copy of this skill.
+> **Before using:** Replace `{PROJECTS_ROOT}`, `{BOILERPLATE_NAME}`, and `./memory` with your actual paths in your copy of this skill.
 
 Initialize a new project at {PROJECTS_ROOT}/$ARGUMENTS:
 
@@ -29,6 +29,6 @@ Initialize a new project at {PROJECTS_ROOT}/$ARGUMENTS:
 
 5. **Initialize git**: `git init` and create initial commit (if not already a git repo)
 
-6. **Register in MemoryCore**: Create project entry in `{MEMORYCORE_PATH}/projects/active/` using the coding template at `{MEMORYCORE_PATH}/templates/coding-template.md`
+6. **Register in memory**: Create project entry in `./memory/projects/active/` using the coding template at `./memory/templates/coding-template.md`
 
 7. **Report**: Show project structure and next steps. For templates, remind user to set env vars (e.g. DATABASE_URL, NEXTAUTH_SECRET, JWT_SECRET) per template README.

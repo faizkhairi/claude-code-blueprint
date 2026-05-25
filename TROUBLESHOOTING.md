@@ -65,7 +65,7 @@ Common issues and fixes. Search this page (Ctrl+F) for your error message or sym
      "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
    }
    ```
-   Then restart Claude Code. See [SETTINGS-GUIDE.md](SETTINGS-GUIDE.md#claude_code_experimental_agent_teams) for details.
+   Then restart Claude Code. See [SETTINGS-GUIDE.md](docs/SETTINGS-GUIDE.md#claude_code_experimental_agent_teams) for details.
 
 2. **Model not available on your Anthropic plan.** If an agent specifies `model: opus` but your API key doesn't have Opus access, the agent will fail. Check your plan at [console.anthropic.com](https://console.anthropic.com). As a workaround, change the agent's frontmatter to `model: sonnet`.
 
@@ -180,7 +180,7 @@ This rule only loads when Claude is working with files under `server/` or `prism
 - `"defaultMode": "dontAsk"` + tool NOT in `allow` list = still blocked
 - Default mode (no `defaultMode` set) = asks for everything not in `allow` list
 
-See [SETTINGS-GUIDE.md](SETTINGS-GUIDE.md#defaultmode) for the full explanation.
+See [SETTINGS-GUIDE.md](docs/SETTINGS-GUIDE.md#defaultmode) for the full explanation.
 
 ### Auto mode classifier blocks legitimate actions
 
@@ -212,7 +212,7 @@ See [SETTINGS-GUIDE.md](SETTINGS-GUIDE.md#defaultmode) for the full explanation.
 
 **How to track:** The [cost-tracker.sh](hooks/cost-tracker.sh) hook logs session costs to `~/.claude/metrics/costs.jsonl`. Review this file to see which sessions cost the most.
 
-See [SETTINGS-GUIDE.md](SETTINGS-GUIDE.md#cost-implications) for the full cost breakdown and model pricing table.
+See [SETTINGS-GUIDE.md](docs/SETTINGS-GUIDE.md#cost-implications) for the full cost breakdown and model pricing table.
 
 ---
 
@@ -260,16 +260,16 @@ See [GETTING-STARTED.md](GETTING-STARTED.md#windows-notes) for the full Windows 
 
 ## Skills and Memory
 
-### "Skills show 'file not found' for {MEMORYCORE_PATH}"
+### "Skills show 'file not found' for ./memory"
 
-**Symptoms:** A skill like load-session or save-session fails with an error about a path containing literal curly braces, e.g., `{MEMORYCORE_PATH}/core/session.md not found`.
+**Symptoms:** A skill like load-session or save-session fails with an error about a path containing literal curly braces, e.g., `./memory/core/session.md not found`.
 
 **Cause:** Placeholder variables in skill files haven't been replaced with your actual paths.
 
 **Fix:** Search your skills directory for unreplaced variables:
 
 ```bash
-grep -r '{MEMORYCORE_PATH}' ~/.claude/skills/
+grep -r './memory' ~/.claude/skills/
 grep -r '{CLAUDE_CONFIG_PATH}' ~/.claude/skills/
 grep -r '{PROJECTS_ROOT}' ~/.claude/skills/
 ```

@@ -35,7 +35,7 @@ FULL_AGENTS=(api-documenter.md backend-specialist.md db-analyst.md devops-engine
 SKILL_DIRS=(changelog db-check deploy-check e2e-check elicit-requirements
             init-project load-session register-project review review-diff
             save-diary save-session session-end sprint-plan status tech-radar test-check)
-RULE_FILES=(api-endpoints.md database-schema.md memorycore-session.md
+RULE_FILES=(api-endpoints.md database-schema.md memory-session.md
             session-lifecycle.md testing.md)
 
 # ============================================================
@@ -453,8 +453,25 @@ replace_placeholders() {
     return
   fi
 
-  # Check if any placeholders exist in installed files
-  if ! grep -rq '{MEMORYCORE_PATH}\|{PROJECTS_ROOT}\|{CLAUDE_CONFIG_PATH}\|{USER_NAME}' "${CLAUDE_DIR}/" 2>/dev/null; then
+  # Memory enablement (hybrid prompt — Y/n default Y)
+  echo ""
+  log_info "Memory persistence is an opt-in feature."
+  log_info "When enabled, Claude remembers preferences, decisions, and session"
+  log_info "context across sessions on this machine. Memory lives in ./memory/"
+  log_info "and is git-ignored by default (won't leak if you push your fork)."
+  echo ""
+  read -r -p "  Enable persistent memory? [Y/n]: " memory_choice
+  memory_choice="${memory_choice:-Y}"
+  if [[ "$memory_choice" =~ ^[Yy] ]]; then
+    log_ok "Memory enabled. Storing in ./memory/ (git-ignored for privacy)."
+    rm -f "${CLAUDE_DIR}/.memory-disabled" 2>/dev/null || true
+  else
+    log_info "Memory disabled. Skills load-session/save-session/save-diary/session-end will be no-ops."
+    touch "${CLAUDE_DIR}/.memory-disabled" 2>/dev/null || true
+  fi
+
+  # Check if any non-memory placeholders exist in installed files
+  if ! grep -rq '{PROJECTS_ROOT}\|{CLAUDE_CONFIG_PATH}\|{USER_NAME}' "${CLAUDE_DIR}/" 2>/dev/null; then
     return
   fi
 
@@ -463,12 +480,12 @@ replace_placeholders() {
   echo ""
 
   if ! confirm "Replace placeholder variables now? (You can do this later manually)"; then
-    log_info "Skipped. Replace later with: grep -r '{MEMORYCORE_PATH}' ~/.claude/"
+    log_info "Skipped. Replace later with: grep -r '{PROJECTS_ROOT}' ~/.claude/"
     return
   fi
 
   # Auto-detect what we can
-  local claude_config_path user_name projects_root memorycore_path
+  local claude_config_path user_name projects_root
   claude_config_path="$(normalize_path_for_json "$CLAUDE_DIR")"
   user_name="$(git config user.name 2>/dev/null || whoami)"
 
@@ -480,9 +497,6 @@ replace_placeholders() {
   projects_root="${input:-$HOME/projects}"
   projects_root="$(normalize_path_for_json "$projects_root")"
 
-  read -r -p "  MemoryCore path (or press Enter to skip) []: " input
-  memorycore_path="${input:-}"
-
   echo ""
 
   # Replace in all files under ~/.claude/ (not the repo)
@@ -493,10 +507,6 @@ replace_placeholders() {
       sed_inplace "s|{CLAUDE_CONFIG_PATH}|${claude_config_path}|g" "$file" 2>/dev/null || true
       sed_inplace "s|{USER_NAME}|${user_name}|g" "$file" 2>/dev/null || true
       sed_inplace "s|{PROJECTS_ROOT}|${projects_root}|g" "$file" 2>/dev/null || true
-      if [ -n "$memorycore_path" ]; then
-        memorycore_path="$(normalize_path_for_json "$memorycore_path")"
-        sed_inplace "s|{MEMORYCORE_PATH}|${memorycore_path}|g" "$file" 2>/dev/null || true
-      fi
     done
   done
 
@@ -546,7 +556,7 @@ verify_installation() {
 
   # Check for unreplaced placeholders
   local remaining
-  remaining="$(grep -r '{MEMORYCORE_PATH}\|{PROJECTS_ROOT}\|{CLAUDE_CONFIG_PATH}\|{USER_NAME}\|{MEMORY_MD_PATH}\|{BOILERPLATE_NAME}' "${CLAUDE_DIR}/" 2>/dev/null | wc -l || echo 0)"
+  remaining="$(grep -r '{PROJECTS_ROOT}\|{CLAUDE_CONFIG_PATH}\|{USER_NAME}\|{MEMORY_MD_PATH}\|{BOILERPLATE_NAME}' "${CLAUDE_DIR}/" 2>/dev/null | wc -l || echo 0)"
   remaining="$(echo "$remaining" | tr -d ' ')"
   if [ "$remaining" -gt 0 ]; then
     log_warn "${remaining} unreplaced placeholder(s) remain. Run: grep -r '{' ~/.claude/ | grep -E '{[A-Z_]+}'"

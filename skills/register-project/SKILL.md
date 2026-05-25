@@ -1,10 +1,10 @@
 ---
 name: register-project
-description: "Register an existing project in AI MemoryCore. Use when starting work on a new repo or when a project needs its own context file. Triggers on: 'register project', 'add project to memory', 'track this project', 'create project file'."
+description: "Register an existing project in memory. Use when starting work on a new repo or when a project needs its own context file. Triggers on: 'register project', 'add project to memory', 'track this project', 'create project file'."
 user-invocable: true
 ---
 
-# Register Project in MemoryCore
+# Register Project in memory
 
 ## Step 1: Detect Project Info
 
@@ -17,15 +17,15 @@ Gather from the current working directory or user input:
 
 ## Step 2: Read Template
 
-Read `{MEMORYCORE_PATH}/templates/coding-template.md` for the standard format.
+Read `./memory/templates/coding-template.md` for the standard format.
 
 ## Step 3: Check Capacity
 
-Scan `{MEMORYCORE_PATH}/projects/active/` — if 10+ projects exist, identify the oldest by Last Accessed date and suggest archiving it.
+Scan `./memory/projects/active/` — if 10+ projects exist, identify the oldest by Last Accessed date and suggest archiving it.
 
 ## Step 4: Create Project File
 
-Write to `{MEMORYCORE_PATH}/projects/active/{project-name}.md` using the template, filled with detected info.
+Write to `./memory/projects/active/{project-name}.md` using the template, filled with detected info.
 
 ## Step 5: Confirm
 

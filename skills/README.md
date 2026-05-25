@@ -28,7 +28,7 @@ Before using skills that reference external paths, you **must** replace these pl
 
 | Variable | Replace With | Example (macOS/Linux) | Example (Windows) |
 |----------|-------------|----------------------|-------------------|
-| `{MEMORYCORE_PATH}` | Path to your memory repo | `~/memory-core` | `C:/Users/you/memory-core` |
+| `./memory` | Path to your memory repo | `~/memory-core` | `C:/Users/you/memory-core` |
 | `{CLAUDE_CONFIG_PATH}` | Path to your Claude config | `~/.claude` | `C:/Users/you/.claude` |
 | `{PROJECTS_ROOT}` | Path to your projects directory | `~/projects` | `C:/Users/you/projects` |
 | `{MEMORY_MD_PATH}` | Path to your auto-memory MEMORY.md | `~/.claude/projects/*/memory/MEMORY.md` | `C:/Users/you/.claude/projects/*/memory/MEMORY.md` |
@@ -39,9 +39,9 @@ Before using skills that reference external paths, you **must** replace these pl
 
 **How to check:** Search your skills directory for unreplaced variables:
 ```bash
-grep -r '{MEMORYCORE_PATH}\|{CLAUDE_CONFIG_PATH}\|{PROJECTS_ROOT}\|{MEMORY_MD_PATH}\|{BOILERPLATE_NAME}\|{USER_NAME}' ~/.claude/skills/
+grep -r './memory\|{CLAUDE_CONFIG_PATH}\|{PROJECTS_ROOT}\|{MEMORY_MD_PATH}\|{BOILERPLATE_NAME}\|{USER_NAME}' ~/.claude/skills/
 ```
-If you see results with curly braces still present, those variables haven't been replaced yet. Claude will try to read literal paths containing `{MEMORYCORE_PATH}`, which fails with a "file not found" error.
+If you see results with curly braces still present, those variables haven't been replaced yet. Claude will try to read literal paths containing `./memory`, which fails with a "file not found" error.
 
 ## Extending Skills for Your Stack
 

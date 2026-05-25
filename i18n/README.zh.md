@@ -67,7 +67,7 @@ curl -o CLAUDE.md https://raw.githubusercontent.com/faizkhairi/claude-code-bluep
 | **小初创（2-5 人）** | 上述 + 共享规则 + 2-3 个 agents | 参见 [Team Setup](GETTING-STARTED.md#setting-up-for-teams) |
 | **成熟团队（5+ 人）** | 完整蓝图，根据需要改进 | Fork、定制、提交共享配置 |
 | **学习编程** | 仅 [GETTING-STARTED.md](GETTING-STARTED.md) | 在熟悉前忽略 agents/skills/memory |
-| **从其他工具迁移** | [CROSS-TOOL-GUIDE.md](CROSS-TOOL-GUIDE.md) | 概念可转移；参见 *Copilot/Cursor in depth* 部分 |
+| **从其他工具迁移** | [CROSS-TOOL-GUIDE.md](../docs/CROSS-TOOL-GUIDE.md) | 概念可转移；参见 *Copilot/Cursor in depth* 部分 |
 
 ### 你的进阶路径
 
@@ -78,7 +78,7 @@ curl -o CLAUDE.md https://raw.githubusercontent.com/faizkhairi/claude-code-bluep
 添加 2-3 个 hooks。零 token 成本。自动配置保护和编辑验证。
 
 **Level 3 -- 随成长定制（持续进行）**
-随着工作流成熟，添加 agents、skills、rules 和内存系统。参见 [Presets](PRESETS.md) 获取即用配置。
+随着工作流成熟，添加 agents、skills、rules 和内存系统。参见 [Presets](../docs/PRESETS.md) 获取即用配置。
 
 ---
 
@@ -88,9 +88,9 @@ curl -o CLAUDE.md https://raw.githubusercontent.com/faizkhairi/claude-code-bluep
 
 | 本蓝图 | 通用配置仓库 |
 |------------|------------|
-| 每个组件都有 [战斗故事](WHY.md)解释为什么存在 | 没有背景的配置 |
+| 每个组件都有 [战斗故事](../docs/WHY.md)解释为什么存在 | 没有背景的配置 |
 | [3 条行为规则](CLAUDE.md)防止 AI 编码错误 | 要复制的设置列表 |
-| [跨工具指南](CROSS-TOOL-GUIDE.md)覆盖 Copilot、Cursor、Cline、Roo Code、OpenCode 等10个工具 | 仅单一工具 |
+| [跨工具指南](../docs/CROSS-TOOL-GUIDE.md)覆盖 Copilot、Cursor、Cline、Roo Code、OpenCode 等10个工具 | 仅单一工具 |
 | [初学者友好的](GETTING-STARTED.md)包含 6 个采用角色 | 假设具有专业知识 |
 | [烟雾测试的 hooks](hooks/test-hooks.sh)包含 35 个自动化测试 | 未测试的脚本 |
 | 安全优先：[配置放置指南](GETTING-STARTED.md#where-config-belongs-project-vs-personal)、隐私警告、[优雅降级](agents/README.md#agents-are-not-infallible) | 无安全指导 |
@@ -202,7 +202,7 @@ curl -o CLAUDE.md https://raw.githubusercontent.com/faizkhairi/claude-code-bluep
 
 3. **上下文是货币** -- 加载到上下文的每个 token 都是无法用于代码的 token。保持 MEMORY.md 在 100 行以下。提取到专题文件。使用路径作用域规则，使无关规则不会加载。
 
-4. **Hooks 免费，上下文便宜** -- 10 个 hook 脚本零 token 成本（在 Claude 上下文外部运行）。CLAUDE.md 每个会话增加约 2,300 个 token — 大约是典型会话的 1-5%。蓝图通过防止重做循环节省的 token 超过其成本。参见 [BENCHMARKS.md](BENCHMARKS.md#token-cost-per-component)。
+4. **Hooks 免费，上下文便宜** -- 10 个 hook 脚本零 token 成本（在 Claude 上下文外部运行）。CLAUDE.md 每个会话增加约 2,300 个 token — 大约是典型会话的 1-5%。蓝图通过防止重做循环节省的 token 超过其成本。参见 [BENCHMARKS.md](../docs/BENCHMARKS.md#token-cost-per-component)。
 
 5. **实战验证优于理论** -- 本仓库的每条规则都存在，因为某个事件说明它是必需的。"为什么"比"是什么"重要得多。
 
@@ -226,7 +226,7 @@ Clone 仓库，然后有选择地将组件复制到你的 `~/.claude/` 目录。
 
 1. **从 [CLAUDE.md](CLAUDE.md) 开始** -- 行为规则模板。最大影响，零设置。
 2. **添加 2-3 个 hooks** -- [`protect-config.sh`](hooks/protect-config.sh) + [`notify-file-changed.sh`](hooks/notify-file-changed.sh) + [`cost-tracker.sh`](hooks/cost-tracker.sh)。复制到 `~/.claude/hooks/` 并在 [`settings.json`](examples/settings-template.json) 中配置。
-3. **阅读 [WHY.md](WHY.md)** 理解设计思路 -- 改进，不要盲目复制。
+3. **阅读 [WHY.md](../docs/WHY.md)** 理解设计思路 -- 改进，不要盲目复制。
 4. **随着工作流成熟而添加 agents** -- 从 `verify-plan` 和 `code-reviewer` 开始。
 5. **当需要跨会话持久化时设置 [memory system](memory-template/)**。
 
@@ -236,13 +236,13 @@ Clone 仓库，然后有选择地将组件复制到你的 `~/.claude/` 目录。
 
 | | | |
 |:--|:--|:--|
-| **[架构](ARCHITECTURE.md)** | **[设置指南](SETTINGS-GUIDE.md)** | **[战斗故事](WHY.md)** |
+| **[架构](../docs/ARCHITECTURE.md)** | **[设置指南](../docs/SETTINGS-GUIDE.md)** | **[战斗故事](../docs/WHY.md)** |
 | 系统设计、hook 生命周期、组件关系 | 每个环境变量、权限和 hook 的完整说明及理由 | 每个组件背后的事件和教训 |
-| **[基准测试](BENCHMARKS.md)** | **[预设](PRESETS.md)** | **[跨工具指南](CROSS-TOOL-GUIDE.md)** |
+| **[基准测试](../docs/BENCHMARKS.md)** | **[预设](../docs/PRESETS.md)** | **[跨工具指南](../docs/CROSS-TOOL-GUIDE.md)** |
 | Token 节省、成本影响、质量指标 | 为独立开发者、团队和 CI/CD 提供的现成配置 | Copilot、Cursor、Cline、Roo Code、OpenCode 等10个工具 |
 | **[FAQ](FAQ.md)** | **[Getting Started](GETTING-STARTED.md)** | **[Troubleshooting](TROUBLESHOOTING.md)** |
 | 社区常见问题解答 | 从零到高效 30 分钟 | 常见问题与解决方案 |
-| **[Setup Guide](SETUP.md)** | **[Examples](examples/)** | **[Roadmap](ROADMAP.md)** |
+| **[Setup Guide](SETUP.md)** | **[Examples](examples/)** | **[Roadmap](../docs/ROADMAP.md)** |
 | 自动安装程序 + 验证清单 | 框架特定 CLAUDE.md 模板 | 项目方向和后续计划 |
 
 ---
