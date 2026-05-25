@@ -2,9 +2,9 @@
 
 # Claude Code Blueprint
 
-**A library of ready-to-copy files (CLAUDE.md, hooks, agents) you mix into your own project to make Claude Code more reliable.**
+**Prevent the most common AI coding mistakes — a library of ready-to-copy files (CLAUDE.md, hooks, agents) you mix into your own project to make Claude Code more reliable.**
 
-Copy one file in 60 seconds. Copy more as your project grows. Works with any language, any framework, any skill level.
+60 seconds to start. Copy one file. Add more as your project grows. Works with any language, any framework, any skill level.
 
 [![Stars](https://img.shields.io/github/stars/faizkhairi/claude-code-blueprint?style=flat)](https://github.com/faizkhairi/claude-code-blueprint/stargazers)
 [![Forks](https://img.shields.io/github/forks/faizkhairi/claude-code-blueprint?style=flat)](https://github.com/faizkhairi/claude-code-blueprint/network/members)
@@ -22,7 +22,7 @@ Copy one file in 60 seconds. Copy more as your project grows. Works with any lan
 
 ---
 
-> **Before you start:** This is a reference repo, not a project template. Do **not** run Claude Code inside this repository — it will read the blueprint's own CLAUDE.md instead of your project's rules. Fork or copy individual files into your own project. See [GETTING-STARTED.md](GETTING-STARTED.md) for the full setup walkthrough.
+> **Heads up before you copy:** This is a reference repo, not a project template — you'll copy files OUT of it into your own project. Don't run Claude Code inside this repository (it'll load this blueprint's CLAUDE.md instead of yours). See [GETTING-STARTED.md](GETTING-STARTED.md) for the full walkthrough.
 
 ---
 
