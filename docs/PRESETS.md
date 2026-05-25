@@ -122,7 +122,7 @@ Use the full [`settings-template.json`](examples/settings-template.json) as your
 | **All hooks** | [`hooks/*.sh`](hooks/) | `~/.claude/hooks/` |
 | **Skills you need** | [`skills/*/SKILL.md`](skills/) | `~/.claude/skills/*/SKILL.md` |
 | **Rules** | [`rules/*.md`](rules/) | `~/.claude/rules/` |
-| **Memory template** | [`memory-template/`](memory-template/) | Your memory repo |
+| **Memory (opt-in)** | [`memory/`](memory/) | Built-in, enabled via setup.sh |
 
 ### What you get (beyond Standard)
 
@@ -137,7 +137,7 @@ Use the full [`settings-template.json`](examples/settings-template.json) as your
 1. **Remove agents you don't need.** A Python project doesn't need `frontend-specialist.md`.
 2. **Pick skills that match your workflow.** Start with `review`, `test-check`, and `deploy-check`. Add others as needed.
 3. **Customize rules for your stack.** Edit `database-schema.md` for your ORM patterns, `api-endpoints.md` for your framework conventions.
-4. **Set up your memory repo.** Follow [memory-template/README.md](memory-template/README.md) to initialize your cross-session persistence.
+4. **Enable memory persistence.** Answer Y when `./setup.sh` asks about memory, or read [memory/README.md](memory/README.md) for the manual setup.
 
 ---
 
@@ -206,91 +206,3 @@ Any → CI/CD:         Separate concern -- CI uses its own settings, not your de
 ```
 
 The recommended path: start Minimal, use it for a week, then upgrade to Standard when you notice gaps. Move to Full only when you're actively using agents and skills in your workflow.
-
----
-
-## Stack Rule Templates
-
-The presets above tell you **how much** of the blueprint to adopt. These templates tell you **what framework-specific rules** to add to your CLAUDE.md.
-
-> These are structural starting points. Replace with battle-tested rules from your own incidents as you discover them. The pattern matters more than the content.
-
-### Backend API
-
-Add these to your CLAUDE.md when building server-side APIs (any framework — Express, NestJS, FastAPI, Django, Go, etc.):
-
-```markdown
-## Stack Rules
-
-### API Conventions
-- All endpoints follow RESTful naming: plural nouns, no verbs (e.g., `/api/users`, not `/api/getUsers`)
-- Every endpoint returns a consistent response envelope: `{ data, error, meta }`
-- Validate all request input at the handler boundary — never trust unvalidated data deeper in the stack
-- Use middleware for cross-cutting concerns (auth, logging, rate limiting) — not inline checks per route
-- Soft delete only — never use hard DELETE. Set `is_active = false` + `deleted_at = now()`
-
-### Error Handling
-- All errors return structured JSON with status code, error code, and human-readable message
-- Never expose stack traces, internal paths, or database details in error responses
-- Log the full error internally; return a sanitized version to the client
-
-### Database Access
-- All database access goes through a service/repository layer — never query directly from route handlers
-- Use a singleton connection pool — never instantiate a new connection per request
-- Run migrations explicitly (`[your ORM] migrate`) — never auto-migrate in production
-```
-
-### Full-Stack App
-
-Add these when building apps with both server and client code (any meta-framework — Nuxt, Next.js, SvelteKit, Remix, etc.):
-
-```markdown
-## Stack Rules
-
-### Server / Client Boundary
-- Data fetching happens server-side — use the framework's server data-loading mechanism, not client-side fetch
-- Sensitive logic (auth checks, database queries, API keys) never runs on the client
-- Mark client-only code explicitly with the framework's directive (e.g., `'use client'`, `<ClientOnly>`, etc.)
-
-### State Management
-- Server state and client state are separate concerns — don't mix them in one store
-- Use the framework's built-in state mechanism before reaching for external state libraries
-- Form state stays local to the form component unless it needs to be shared
-
-### Navigation & Routing
-- Use the framework's navigation primitive — not raw `window.location` or `<a href>`
-- Dynamic routes use the framework's parameter syntax — never construct URLs by string concatenation
-- Protect authenticated routes with middleware/guards, not per-page checks
-
-### Rendering
-- Default to server rendering — opt into client rendering only when interactivity requires it
-- Keep page components thin — extract logic into composables/hooks, UI into subcomponents
-- Images use the framework's optimized image component — not raw `<img>` tags
-```
-
-### Database + ORM
-
-Add these when your project has a database layer (any ORM — Prisma, Drizzle, TypeORM, SQLAlchemy, GORM, etc.):
-
-```markdown
-## Stack Rules
-
-### Schema Conventions
-- Table names: plural, snake_case (e.g., `user_roles`, not `UserRole`)
-- Every table has: `id` (primary key), `created_at`, `updated_at`
-- Soft-delete tables add: `is_active` (boolean, default true), `deleted_at` (nullable timestamp)
-- Foreign keys are explicit — never rely on application-level joins without DB constraints
-
-### Migrations
-- Every schema change gets a migration — never edit the database directly
-- Migrations are reviewed before running — treat them like production deployments
-- Down migrations must be tested — if you can't roll back, document why in the migration file
-
-### Query Patterns
-- Use the ORM's query builder for standard operations — raw SQL only for performance-critical queries
-- Always select only needed columns — no `SELECT *` equivalent in production code
-- Watch for N+1 queries — use eager loading/joins for related data that will be accessed
-- Connection pooling is mandatory — configure pool size based on your deployment (serverless vs. long-running)
-```
-
-> Don't see your stack? Copy the closest template and adapt. You can also combine templates — a full-stack app with a database layer would use both the "Full-Stack App" and "Database + ORM" templates together.
