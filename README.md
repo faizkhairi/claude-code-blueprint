@@ -157,7 +157,7 @@ See [skills/README.md](skills/README.md) for customization and placeholder varia
 | Stop | security check + cost-tracker.sh | Last defense + metrics |
 | SessionEnd | session-checkpoint.sh | Guaranteed final save |
 
-Plus 2 utility scripts: `verify-mcp-sync.sh` (MCP config checker) and `status-line.sh` (branch/project status).
+Plus 2 utility scripts: `verify-mcp-sync.sh` (MCP config checker) and `status-line.sh` (branch/project status). The 11th file in the folder is `test-hooks.sh` — the local test harness, run via `bash hooks/test-hooks.sh` to verify all hooks. It's not deployed to `~/.claude/hooks/` and isn't counted in the "10 hooks" total.
 
 Run `bash hooks/test-hooks.sh` to verify all hooks pass (35 automated tests).
 
