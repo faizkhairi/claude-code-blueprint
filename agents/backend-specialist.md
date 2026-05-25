@@ -4,6 +4,7 @@ description: Expert backend engineer for building server routes, API endpoints, 
 model: sonnet
 tools: Read, Write, Edit, Bash, Grep, Glob
 maxTurns: 25
+permissionMode: default
 memory: user
 ---
 

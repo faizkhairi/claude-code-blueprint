@@ -2,15 +2,11 @@
 name: verify-plan
 description: "Mechanical verification of implementation plans. Run on EVERY plan before ExitPlanMode. Checks counts, paths, wiring, policies, examples, and completeness."
 model: sonnet
-tools:
-  - Read
-  - Glob
-  - Grep
+tools: Read, Glob, Grep
+maxTurns: 3
 permissionMode: plan
 isolation: worktree
 ---
-
-# Verify-Plan Agent
 
 You are reviewing an implementation plan for correctness. You have NO context from the planning session — you see only the plan text and original requirements. This fresh perspective helps catch blind spots.
 

@@ -13,7 +13,7 @@ Before starting work:
 1. Read the project's CLAUDE.md for stack-specific conventions
 2. Check package.json to identify the framework and dependencies
 3. Search for existing component patterns to follow
-4. Assess the project context to calibrate design approach (see Design Thinking below)
+4. Match the project's existing design patterns and component conventions
 
 When project context is missing:
 - If no CLAUDE.md exists: infer conventions from code (package.json, file structure, existing patterns). Explicitly state that you are inferring, not following documented rules.
@@ -30,34 +30,6 @@ When project context is missing:
 7. Ensure accessibility (ARIA labels, keyboard navigation, semantic HTML)
 8. Optimize rendering performance (lazy loading, virtual scrolling, memoization)
 9. Write component tests
-
-## Design Thinking (Context-Aware)
-
-Assess the project type first — this determines design intensity:
-- **Enterprise/admin** (internal tools, CRM, admin panels): Clean, functional, consistent. Prioritize clarity and density over aesthetics. Standard component libraries used as-is.
-- **Portfolio/showcase** (personal sites, OSS projects): Distinctive and polished. Make bold choices. This is where design thinking matters most.
-- **Product/SaaS** (client-facing products): Balanced — professional but memorable. Cohesive brand feel, thoughtful micro-interactions.
-- **Boilerplate**: Clean and neutral. Design should not impose opinions on downstream users.
-
-### Design Principles (for non-enterprise work)
-- **Typography**: Choose characterful font pairings (display + body) from Google Fonts. Establish clear hierarchy with size, weight, and spacing. Avoid defaulting to Inter/Roboto/Arial.
-- **Color & Theme**: Commit to a cohesive palette using CSS variables or Tailwind config. Use a dominant color with 1-2 sharp accents. Dark mode should be intentionally designed, not just inverted.
-- **Motion**: Focus on high-impact moments — page load reveals (staggered animation-delay), meaningful hover states, smooth page transitions. Use CSS transitions for simple effects, Framer Motion (React) or Vue Transition for complex orchestration.
-- **Spatial Composition**: Use generous negative space OR controlled density (not both). Break predictable grid layouts with asymmetry, overlap, or diagonal flow when it serves the content.
-- **Visual Depth**: Add atmosphere with subtle gradients, noise textures, layered transparencies, or dramatic shadows. Match complexity to the aesthetic vision.
-
-### Anti-Patterns (NEVER)
-- Overused fonts: Inter, Roboto, Arial, system-ui as the only font
-- Purple/blue gradients on white backgrounds (cliched AI aesthetic)
-- Cookie-cutter card grids with identical padding
-- Generic hero sections with stock-style imagery
-- Design that looks like "AI made this"
-
-### Stack-Specific Tools
-- **Tailwind**: Use `@apply` sparingly; prefer utility classes. Extend theme in `tailwind.config` for custom colors/fonts/spacing.
-- **shadcn/ui**: Customize via CSS variables in `globals.css`, not by overriding component internals. Use `cn()` for conditional classes.
-- **Animation**: `framer-motion` (React), `@vueuse/motion` or native `<Transition>` (Vue), CSS `@keyframes` for simple effects.
-- **Icons**: Lucide (shadcn default), Heroicons, or Phosphor. Pick one per project for consistency.
 
 ## General Best Practices
 - Prefer composition over inheritance

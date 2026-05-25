@@ -24,12 +24,18 @@ Every agent follows this structure:
 
 | Mode | Agents | Why |
 |------|--------|-----|
-| (default) | backend, frontend, qa-tester, project-architect, docs-writer | Need write access to implement or generate |
-| plan | verify-plan, code-reviewer, security-reviewer, db-analyst, devops-engineer, api-documenter | Read-only analysis — should never modify files |
+| `default` (explicit) | backend, frontend, qa-tester, project-architect, docs-writer | Need write access to implement or generate. Frontmatter declares `permissionMode: default` explicitly for clarity. |
+| `plan` | verify-plan, code-reviewer, security-reviewer, db-analyst, devops-engineer, api-documenter | Read-only analysis — should never modify files. Cannot use Write/Edit tools. |
+
+Note: if an agent omits the `permissionMode` field, Claude Code falls back to write-access default. We declare `permissionMode: default` explicitly on write-access agents to make the intent visible in the frontmatter.
 
 ## Worktree Isolation
 
-Review agents (verify-plan, code-reviewer, security-reviewer) use `isolation: worktree` for fresh-context reviews. This creates a temporary git worktree so the agent sees a clean copy of the repo. If the project is not a git repository, worktree isolation is skipped and the agent runs in the main context.
+`isolation: worktree` creates a temporary git worktree so the agent sees a clean copy of the repo. If the project is not a git repository, worktree isolation is skipped and the agent runs in the main context.
+
+**Agents using worktree**: verify-plan, code-reviewer, security-reviewer. Reason — these are review agents that benefit from a fresh checkout: their analysis isn't biased by the main session's in-progress edits.
+
+**Analysis-only agents NOT using worktree**: db-analyst, devops-engineer, api-documenter. Reason — these read live config/schema state (e.g., the current Prisma schema, the current Dockerfile, the current OpenAPI spec). A worktree could give them stale state if the main session has uncommitted changes that matter for analysis.
 
 ## Named Subagents
 
@@ -51,7 +57,7 @@ Each agent has a `maxTurns` limit in its frontmatter that caps the number of too
 | security-reviewer | sonnet | 15 |
 | docs-writer | haiku | 15 |
 | api-documenter | haiku | 10 |
-| verify-plan | sonnet | system default (no explicit limit) |
+| verify-plan | sonnet | 3 |
 
 **If an agent stops mid-task:**
 1. Check what was completed: `git diff` for file changes, `git status` for uncommitted work
