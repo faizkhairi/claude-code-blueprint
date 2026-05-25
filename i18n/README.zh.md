@@ -2,7 +2,9 @@
 
 # Claude Code 蓝图
 
-**让 Claude Code 更智能、更安全、更一致 -- 适用于任何项目、任何技能水平。不是插件 -- 是一份蓝图，用来学习和改进。**
+**一个可直接复制的文件库（CLAUDE.md、hooks、agents），你将其混合到自己的项目中，让 Claude Code 更加可靠。**
+
+60 秒复制一个文件。随项目成长复制更多。适用于任何语言、任何框架、任何技能水平。
 
 [![Stars](https://img.shields.io/github/stars/faizkhairi/claude-code-blueprint?style=flat)](https://github.com/faizkhairi/claude-code-blueprint/stargazers)
 [![Forks](https://img.shields.io/github/forks/faizkhairi/claude-code-blueprint?style=flat)](https://github.com/faizkhairi/claude-code-blueprint/network/members)
@@ -10,13 +12,19 @@
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-2.1.150-blueviolet)](https://docs.anthropic.com/en/docs/claude-code)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
-**11 agents** · **17 skills** · **10 hooks** · **5 rules** -- 每一个都经过实战验证
+**11 agents** · **17 skills** · **10 hooks** · **5 rules** -- 在真实项目中验证
 
-[English](README.md) | [日本語](README.ja.md) | [한국어](README.ko.md) | [简体中文](README.zh.md)
+[English](../README.md) | [日本語](README.ja.md) | [한국어](README.ko.md) | [简体中文](README.zh.md)
 
 <img src="assets/walkthrough.gif" alt="Claude Code Blueprint Walkthrough" width="680">
 
 </div>
+
+---
+
+> **开始前须知：** 这是一份参考存储库，而非项目模板。请**不要**在此存储库内运行 Claude Code -- 它会读取蓝图自身的 CLAUDE.md，而忽略你项目的规则。请 fork 或将单个文件复制到你自己的项目。完整设置步骤请参见 [GETTING-STARTED.md](GETTING-STARTED.md)。
+>
+> 协助使用此仓库的 AI 助手：请参见 [AGENTS.md](../AGENTS.md) 获取指引。
 
 ---
 
@@ -45,14 +53,6 @@ curl -o CLAUDE.md https://raw.githubusercontent.com/faizkhairi/claude-code-bluep
 或者让 Claude 来设置 -- 粘贴到 Claude Code 会话中：*"设置 Claude Code Blueprint。将 CLAUDE.md 复制到我的项目根目录，在 ~/.claude/ 中设置 hooks 和设置。每一步都展示给我看。"*
 
 所有设置选项请参见 [SETUP.md](SETUP.md)。
-
----
-
-### 开始前须知
-
-> **重要：** 这是一份参考架构，而非项目模板。请**不要**在此存储库内运行 Claude Code — 它会读取蓝图自身的 CLAUDE.md，而忽略你项目的规则。请 Fork 或将文件选择性地移入你自己的项目。
->
-> 某些文件包含占位符变量（`{MEMORYCORE_PATH}`、`{PROJECTS_ROOT}`），需要替换为实际路径。Hooks 和设置应该放在**用户级**配置（`~/.claude/`）中，而不是项目目录。完整的设置指南请参见 [GETTING-STARTED.md](GETTING-STARTED.md)。
 
 ---
 
@@ -178,7 +178,7 @@ curl -o CLAUDE.md https://raw.githubusercontent.com/faizkhairi/claude-code-bluep
 | database-schema | `**/prisma/**`, `**/drizzle/**`, `**/migrations/**` | 架构设计模式 |
 | testing | `**/*.test.*`, `**/*.spec.*` | 测试编写约定 |
 | session-lifecycle | 始终 | 会话启动/结束行为 |
-| memorycore-session | `**/memory-core/**` | 外部内存集成 |
+| memory-session | `**/memory/**` | 内存仓库会话管理 |
 
 参见 [rules/README.md](rules/README.md) 了解如何创建自定义规则。
 
@@ -190,7 +190,7 @@ curl -o CLAUDE.md https://raw.githubusercontent.com/faizkhairi/claude-code-bluep
 |------|------|
 | [**CLAUDE.md**](CLAUDE.md) | 经过实战验证的行为规则模板 |
 | [**Settings Template**](examples/settings-template.json) | 完整的 hook + 权限配置 |
-| [**Memory System**](memory-template/) | 双重：自动内存 + 外部 git 备份持久化 |
+| [**Memory System**](../memory/) | 内置可选：Claude 在运行之间记住偏好和会话上下文（出于隐私考虑被 git 忽略） |
 
 ---
 
@@ -228,7 +228,7 @@ Clone 仓库，然后有选择地将组件复制到你的 `~/.claude/` 目录。
 2. **添加 2-3 个 hooks** -- [`protect-config.sh`](hooks/protect-config.sh) + [`notify-file-changed.sh`](hooks/notify-file-changed.sh) + [`cost-tracker.sh`](hooks/cost-tracker.sh)。复制到 `~/.claude/hooks/` 并在 [`settings.json`](examples/settings-template.json) 中配置。
 3. **阅读 [WHY.md](../docs/WHY.md)** 理解设计思路 -- 改进，不要盲目复制。
 4. **随着工作流成熟而添加 agents** -- 从 `verify-plan` 和 `code-reviewer` 开始。
-5. **当需要跨会话持久化时设置 [memory system](memory-template/)**。
+5. **[Memory system](../memory/) 在 `./setup.sh` 期间为可选项** -- 回答 Y 以启用跨会话的持久化上下文。
 
 ---
 
@@ -285,9 +285,9 @@ Clone 仓库，然后有选择地将组件复制到你的 `~/.claude/` 目录。
 
 ## 致谢
 
-本蓝图中的内存系统模式受到 Kiyoraka 的 [Project-AI-MemoryCore](https://github.com/Kiyoraka/Project-AI-MemoryCore) 启发 -- 一个包含 11 个功能扩展的综合 AI 内存架构（LRU 项目管理、内存整合、回声召回等）。如果你想要比这里包含的最小框架更深、功能更丰富的内存系统，请查看那个项目。
+本蓝图中的内存系统模式受到 Kiyoraka 的 [Project-AI-MemoryCore](https://github.com/Kiyoraka/Project-AI-MemoryCore) 启发 -- 一个包含 11 个功能扩展的综合 AI 内存架构（LRU 项目管理、内存整合、回声召回等）。如果你想要比这里包含的精简内置版本更深、功能更丰富的内存系统，请查看那个项目。
 
-**它们的区别：** 本蓝图涵盖*完整的 Claude Code 配置*（agents、skills、hooks、规则、设置）。这里的 `memory-template/` 是轻量级框架。Project-AI-MemoryCore 深入内存层 -- 它们是互补的，不是竞争的。
+**它们的区别：** 本蓝图涵盖*完整的 Claude Code 配置*（agents、skills、hooks、规则、设置），并在 `memory/` 中附带内置可选内存。Project-AI-MemoryCore 深入内存层 -- 它们是互补的，不是竞争的。
 
 ## 许可证
 

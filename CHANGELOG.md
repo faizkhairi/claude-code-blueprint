@@ -6,6 +6,30 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## 2026-05-25 (evening)
+
+### i18n Translation Sync (ja/ko/zh → parity with restructured English README)
+
+**Synced**
+- All 3 translation READMEs (`i18n/README.ja.md`, `README.ko.md`, `README.zh.md`) updated to match the restructured English README from the same-day afternoon entry.
+- New hero framing translated: "library of ready-to-copy files (CLAUDE.md, hooks, agents)" wording in all 3 languages, replacing the older aspirational "smarter / safer / more consistent" tagline.
+- "Before You Start" safety warning moved ABOVE Quick Start in all 3 (was a sub-section after Quick Start). Wording rewritten as a blockquote matching the English version. Stale `{MEMORYCORE_PATH}` / `{PROJECTS_ROOT}` placeholder mention removed (placeholders no longer exist).
+- `memory-template/` → `memory/` references updated across What's Inside table and adoption-path step. Adoption-path memory step rewritten to reflect Path A opt-in framing ("answer Y during `./setup.sh`").
+- `memorycore-session` rule filename → `memory-session` in What's Inside Rules table; glob `**/memory-core/**` → `**/memory/**`; description updated to "memory repository session management".
+- Memory System row description updated: "dual: auto memory + external git-based persistence" → "built-in opt-in: Claude remembers preferences and session context across runs (git-ignored for privacy)".
+- AGENTS.md cross-reference added to all 3 translations (links to `../AGENTS.md`), placed in the safety-warning blockquote so AI assistants reading translated entry points find it immediately.
+- Acknowledgements wording adjusted from "minimal scaffold" / "lightweight scaffold" → "lean built-in version"; clarified that this blueprint now ships built-in opt-in memory in `memory/`. Kiyoraka credit + Project-AI-MemoryCore link preserved verbatim.
+- Language-switcher English link corrected from `README.md` → `../README.md` (translations now live in `i18n/`).
+
+**Parity verification**
+- All 3 translations have identical `##` section count (16, matching English).
+- Zero stale references (`memory-template`, `memorycore-session`, `MEMORYCORE_PATH`) remain in any translation.
+- Safety warning at line 25 / Quick Start at line 31 across all 3 (structural parity preserved).
+
+**Honest disclosure**: translations were produced by mirroring established patterns in the existing high-quality translation content + careful word choice against the new English source. They are functionally accurate but may not match native-speaker quality. Opening 3 community issues (one per language) inviting native speakers to polish wording via PRs (labels: `good first issue`, `documentation`, `help wanted`, `i18n`).
+
+**Not translated yet** (deferred to community contribution): AGENTS.md, docs/README.md, GETTING-STARTED.md additions ("How Memory Works" section). These are larger separate efforts.
+
 ## 2026-05-25 (afternoon)
 
 ### Structural Optimization for Newcomers and AI Assistants + Built-in Memory (Path A)
