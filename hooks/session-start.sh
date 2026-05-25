@@ -23,7 +23,8 @@ if [ -f "$CHECKPOINT_FILE" ] && [ -f "$SESSION_FILE" ]; then
   SESSION_DATE=$(grep -m1 'Last Updated' "$SESSION_FILE" | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}')
 
   if [ -n "$CHECKPOINT_DATE" ] && [ -n "$SESSION_DATE" ]; then
-    if [[ "$CHECKPOINT_DATE" > "$SESSION_DATE" ]]; then
+    # Use POSIX-compatible test (bash 3.2+, also dash/ash). YYYY-MM-DD format sorts lexically.
+    if [ "$CHECKPOINT_DATE" \> "$SESSION_DATE" ]; then
       export STALE_WARNING="STALE SESSION DETECTED: Last checkpoint was $CHECKPOINT_DATE but session.md was last updated $SESSION_DATE. A previous session may have ended abruptly. Check recent plan files and git status to recover context."
     fi
   fi

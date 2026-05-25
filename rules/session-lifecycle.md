@@ -6,7 +6,7 @@
   The hook and rule are safety nets; the skill is the full restoration.
 -->
 
-> **SETUP REQUIRED:** Replace `./memory` and `{CLAUDE_CONFIG_PATH}` with your actual paths before using this rule. If you skip this step, Claude will attempt to read file paths containing literal curly braces (e.g., `./memory/core/session.md`), which will produce confusing "file not found" errors. See [skills/README.md](../skills/README.md#required-replace-placeholder-variables) for platform-specific examples.
+> **Setup note:** `./memory/` is the built-in opt-in memory folder shipped with the blueprint (enabled via `./setup.sh`) — no path substitution needed. The `{CLAUDE_CONFIG_PATH}` placeholder on line 39 below DOES need replacement (typically `~/.claude` on macOS/Linux, `C:/Users/you/.claude` on Windows). See [skills/README.md](../skills/README.md#required-replace-placeholder-variables) for the full placeholder list.
 
 # Session Lifecycle — Automatic Behaviors
 
