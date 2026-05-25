@@ -2,9 +2,9 @@
 
 # Claude Code Blueprint
 
-**자신의 프로젝트에 가져다 쓰는 복사-붙여넣기 가능한 파일 라이브러리 (CLAUDE.md, hooks, agents) -- Claude Code를 더 신뢰할 수 있게.**
+**가장 흔한 AI 코딩 실수를 방지하세요 -- 복사-붙여넣기 가능한 파일 라이브러리 (CLAUDE.md, hooks, agents)를 자신의 프로젝트에 섞어 넣어 Claude Code를 더 신뢰할 수 있게.**
 
-60초 안에 한 파일 복사. 프로젝트가 커지면 더 복사. 모든 언어, 모든 프레임워크, 모든 스킬 레벨에서 작동합니다.
+60초 안에 한 파일을 복사하세요. 프로젝트가 커지면 더 복사하세요. 모든 언어, 모든 프레임워크, 모든 스킬 레벨에서 작동합니다.
 
 [![Stars](https://img.shields.io/github/stars/faizkhairi/claude-code-blueprint?style=flat)](https://github.com/faizkhairi/claude-code-blueprint/stargazers)
 [![Forks](https://img.shields.io/github/forks/faizkhairi/claude-code-blueprint?style=flat)](https://github.com/faizkhairi/claude-code-blueprint/network/members)
@@ -22,7 +22,7 @@
 
 ---
 
-> **시작하기 전에:** 이것은 프로젝트 템플릿이 아니라 참조 저장소입니다. **이 저장소 내에서** Claude Code를 **실행하지 마세요** -- 블루프린트 자체의 CLAUDE.md를 읽어들여 당신의 프로젝트 규칙을 무시합니다. 자신의 프로젝트에 fork하거나 개별 파일을 복사하세요. 전체 설정 안내는 [GETTING-STARTED.md](GETTING-STARTED.md)를 참조하세요.
+> **시작하기 전에:** 이것은 프로젝트 템플릿이 아니라 참조 저장소입니다. **이 저장소 내에서** Claude Code를 **실행하지 마세요** -- (블루프린트 자체의 CLAUDE.md를 로드하여 당신의 프로젝트 규칙을 무시하게 됩니다). 자신의 프로젝트에 fork하거나 개별 파일을 복사하세요. 전체 설정 안내는 [GETTING-STARTED.md](GETTING-STARTED.md)를 참조하세요.
 >
 > 이 저장소로 작업하는 AI 어시스턴트용: 오리엔테이션은 [AGENTS.md](../AGENTS.md)를 참조하세요.
 
