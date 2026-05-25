@@ -2,6 +2,8 @@
 
 This project evolves based on real-world usage and community feedback. If you want to influence the direction, open a [Discussion](https://github.com/faizkhairi/claude-code-blueprint/discussions/categories/ideas) or submit a PR.
 
+The blueprint is a **Claude Harness** — a reference architecture for configuring Claude Code itself. It is intentionally framework-agnostic and tool-agnostic. Roadmap items must serve adoption, understanding, or community engagement around that mission. Items that contradict it (framework recipes, scaffolders, build tooling) are explicitly out of scope — see "Not Planned" below.
+
 ---
 
 ## Completed
@@ -11,25 +13,24 @@ This project evolves based on real-world usage and community feedback. If you wa
 - **SETUP.md** -- Action-focused setup guide with checklist and verification commands
 - **Beginner accessibility** -- Persona table above the fold, Level 1/2/3 progression, "Got This Link from a Colleague?" flow
 - **Framework-agnostic signaling** -- Hero subtitle, comparison table, GitHub topics and description updated
-- **Cross-tool guide** -- Cursor (in depth), Codex CLI, Gemini CLI, Windsurf concept mapping
-- **Hook smoke tests** -- 35 automated tests in `hooks/test-hooks.sh`
-- **4 localized READMEs** -- Japanese, Korean, Simplified Chinese (structural translations)
+- **Cross-tool guide** -- 10 tools mapped (Copilot, Cursor, Cline, Roo Code, OpenCode, Codex CLI, Gemini CLI, Windsurf, and more)
+- **Hook smoke tests** -- 35 automated tests in `hooks/test-hooks.sh` (run locally)
+- **3 localized READMEs** -- Japanese, Korean, Simplified Chinese landing pages (English root + 3 translations = 4 README files total)
+- **Built-in opt-in memory** -- Setup.sh prompts to enable persistent session memory; no external repo required
+- **AGENTS.md** -- AI-assistant orientation file at repo root
 
 ## In Progress
 
-- **Framework-specific CLAUDE.md examples** -- Copy-ready templates for Python, React, Go, Rails in `examples/`
-- **GitHub Actions CI** -- Hook tests + link checker on every PR
+_Nothing currently in progress. Open a Discussion if you want to drive a specific direction._
 
 ## Planned
 
 Items we intend to build. No timeline -- contributions welcome.
 
-- **Video walkthrough** -- Upload `assets/walkthrough.mp4` to YouTube with search-optimized title and description. Embed in README and GETTING-STARTED.md
-- **CLI scaffolder** -- `create-claude-blueprint` (separate repo). Interactive TypeScript CLI that walks users through setup without requiring a fork
-- **Architecture diagrams** -- SVG or Mermaid visual of hook lifecycle, agent ecosystem, and component relationships. Replace ASCII art in ARCHITECTURE.md
-- **FUNDING.yml** -- GitHub Sponsors configuration
-- **Discussion templates** -- Structured templates for Q&A and Show & Tell categories
-- **Community case studies** -- Anonymized before/after metrics and workflow improvements from real users
+- **Discussion templates** -- Q&A and Show & Tell category templates (in flight as part of this cleanup)
+- **Community case studies** -- Anonymized before/after metrics and workflow improvements from real adopters. Submission template lives at [CASE-STUDIES.md](CASE-STUDIES.md); no case studies yet — be the first
+- **FUNDING.yml** -- GitHub Sponsors button config (file shipped; actual Sponsors enrollment is a manual GitHub UI process)
+- **Additional Claude Code product-feature integration** -- As new Claude Code features ship (new hooks, agent capabilities, settings), document and integrate them through the same understand-then-adapt lens
 
 ## Community Wishlist
 
@@ -39,18 +40,25 @@ We review ideas regularly and promote popular ones to Planned.
 
 ## Not Planned
 
-Things we've considered and decided against (for now):
+Things we've considered and explicitly decided against:
 
+- **Framework-specific CLAUDE.md recipes** -- Blueprint is Claude Code's *harness*, not a project starter. Framework-specific rules belong in your own fork's CLAUDE.md. Even ones we previously shipped (Python/React/Go/Rails) were removed because they contradicted the mission. If you want a stack-specific template, fork and add your own.
+- **CLI scaffolder (`create-claude-blueprint` etc.)** -- Defeats the "understand and adapt each component" principle. An installer that hides the choices removes the educational value.
+- **GitHub Actions CI for hook tests / link checks** -- This is a reference-config repo, not a build target. Hook tests run locally via `bash hooks/test-hooks.sh` (35 automated tests). Adding CI implies a "broken build" status that's misaligned with what this repo IS.
+- **Video walkthrough on YouTube** -- The existing `assets/walkthrough.gif` is sufficient for a docs-first GitHub repo. Production-quality video adds maintenance burden without proportional value.
+- **SVG / Mermaid architecture diagrams** -- ASCII art in [ARCHITECTURE.md](ARCHITECTURE.md) is intentional. Renders everywhere, needs no tooling, copy-pastes into any editor, survives GitHub re-renders.
 - **npm package** -- This is a reference architecture, not a library. Installing it via npm would defeat the purpose of understanding and adapting each component. The `setup.sh` script handles automated installation.
-- **Localized deep-dive docs** -- The 4 README translations serve as landing pages. Deep-dive docs (GETTING-STARTED, SETTINGS-GUIDE, etc.) remain English-only. Developers who need those docs can read English. If community translators volunteer, we'll reconsider.
+- **Localized deep-dive docs** -- The 3 README translations serve as landing pages. Deep-dive docs (GETTING-STARTED, SETTINGS-GUIDE, AGENTS.md, etc.) remain English-only. Developers who need those docs can read English. If community translators volunteer per the [i18n issues](https://github.com/faizkhairi/claude-code-blueprint/issues?q=label%3Ai18n), we'll reconsider.
 - **Plugin marketplace** -- Plugins that inject context or modify CLAUDE.md conflict with the blueprint's design philosophy. MCP server plugins are fine and documented.
 
 ---
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for how to submit changes. The most impactful contributions right now:
+See [CONTRIBUTING.md](../CONTRIBUTING.md) for how to submit changes. The most impactful contributions right now:
 
 1. **Battle stories** -- Real incidents that led to a configuration decision (submit via the [battle story template](https://github.com/faizkhairi/claude-code-blueprint/issues/new?template=battle_story.md))
-2. **Framework examples** -- CLAUDE.md stack rules for frameworks not yet covered
-3. **Cross-tool mappings** -- How blueprint concepts translate to tools beyond the 5 currently documented
+2. **Cross-tool mappings** -- How blueprint concepts translate to AI coding tools beyond the 10 currently documented in [CROSS-TOOL-GUIDE.md](CROSS-TOOL-GUIDE.md)
+3. **Skill description improvements** -- See [issue #4](https://github.com/faizkhairi/claude-code-blueprint/issues/4) — add capability statements and dynamic detection to existing skills
+4. **i18n polish** -- Native-speaker review of [Japanese](https://github.com/faizkhairi/claude-code-blueprint/issues/6), [Korean](https://github.com/faizkhairi/claude-code-blueprint/issues/7), or [Chinese](https://github.com/faizkhairi/claude-code-blueprint/issues/8) translations
+5. **Case studies** -- Submit your before/after experience via [CASE-STUDIES.md](CASE-STUDIES.md)
