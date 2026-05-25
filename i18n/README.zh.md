@@ -2,7 +2,7 @@
 
 # Claude Code 蓝图
 
-**一个可直接复制的文件库（CLAUDE.md、hooks、agents），你将其混合到自己的项目中，让 Claude Code 更加可靠。**
+**一个可直接复制的文件库（CLAUDE.md、hooks、agents），你可以混入自己的项目，让 Claude Code 更加可靠。**
 
 60 秒复制一个文件。随项目成长复制更多。适用于任何语言、任何框架、任何技能水平。
 
@@ -28,7 +28,7 @@
 
 ---
 
-## 快速开始
+## Quick Start
 
 复制一个文件，获得三条行为规则。60 秒完成。
 
@@ -41,7 +41,7 @@ curl -o CLAUDE.md https://raw.githubusercontent.com/faizkhairi/claude-code-bluep
 
 **Verify-After-Complete** · **Diagnose-First** · **Plan-Before-Execute**
 
-准备好深入了解？查看[完整采用路径](#推荐的采用路径)或[30 分钟初学者指南](GETTING-STARTED.md)。Claude Code 新手？查看[适用对象](#这是为谁准备的)或 [FAQ](FAQ.md)。
+准备好深入了解？查看[完整采用路径](#recommended-adoption-path)或[30 分钟初学者指南](GETTING-STARTED.md)。Claude Code 新手？查看[适用对象](#who-is-this-for)或 [FAQ](FAQ.md)。
 
 **需要比 CLAUDE.md 更多？** 自动安装 hooks、agents 和设置：
 
@@ -56,7 +56,7 @@ curl -o CLAUDE.md https://raw.githubusercontent.com/faizkhairi/claude-code-bluep
 
 ---
 
-## 这是为谁准备的？
+## Who Is This For?
 
 任何开发者、任何框架、任何技能水平。
 
@@ -69,7 +69,7 @@ curl -o CLAUDE.md https://raw.githubusercontent.com/faizkhairi/claude-code-bluep
 | **学习编程** | 仅 [GETTING-STARTED.md](GETTING-STARTED.md) | 在熟悉前忽略 agents/skills/memory |
 | **从其他工具迁移** | [CROSS-TOOL-GUIDE.md](../docs/CROSS-TOOL-GUIDE.md) | 概念可转移；参见 *Copilot/Cursor in depth* 部分 |
 
-### 你的进阶路径
+### Your Progression
 
 **Level 1 -- 从这里开始（60 秒）**
 将 CLAUDE.md 复制到你的项目。三条行为规则。立竿见影。
@@ -82,9 +82,9 @@ curl -o CLAUDE.md https://raw.githubusercontent.com/faizkhairi/claude-code-bluep
 
 ---
 
-## 与众不同之处
+## What Makes This Different
 
-其他仓库给你 **135 个 agents**。我们给你 **11 个** — 并解释每个为什么存在。
+其他仓库给你 **135 个 agents**。我们给你 **11 个** -- 并解释每个为什么存在。
 
 | 本蓝图 | 通用配置仓库 |
 |------------|------------|
@@ -98,7 +98,7 @@ curl -o CLAUDE.md https://raw.githubusercontent.com/faizkhairi/claude-code-bluep
 
 ---
 
-## 包含的内容
+## What's Inside
 
 <details>
 <summary><strong>11 个 Agents</strong> -- 专用的子 agents，支持模型分级（opus/sonnet/haiku）</summary>
@@ -194,7 +194,7 @@ curl -o CLAUDE.md https://raw.githubusercontent.com/faizkhairi/claude-code-bluep
 
 ---
 
-## 哲学
+## Philosophy
 
 1. **Hooks 用于强制执行，CLAUDE.md 用于指导** -- Hooks 100% 触发。CLAUDE.md 指令约 80% 被遵循。如果某件事必须发生，就把它做成 hook。
 
@@ -202,13 +202,13 @@ curl -o CLAUDE.md https://raw.githubusercontent.com/faizkhairi/claude-code-bluep
 
 3. **上下文是货币** -- 加载到上下文的每个 token 都是无法用于代码的 token。保持 MEMORY.md 在 100 行以下。提取到专题文件。使用路径作用域规则，使无关规则不会加载。
 
-4. **Hooks 免费，上下文便宜** -- 10 个 hook 脚本零 token 成本（在 Claude 上下文外部运行）。CLAUDE.md 每个会话增加约 2,300 个 token — 大约是典型会话的 1-5%。蓝图通过防止重做循环节省的 token 超过其成本。参见 [BENCHMARKS.md](../docs/BENCHMARKS.md#token-cost-per-component)。
+4. **Hooks 免费，上下文便宜** -- 10 个 hook 脚本零 token 成本（在 Claude 上下文外部运行）。CLAUDE.md 每个会话增加约 2,300 个 token -- 大约是典型会话的 1-5%。蓝图通过防止重做循环节省的 token 超过其成本。参见 [BENCHMARKS.md](../docs/BENCHMARKS.md#token-cost-per-component)。
 
 5. **实战验证优于理论** -- 本仓库的每条规则都存在，因为某个事件说明它是必需的。"为什么"比"是什么"重要得多。
 
 ---
 
-## 开始使用
+## Getting Started
 
 ### 选项 A：Fork（推荐）
 Fork 本仓库并将其定制为你自己的活文档参考。之后可以拉取上游更新，随着蓝图的演变而更新。
@@ -222,7 +222,7 @@ Clone 仓库，然后有选择地将组件复制到你的 `~/.claude/` 目录。
 ### 选项 D：自动设置
 从克隆或 Fork 的副本运行 `./setup.sh`。选择预设（minimal/standard/full），脚本将处理目录创建、文件复制、设置合并和占位符替换。参见 [SETUP.md](SETUP.md)。
 
-### 推荐的采用路径
+### Recommended adoption path
 
 1. **从 [CLAUDE.md](CLAUDE.md) 开始** -- 行为规则模板。最大影响，零设置。
 2. **添加 2-3 个 hooks** -- [`protect-config.sh`](hooks/protect-config.sh) + [`notify-file-changed.sh`](hooks/notify-file-changed.sh) + [`cost-tracker.sh`](hooks/cost-tracker.sh)。复制到 `~/.claude/hooks/` 并在 [`settings.json`](examples/settings-template.json) 中配置。
@@ -232,7 +232,7 @@ Clone 仓库，然后有选择地将组件复制到你的 `~/.claude/` 目录。
 
 ---
 
-## 深入学习
+## Deep Dives
 
 | | | |
 |:--|:--|:--|
@@ -247,7 +247,7 @@ Clone 仓库，然后有选择地将组件复制到你的 `~/.claude/` 目录。
 
 ---
 
-## 常见问题
+## Common Questions
 
 **支持我的框架吗？** 是的，蓝图框架无关 -- 它配置 Claude Code 的行为，而非你的技术栈。[详情...](FAQ.md#what-framework-or-language-does-this-work-with)
 
@@ -283,12 +283,12 @@ Clone 仓库，然后有选择地将组件复制到你的 `~/.claude/` 目录。
 
 ---
 
-## 致谢
+## Acknowledgments
 
 本蓝图中的内存系统模式受到 Kiyoraka 的 [Project-AI-MemoryCore](https://github.com/Kiyoraka/Project-AI-MemoryCore) 启发 -- 一个包含 11 个功能扩展的综合 AI 内存架构（LRU 项目管理、内存整合、回声召回等）。如果你想要比这里包含的精简内置版本更深、功能更丰富的内存系统，请查看那个项目。
 
 **它们的区别：** 本蓝图涵盖*完整的 Claude Code 配置*（agents、skills、hooks、规则、设置），并在 `memory/` 中附带内置可选内存。Project-AI-MemoryCore 深入内存层 -- 它们是互补的，不是竞争的。
 
-## 许可证
+## License
 
 MIT
