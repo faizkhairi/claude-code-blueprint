@@ -6,6 +6,38 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## 2026-05-25 (night)
+
+### Mission realignment + doc audit + community-engagement scaffold
+
+**Removed (mission realignment toward framework-agnostic Claude Harness)**
+- Deleted `examples/claude-md-{python,react,go,rails}.md` — framework-specific CLAUDE.md templates contradicted the "configures Claude Code, not your stack" identity. `examples/settings-template.json` is kept since it's framework-agnostic.
+- Deleted `.github/workflows/ci.yml` — CI for hook tests + link checks is misaligned with a reference-config repo. Hook tests still work locally via `bash hooks/test-hooks.sh` (35 automated tests).
+- Removed `docs/PRESETS.md` "Stack Rule Templates" section — same reason. PRESETS.md continues to cover solo/team/CI-CD adoption presets (how much of the blueprint to use, not what framework).
+- ROADMAP.md rewritten: cleared "In Progress", trimmed "Planned", added explicit "Not Planned" entries for framework recipes, CLI scaffolder, GitHub Actions CI, video walkthrough, SVG/Mermaid diagrams — each with rationale anchoring back to the "Claude Harness" identity.
+- README.md Deep Dives table: replaced `[Examples](examples/)` row with `[Case Studies](docs/CASE-STUDIES.md)`.
+- AGENTS.md `examples/` row description updated to reflect what's left (`settings.json` template only).
+- FAQ.md: removed line linking to `PRESETS.md#stack-rule-templates` (target section deleted).
+
+**Fixed (stale references the polish-pass missed because it only checked i18n)**
+- `memory-template/` → `memory/` across: README.md, GETTING-STARTED.md (3 refs), docs/CROSS-TOOL-GUIDE.md (4 refs), docs/ARCHITECTURE.md (ASCII art), docs/PRESETS.md (2 refs).
+- `memorycore-session` → `memory-session` in README.md Rules table and rules/README.md.
+- `**/memory-core/**` glob → `**/memory/**` in rules/memory-session.md frontmatter (the rule was scoped to a path that no longer exists — it wasn't actually firing).
+- README.md Deep Dives cross-tool count: clarified "and 5 more (10 tools total)" to remove ambiguity.
+- docs/README.md (deep-dives index): added Case Studies entry, fixed cross-tool count.
+- 3 i18n READMEs: Deep Dives Examples cell → Case Studies cell.
+
+**Added (community engagement)**
+- `.github/FUNDING.yml` — GitHub Sponsors button config (`github: faizkhairi`). Honest disclosure: this file enables the Sponsor link on the repo, but the button lands on "X isn't accepting sponsorships yet" until the user completes the manual GitHub Sponsors enrollment at github.com/sponsors/accounts (tax/identity verification — cannot be done via API).
+- `.github/DISCUSSION_TEMPLATE/q-and-a.yml` + `show-and-tell.yml` — structured templates for the 2 discussion categories. Native GitHub format.
+- `docs/CASE-STUDIES.md` — adopter-stories landing page with submission template. Honest framing: "no case studies yet — be the first." We don't fabricate case studies, and we don't list ourselves as the canonical example.
+
+**Did NOT**
+- Touch CHANGELOG history (entries referencing the removed items stay; they're a true record of what was built/decided).
+- Modify the i18n Acknowledgements Kiyoraka credit (preserved verbatim).
+- Convert ASCII diagrams to SVG/Mermaid (ASCII is intentional).
+- Enroll user in GitHub Sponsors (manual UI step required separately at github.com/sponsors/accounts).
+
 ## 2026-05-25 (late evening)
 
 ### Editorial polish pass on ja/ko/zh translations + PR #5 merge
