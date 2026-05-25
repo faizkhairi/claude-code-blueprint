@@ -6,6 +6,32 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## 2026-05-25 (late night)
+
+### Post-cleanup health pass
+
+**Verified**
+- All 35 hook smoke tests pass via `bash hooks/test-hooks.sh`. Since CI was removed earlier today, this manual run is the only safety net for hook regressions. Result: 35 PASS / 0 FAIL / 0 SKIP.
+- AGENTS.md content quality + WHY.md architectural freshness audit returned GREEN (Explore subagent). Counts accurate (11 agents / 17 skills / 10 hooks / 5 rules), mission-aligned, no rot.
+- Adjacent files (setup.sh, TROUBLESHOOTING.md, CONTRIBUTING.md) audit returned CLEAN. No broken references to deleted files from the earlier cleanup pass.
+
+**Fixed**
+- `skills/README.md`: removed vestigial `./memory` row from the placeholder-variables table. The row showed stale `~/memory-core` example paths from before the Path A migration, and conceptually `./memory/` is the built-in folder, not a substitutable placeholder. Added a clarifying note that skills referencing `./memory/` use the built-in folder directly (no replacement needed). Updated the grep-for-unreplaced-variables command to only check `{NAME}`-style placeholders.
+- `skills/init-project/SKILL.md`: line 8 instruction "Replace `{PROJECTS_ROOT}`, `{BOILERPLATE_NAME}`, and `./memory` with your actual paths" updated to drop the `./memory` substitution (it's the built-in folder, not a placeholder).
+- `README.md` hero (first-impression audit MED finding): rewrote to lead with value-prop before description. Was "A library of ready-to-copy files... to make Claude Code more reliable." Now "Prevent the most common AI coding mistakes — a library of ready-to-copy files..." The "library of files" identity is preserved; the value-prop just front-loads.
+- `README.md` safety warning (first-impression audit MED finding): softened wording while keeping the above-Quick-Start position. Was "**Before you start:** This is a reference repo, not a project template. Do **not** run Claude Code inside this repository..." Now "**Heads up before you copy:** This is a reference repo, not a project template — you'll copy files OUT of it into your own project. Don't run Claude Code inside this repository..." Same protection against the #1 newcomer mistake (running Claude in the blueprint repo), warmer entry tone.
+
+**Added (GitHub state, not repo state)**
+- Seeded Discussions tab with 3 starter posts authored under the maintainer account: [#9 Welcome](https://github.com/faizkhairi/claude-code-blueprint/discussions/9) (Announcements), [#10 sample Q&A](https://github.com/faizkhairi/claude-code-blueprint/discussions/10) (Q&A category, pre-answered to demonstrate the "marked as answer" pattern), [#11 sample Show & Tell](https://github.com/faizkhairi/claude-code-blueprint/discussions/11). Helps visitors see the templates we shipped working end-to-end and avoids the "empty Discussions tab signals abandoned project" impression.
+
+**Drafted (delivered for user to apply via UI — Sponsors profile content)**
+- GitHub Sponsors profile (github.com/sponsors/faizkhairi) is active but has default placeholder content: shortDescription and fullDescription are both the GitHub-generated default "Support faizkhairi's open source work", and **0 tiers are configured** (critical gap — visitors clicking the Sponsor button have no actual way to support). Drafted replacement content for shortDescription (3 options), fullDescription (markdown), 3 recommended monthly tiers + 1 optional one-time tier, optional activeGoal, and featured-items pinning guidance. User applies via the Sponsors dashboard UI (profile editing is UI-only; not API-doable).
+
+**Did NOT**
+- Apply the LOW-severity README findings from the audit (stat-line context, comparison-table tone) — both flagged as optional / "no change required" by the audit itself.
+- Modify the Sponsors profile content directly (API can only read; editing is UI-only).
+- Touch CHANGELOG history.
+
 ## 2026-05-25 (night)
 
 ### Mission realignment + doc audit + community-engagement scaffold
