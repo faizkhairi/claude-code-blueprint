@@ -34,6 +34,7 @@ While this blueprint is built for Claude Code, the **principles are universal**.
 - **Permissions**: `cli-config.json` controls **tool allowlists** for the Agent CLI; `permissions.json` provides **unified editor + CLI permissions** with sandbox modes. Neither is the same as VS Code's `settings.json`. See [permissions docs](https://cursor.com/docs/reference/permissions).
 - **Hooks** are configured in `hooks.json` (not `settings.json`). Cursor has ~11 hook types -- see the [Lifecycle Hooks](#3-lifecycle-hooks) section for the full list and CLI limitations.
 - **`.cursorignore`** controls which files are excluded from Cursor's codebase indexing -- like `.gitignore` for AI context. Add your memory/session files here if they shouldn't be indexed.
+- **Cursor 3 (April 2026)** rebuilt the IDE around an **Agents Window** that replaces the Composer pane — you can run multiple agents in parallel across different tasks/repos. The April 24 update added a `/multitask` command that spawns async subagents to handle independent parts of a request simultaneously (vs queueing sequentially). If you're on Cursor 3, the blueprint's agent patterns map naturally: each subagent the Agents Window spawns is the equivalent of a Claude Code subagent invocation.
 
 ---
 
