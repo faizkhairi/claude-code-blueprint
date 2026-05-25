@@ -106,7 +106,7 @@ Auto-Memory (~/.claude/projects/<project>/memory/)
   ├─ Topic files (on-demand: project-conventions.md, frameworks.md, etc.)
   └─ Feedback files (learned behaviors)
 
-External Memory (git-backed repo, see memory-template/)
+Built-in Memory (opt-in via setup.sh, see memory/)
   ├─ core/session.md (working memory)
   ├─ core/preferences.md (user profile)
   ├─ core/reminders.md (persistent tasks)

@@ -135,7 +135,7 @@ Configured in `.github/hooks/*.json` (workspace) or `~/.copilot/hooks/` (user-le
 
 ### Cross-session context
 
-Copilot reads `CLAUDE.md` and `AGENTS.md` files at workspace root for cross-tool compatibility. The [memory-template/](memory-template/) pattern works if you teach your agent profiles to read/update the files.
+Copilot reads `CLAUDE.md` and `AGENTS.md` files at workspace root for cross-tool compatibility. The [memory/](../memory/) pattern works if you teach your agent profiles to read/update the files.
 
 ---
 
@@ -191,7 +191,7 @@ Some blueprint hooks (session injection, post-edit nudges, stop-time review) are
 
 ### Cross-session context without vendor "memory"
 
-The [memory-template/](memory-template/) pattern (a **small private git repo** with markdown like `session.md`, decisions, reminders) works for **any** tool: any agent that can read files can load it when you ask. Automation differs: only your **skills / rules** define when that happens -- there is no single universal auto-load unless you configure it per tool.
+The [memory/](../memory/) pattern (markdown files like `session.md`, decisions, reminders — built-in opt-in here, or a separate private git repo for advanced multi-machine setups) works for **any** tool: any agent that can read files can load it when you ask. Automation differs: only your **skills / rules** define when that happens -- there is no single universal auto-load unless you configure it per tool.
 
 ---
 
@@ -319,7 +319,7 @@ Hooks are deterministic automation that fires on specific events (before/after f
 
 ### 4. Memory Persistence (Varies Significantly)
 
-**Claude Code** has dual memory: auto-memory (`~/.claude/projects/*/memory/MEMORY.md`) + the git-backed pattern in this blueprint's [memory-template/](memory-template/).
+**Claude Code** has dual memory: auto-memory (`~/.claude/projects/*/memory/MEMORY.md`) + the opt-in markdown pattern in this blueprint's [memory/](../memory/).
 
 **Copilot** has two memory systems. **Copilot Memory** (public preview) is repo-scoped, shared across users, auto-validated against the current branch, and auto-deleted after 28 days if not reused. Available in cloud agent, code review, and CLI -- not yet in regular IDE chat. **VS Code local memory** (`~/.copilot/`) persists per-user across workspaces with the first 200 lines auto-loaded at session start.
 
@@ -341,9 +341,9 @@ Hooks are deterministic automation that fires on specific events (before/after f
 
 **Aider** stores full chat transcripts in `.aider.chat.history.md`. `--restore-chat-history` replays previous messages when starting a new session (disabled by default). Chat history has a soft token limit after which summarization kicks in via the weak model. No semantic memory or knowledge graph.
 
-**What to copy:** The [memory-template/](memory-template/) pattern works with **any** tool:
+**What to copy:** The [memory/](../memory/) pattern works with **any** tool:
 
-1. Create a **separate private** git repo for your memory data (not in your public blueprint fork if it contains secrets).
+1. Enable memory via `./setup.sh` (built-in, git-ignored), OR create a **separate private** git repo for cross-machine sync if you want that (advanced).
 2. Teach your **rules or skills** to read/update agreed files (e.g. session summary, decisions) when you start or end work.
 3. Only Claude Code can wire some of this to **hooks** automatically; elsewhere, a short **User Rule**, **skill**, or **agent instruction** replaces "on session start, load X."
 

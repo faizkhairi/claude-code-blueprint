@@ -1,6 +1,6 @@
 ---
 paths:
-  - "**/memory-core/**"
+  - "**/memory/**"
 ---
 
 # Memory Session Management Rules

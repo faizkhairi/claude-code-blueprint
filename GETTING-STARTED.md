@@ -671,7 +671,7 @@ Start new developers on the default (ask) mode. Graduate to `"auto"` once they'v
 ### Memory for Teams
 
 - **Session memory** (`~/.claude/projects/*/memory/`) is per-user and cannot be shared. Each developer builds their own memory over time.
-- **External memory** ([memory-template/](memory-template/)) can be team-shared (one repo everyone reads) or per-user (each developer has their own memory repo). Team-shared works well for architectural decisions and conventions. Per-user works better for personal preferences and session history.
+- **Built-in memory** ([memory/](memory/)) is opt-in via `./setup.sh`. By default it lives in the user's working copy and is git-ignored for privacy. Advanced users can configure it as a separate git repo for cross-machine sync; team-shared memory works well for architectural decisions and conventions, per-user for personal preferences and session history.
 - **CLAUDE.md** is the primary mechanism for sharing team conventions. If everyone on the team should follow a rule, it belongs in CLAUDE.md, not in personal memory.
 
 ---
@@ -684,13 +684,12 @@ Once you're comfortable with the basics:
 2. **Skills** — Read [skills/README.md](skills/README.md) to see how multi-step workflows are built
 3. **Hooks deep dive** — Read [hooks/README.md](hooks/README.md) for the full lifecycle and design principles
 4. **Settings deep dive** — Read [SETTINGS-GUIDE.md](docs/SETTINGS-GUIDE.md) for every env var, permission, and cost implication explained
-5. **Memory system** — Read [memory-template/README.md](memory-template/README.md) when you need cross-session persistence
-6. **ADR template** — Use [memory-template/templates/adr-template.md](memory-template/templates/adr-template.md) when documenting architectural decisions
+5. **Memory system** — Read [memory/README.md](memory/README.md) when you need cross-session persistence
+6. **ADR template** — Use [memory/templates/adr-template.md](memory/templates/adr-template.md) when documenting architectural decisions
 7. **Architecture** — Read [ARCHITECTURE.md](docs/ARCHITECTURE.md) for how everything connects
-8. **Stack rule templates** — See [PRESETS.md](docs/PRESETS.md#stack-rule-templates) for framework-agnostic CLAUDE.md snippets by project type
-9. **Cross-tool** — Read [CROSS-TOOL-GUIDE.md](docs/CROSS-TOOL-GUIDE.md) if you also use Copilot, Cursor, Cline, Roo Code, OpenCode, or other AI tools
-10. **FAQ** — See [FAQ.md](FAQ.md) for answers to the most common community questions
-11. **Troubleshooting** — Read [TROUBLESHOOTING.md](TROUBLESHOOTING.md) if something isn't working as expected
+8. **Cross-tool** — Read [CROSS-TOOL-GUIDE.md](docs/CROSS-TOOL-GUIDE.md) if you also use Copilot, Cursor, Cline, Roo Code, OpenCode, or other AI tools
+9. **FAQ** — See [FAQ.md](FAQ.md) for answers to the most common community questions
+10. **Troubleshooting** — Read [TROUBLESHOOTING.md](TROUBLESHOOTING.md) if something isn't working as expected
 
 ---
 

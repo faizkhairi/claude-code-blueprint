@@ -22,7 +22,7 @@ paths:
 | [database-schema.md](database-schema.md) | `**/prisma/**`, `**/drizzle/**`, `**/migrations/**` | Schema design patterns (soft delete, timestamps, naming) |
 | [testing.md](testing.md) | `**/*.test.*`, `**/*.spec.*`, `**/tests/**` | Test writing conventions (structure, assertions, coverage) |
 | [session-lifecycle.md](session-lifecycle.md) | Always (no path filter) | Session start/end behaviors (memory loading, state persistence) |
-| [memory-session.md](memory-session.md) | `**/memory-core/**` | External memory system integration rules |
+| [memory-session.md](memory-session.md) | `**/memory/**` | Memory repository session management rules |
 
 ## Design Principles
 
