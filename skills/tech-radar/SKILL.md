@@ -1,6 +1,6 @@
 ---
 name: tech-radar
-description: "MUST use when user asks 'what's new?', 'any updates?', 'latest versions?', 'breaking changes?', 'should we upgrade?', 'what changed in X?', or when starting a new project to check if dependencies are current. Also trigger proactively at the start of major upgrade sessions."
+description: "MUST use when user asks 'what's new?', 'any updates?', 'latest versions?', 'breaking changes?', 'should we upgrade?', 'what changed in X?', or when starting a new project. Detects dependencies dynamically from `package.json` / `requirements.txt` / `go.mod` / `composer.json` first, then reports per-package: latest version (vs. installed), breaking changes since installed version, security advisories (CRITICAL/HIGH), and deprecation warnings. Falls back to a generic stack table only when no manifest file is found."
 user-invocable: true
 argument-hint: "[optional: specific package or framework name]"
 ---

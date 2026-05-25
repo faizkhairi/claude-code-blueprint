@@ -1,6 +1,6 @@
 ---
 name: deploy-check
-description: "MUST use before any git push to main/master/production, or when user mentions 'deploy', 'going live', 'push to prod', 'ready to ship', 'merge to main', 'release'. Also trigger before any npm publish for CLI tools. Also triggers on: 'audit', 'check vulnerabilities', 'are our deps safe?', 'npm audit', 'yarn audit'."
+description: "MUST use before any git push to main/master/production, or when user mentions 'deploy', 'going live', 'push to prod', 'ready to ship', 'merge to main', 'release'. Also trigger before any npm publish for CLI tools, or on 'audit', 'check vulnerabilities', 'are our deps safe?', 'npm audit', 'yarn audit'. Performs: test suite validation, dev-artifact scan (`console.log`, `TODO`/`FIXME`, hardcoded secrets like `password:` / `token:` / API keys), dependency audit (CRITICAL/HIGH/MODERATE), build verification, Prisma schema safety check, auth-middleware coverage on new endpoints. Verdict: GO / NO-GO with per-check checklist."
 user-invocable: true
 argument-hint: "[environment: dev|stg|prod] or ['audit' for deps-only]"
 ---

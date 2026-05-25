@@ -1,6 +1,6 @@
 ---
 name: elicit-requirements
-description: Structured pre-feature requirements gathering. Run before writing any new feature or API endpoint to clarify scope, acceptance criteria, and technical constraints.
+description: "Structured pre-feature requirements gathering. Run before writing any new feature or API endpoint to clarify scope, acceptance criteria, and technical constraints. Produces: a Requirements Summary (Problem | Scope | Stories | Acceptance Criteria | Out of Scope | Open Questions) — presented to the user for confirmation BEFORE saving to a file, so requirements can be edited before they become reference for implementation."
 user-invocable: true
 argument-hint: "[feature or integration name]"
 ---
@@ -115,4 +115,12 @@ After elicitation, produce a structured summary:
 - ...
 ```
 
-Then save the requirements to a structured markdown file the user can reference during implementation.
+## Step 7: Confirmation Before Saving
+
+After drafting the Requirements Summary, present it to the user in readable markdown and ask:
+
+> "Does this requirements summary look complete and accurate? Should I save it?"
+
+Do NOT save until the user confirms (yes / save / proceed / looks good). If the user wants revisions, loop back to the relevant section, update the draft, and re-present.
+
+Only after confirmation: save the requirements to a structured markdown file the user can reference during implementation.

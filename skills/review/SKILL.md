@@ -1,6 +1,6 @@
 ---
 name: review
-description: "Run a comprehensive multi-perspective code review on recent changes. Also triggers on 'is this secure?', 'security review', 'check for vulnerabilities', 'could this be exploited?' for security-focused review. Produces: GO/NO-GO decision with findings grouped by severity (CRITICAL/HIGH/MEDIUM/LOW), covering code quality, security vulnerabilities, and database issues."
+description: "Run a comprehensive multi-perspective code review on recent changes. Also triggers on 'is this secure?', 'security review', 'check for vulnerabilities', 'could this be exploited?' for security-focused review. Produces: GO/NO-GO verdict + findings table (Severity | Category | File:Line | Issue | Recommendation) grouping CRITICAL/HIGH/MEDIUM/LOW across code quality (patterns, error handling, types), security (OWASP Top 10, auth gaps, hardcoded secrets), and database logic (N+1 queries, soft-delete violations, missing models)."
 user-invocable: true
 argument-hint: "[file, branch, git-range, or 'security' for security-only]"
 ---
