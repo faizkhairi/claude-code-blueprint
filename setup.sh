@@ -622,8 +622,8 @@ replace_placeholders() {
     touch "${CLAUDE_DIR}/.memory-disabled" 2>/dev/null || true
   fi
 
-  # Check if any non-memory placeholders exist in installed files
-  if ! grep -rq '{PROJECTS_ROOT}\|{CLAUDE_CONFIG_PATH}\|{USER_NAME}' "${CLAUDE_DIR}/" 2>/dev/null; then
+  # Check if any installer-replaceable placeholders exist in installed files
+  if ! grep -rq '{PROJECTS_ROOT}\|{CLAUDE_CONFIG_PATH}\|{USER_NAME}\|{MEMORY_MD_PATH}' "${CLAUDE_DIR}/" 2>/dev/null; then
     return
   fi
 
@@ -637,9 +637,11 @@ replace_placeholders() {
   fi
 
   # Auto-detect what we can
-  local claude_config_path user_name projects_root
+  local claude_config_path user_name projects_root memory_md_path
   claude_config_path="$(normalize_path_for_json "$CLAUDE_DIR")"
   user_name="$(git config user.name 2>/dev/null || whoami)"
+  # Global auto-memory index, derived from the config path (see skills/README.md).
+  memory_md_path="${claude_config_path}/memory/MEMORY.md"
 
   echo ""
   if [ "$AUTO_YES" = true ] || ! [ -t 0 ]; then
@@ -664,6 +666,7 @@ replace_placeholders() {
       sed_inplace "s|{CLAUDE_CONFIG_PATH}|${claude_config_path}|g" "$file" 2>/dev/null || true
       sed_inplace "s|{USER_NAME}|${user_name}|g" "$file" 2>/dev/null || true
       sed_inplace "s|{PROJECTS_ROOT}|${projects_root}|g" "$file" 2>/dev/null || true
+      sed_inplace "s|{MEMORY_MD_PATH}|${memory_md_path}|g" "$file" 2>/dev/null || true
     done
   done
 
@@ -717,7 +720,10 @@ verify_installation() {
   # substitution (set -e). Neutralising grep's exit before the pipe means pipefail has
   # nothing to propagate, so a clean "0" is captured on the no-match (happy) path.
   local remaining
-  remaining="$( { grep -rho '{PROJECTS_ROOT}\|{CLAUDE_CONFIG_PATH}\|{USER_NAME}\|{MEMORY_MD_PATH}\|{BOILERPLATE_NAME}' "${CLAUDE_DIR}/" 2>/dev/null || true; } | wc -l | tr -d '[:space:]')"
+  # {BOILERPLATE_NAME} is intentionally left for the user to set in their own copy of the
+  # scaffold-project skill (it names THEIR template repo, e.g. "nuxt-boilerplate"), so it is
+  # not an installer responsibility -- excluded from this check to avoid a permanent false WARN.
+  remaining="$( { grep -rho '{PROJECTS_ROOT}\|{CLAUDE_CONFIG_PATH}\|{USER_NAME}\|{MEMORY_MD_PATH}' "${CLAUDE_DIR}/" 2>/dev/null || true; } | wc -l | tr -d '[:space:]')"
   remaining="${remaining:-0}"
   if [ "$remaining" -gt 0 ]; then
     log_warn "${remaining} unreplaced placeholder(s) remain. Run: grep -r '{' ~/.claude/ | grep -E '{[A-Z_]+}'"
