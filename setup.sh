@@ -454,6 +454,11 @@ if "env" in template:
         if k not in existing["env"]:
             existing["env"][k] = v
 
+# Add statusLine if the template defines one and the user has none (don't overwrite theirs).
+# Placed before the prune pass so a preset that didn't install status-line.sh still drops it.
+if "statusLine" in template and "statusLine" not in existing:
+    existing["statusLine"] = template["statusLine"]
+
 # Merge permissions.allow: append entries not present
 if "permissions" in template and "allow" in template["permissions"]:
     if "permissions" not in existing:
@@ -662,7 +667,7 @@ replace_placeholders() {
   local target_dirs=("${CLAUDE_DIR}/hooks" "${CLAUDE_DIR}/agents" "${CLAUDE_DIR}/skills" "${CLAUDE_DIR}/rules")
   for dir in "${target_dirs[@]}"; do
     [ ! -d "$dir" ] && continue
-    find "$dir" -type f -name '*.md' -o -name '*.sh' 2>/dev/null | while read -r file; do
+    find "$dir" -type f \( -name '*.md' -o -name '*.sh' \) 2>/dev/null | while read -r file; do
       sed_inplace "s|{CLAUDE_CONFIG_PATH}|${claude_config_path}|g" "$file" 2>/dev/null || true
       sed_inplace "s|{USER_NAME}|${user_name}|g" "$file" 2>/dev/null || true
       sed_inplace "s|{PROJECTS_ROOT}|${projects_root}|g" "$file" 2>/dev/null || true

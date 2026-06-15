@@ -76,15 +76,26 @@ def check(cmd):
     m = ref.search(cmd)
     if m and not os.path.isfile(os.path.join(hooks_dir, m.group(1))):
         missing.append(m.group(1))
+wired = set()
+def collect(cmd):
+    if not cmd: return
+    m = ref.search(cmd)
+    if m: wired.add(m.group(1))
 for ev, blocks in (d.get("hooks") or {}).items():
     if isinstance(blocks, list):
         for b in blocks:
             for h in (b.get("hooks") or []):
-                check(h.get("command"))
+                check(h.get("command")); collect(h.get("command"))
 sl = d.get("statusLine")
-if isinstance(sl, dict): check(sl.get("command"))
+if isinstance(sl, dict):
+    check(sl.get("command")); collect(sl.get("command"))
 if missing:
     print("WIRED_BUT_MISSING: %s" % ",".join(sorted(set(missing)))); sys.exit(3)
+# Over-wiring guard: every wired hook script must be one this install actually placed.
+installed = {f for f in os.listdir(hooks_dir) if f.endswith(".sh")} if os.path.isdir(hooks_dir) else set()
+over = wired - installed
+if over:
+    print("OVER_WIRED (referenced but not installed): %s" % ",".join(sorted(over))); sys.exit(4)
 sys.exit(0)
 PYCHK
   local rc=$?
@@ -164,7 +175,22 @@ for preset in "${PRESETS[@]}"; do
   rm -rf "$H" "$ERR"
 done
 
-# 5) Piped menu choice (no --preset): "3" selects core via the menu, then must finish
+# 5) Cross-preset upgrade: install minimal, then re-run as standard into the same HOME.
+#    This is the highest-risk merge path -- PYMERGE must ADD the new hooks without
+#    duplicating, and the result must still wire only installed scripts.
+echo ""
+echo "-- cross-preset upgrade (minimal -> standard) --"
+H="$(new_home)"; ERR1="$(mktemp)"; ERR2="$(mktemp)"
+HOME="$H" bash "$SETUP" --preset=minimal --yes >/dev/null 2>"$ERR1"; c1=$?
+HOME="$H" bash "$SETUP" --preset=standard --yes >/dev/null 2>"$ERR2"; c2=$?
+ok=0
+assert_clean_run "upgrade (minimal install)" "$H" "$ERR1" "$c1" || ok=1
+assert_clean_run "upgrade (standard re-run)" "$H" "$ERR2" "$c2" || ok=1
+assert_settings_wiring "upgrade (wiring)" "$H" || ok=1
+record "cross-preset upgrade (minimal -> standard)" "$ok"
+rm -rf "$H" "$ERR1" "$ERR2"
+
+# 6) Piped menu choice (no --preset): "3" selects core via the menu, then must finish
 echo ""
 echo "-- piped menu choice --"
 H="$(new_home)"; ERR="$(mktemp)"
