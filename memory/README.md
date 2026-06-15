@@ -2,7 +2,7 @@
 
 Gives your AI assistant persistent context across sessions, IDE reinstalls, and (with optional cross-machine sync) machine changes. Enabled via `./setup.sh` — no separate repo required.
 
-> **Privacy by default:** The `.gitignore` shipped in this folder keeps personal content (session, preferences, diary, projects) **out of git** — your blueprint fork can stay public without leaking your work history. Templates and this README stay tracked.
+> **Privacy by default:** The `.gitignore` shipped in this folder keeps your most personal content (session, reminders, diary, projects/active) **out of git** — your blueprint fork can stay public without leaking your work history. Session and reminders ship only as `.example` templates; your real files are created locally (and git-ignored) when you enable memory. Lower-sensitivity structural files (preferences, identity, decisions) stay tracked by default — review them before pushing, or uncomment them in `memory/.gitignore` for stricter privacy. This README and the templates stay tracked.
 
 ## Quick Reference
 

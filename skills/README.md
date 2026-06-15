@@ -6,12 +6,12 @@
 
 | Category | Skills | Triggers |
 |----------|--------|----------|
-| **Code Quality** | review, review-diff | "is this secure?", "scan diff", "check for vulnerabilities" |
+| **Code Quality** | review-full, review-diff | "is this secure?", "scan diff", "check for vulnerabilities" |
 | **Testing** | test-check, e2e-check | "run the tests", "browser test", "are tests passing?" |
 | **Deployment** | deploy-check | "deploy", "push to prod", "ready to ship", "npm audit" |
 | **Planning** | sprint-plan, elicit-requirements | "let's build", "new feature", multi-step tasks |
 | **Session** | load-session, save-session, session-end, save-diary | Session start/end, "save", "bye", "done" |
-| **Project** | init-project, register-project, status, changelog | "new project", "register project", "status" |
+| **Project** | scaffold-project, register-project, status, changelog | "new project", "register project", "status" |
 | **Database** | db-check | "check the schema", "database health", "validate models" |
 | **Utilities** | tech-radar | "what's new?", "any updates?", "should we upgrade?" |
 
@@ -20,7 +20,7 @@
 1. **Natural language triggers** — Skills detect intent from conversation, not slash commands
 2. **Step-by-step workflows** — Each skill has numbered steps that Claude follows mechanically
 3. **GO/NO-GO verdicts** — Review and deploy skills end with clear pass/fail decisions
-4. **Multi-agent orchestration** — The review skill spawns code-reviewer + security-reviewer + db-analyst in parallel
+4. **Multi-agent orchestration** — The review-full skill spawns code-reviewer + security-reviewer + db-analyst in parallel
 
 ## Required: Replace Placeholder Variables
 
@@ -36,7 +36,7 @@ Before using skills that reference external paths, you **must** replace these pl
 
 > **Note on memory paths**: skills like `load-session`, `save-session`, `session-end`, `save-diary`, and `register-project` reference `./memory/` directly — that's the built-in opt-in memory folder shipped with the blueprint, not a placeholder you substitute. If you enabled memory via `./setup.sh`, those paths already work. No replacement needed.
 
-**Skills that need placeholder replacement:** init-project (uses `{PROJECTS_ROOT}` and `{BOILERPLATE_NAME}`), plus any skill that references `{CLAUDE_CONFIG_PATH}`, `{MEMORY_MD_PATH}`, or `{USER_NAME}`.
+**Skills that need placeholder replacement:** scaffold-project (uses `{PROJECTS_ROOT}` and `{BOILERPLATE_NAME}`), plus any skill that references `{CLAUDE_CONFIG_PATH}`, `{MEMORY_MD_PATH}`, or `{USER_NAME}`.
 
 **How to check:** Search your skills directory for unreplaced `{NAME}`-style variables:
 ```bash
@@ -48,9 +48,9 @@ If you see results with curly braces still present, those variables haven't been
 
 Skills are designed to be generic, but you'll get more value by adding stack-specific checks. Here are examples of what to add — adapt these for YOUR stack's failure modes.
 
-### review skill — Add ORM query check
+### review-full skill — Add ORM query check
 
-In `review/SKILL.md`, add to the code review checklist:
+In `review-full/SKILL.md`, add to the code review checklist:
 
 ```
 - Check for N+1 queries: any loop that calls a database query (e.g., findMany inside a map/forEach) should use eager loading or a batch query instead

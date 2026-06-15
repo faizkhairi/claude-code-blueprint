@@ -204,7 +204,7 @@ See [SETTINGS-GUIDE.md](docs/SETTINGS-GUIDE.md#defaultmode) for the full explana
 
 1. **Stop hook runs Sonnet on every response.** This is the single biggest cost driver in the blueprint. Each response triggers a Sonnet security evaluation. In a 50-response session, that's 50 extra Sonnet calls. To reduce: remove the Stop hook's security prompt (not recommended) or run it only on code-producing responses.
 
-2. **Parallel agent spawns.** Skills like `review` spawn up to 3 agents simultaneously, each with its own context window and token budget. Modify the skill to spawn fewer agents for lower-risk changes.
+2. **Parallel agent spawns.** Skills like `review-full` spawn up to 3 agents simultaneously, each with its own context window and token budget. Modify the skill to spawn fewer agents for lower-risk changes.
 
 3. **Always-thinking + high effort.** `alwaysThinkingEnabled: true` with `effortLevel: "high"` maximizes reasoning depth but also token usage. Switch to `"medium"` effort or disable always-thinking for routine tasks.
 

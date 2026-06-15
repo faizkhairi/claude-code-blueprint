@@ -1,5 +1,5 @@
 ---
-name: init-project
+name: scaffold-project
 description: Scaffold a new project with standard structure, configs, and CLAUDE.md
 user-invocable: true
 argument-hint: "[project-name] [type: nuxt|next|vue-springboot|expo|node|library]"

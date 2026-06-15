@@ -63,7 +63,7 @@ Session End
               └──────────┬──────────┘
                          │ tests pass
               ┌──────────▼──────────┐
-              │  review (skill)     │ spawns 1-3 agents:
+              │  review-full (skill)│ spawns 1-3 agents:
               │  ├─ code-reviewer   │ (sonnet, worktree)
               │  ├─ security-reviewer│ (sonnet, worktree)
               │  └─ db-analyst      │ (sonnet, plan mode)

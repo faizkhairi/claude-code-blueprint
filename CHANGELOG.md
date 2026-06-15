@@ -25,7 +25,7 @@ Three parallel Explore subagents + my own surgical greps did a comprehensive fin
 **Never-audited surfaces** — 8/8 areas CLEAN:
 - `.github/PULL_REQUEST_TEMPLATE.md` aligned with CONTRIBUTING.md (NDA sweep, sanitization checklist)
 - 3 issue templates (bug_report, feature_request, battle_story) all match their downstream consumers
-- `hooks/test-hooks.sh` accurately runs 35 tests across 4 categories on 9 hook files
+- `hooks/test-hooks.sh` accurately runs 35 tests across 4 categories (10 files syntax-checked, 8 stdin-tested)
 - `hooks/README.md` lifecycle table correct, no stale CI references
 - 4 non-session-lifecycle rules (api-endpoints, database-schema, testing, memory-session) — path globs accurate, content practical
 - `assets/walkthrough.gif` present (referenced from README)
@@ -88,7 +88,7 @@ Closes #4.
   - **zh**: 3 fixes — spacing around markdown-link/Chinese-verb boundaries (lines 91, 93), double-negative `使...不会加载` → `防止...加载` plus word-order tweak in line 203. One audit finding about em-dash inconsistency was skipped (file uses ` -- ` consistently per the editorial polish convention).
 - Comments posted on issues #6 (ja), #7 (ko), #8 (zh) summarizing the second-pass changes. **Issues stay OPEN.** Honest framing: this was still an editor-pass, not native-speaker authorship. Native ja/ko/zh PRs are still very welcome.
 
-**Personal memory** (NOT in this repo, written to `~/.claude/projects/c--Repo/memory/`):
+**Personal memory** (NOT in this repo, written to `~/.claude/projects/<project>/memory/`):
 - 3 new memory files added in earlier session work: `project_claude_code_blueprint.md` (identity + conventions), `project_blueprint_memory_path_a.md` (Path A details), `feedback_subagent_audit_verification.md` (parallel-grep pattern for catching subagent audit false negatives — reinforced by THIS session catching multiple false positives in i18n audits)
 - MEMORY.md trimmed from 204 → 200 lines (at truncation limit, was 4 over). Achieved via 3 entry merges (no knowledge loss — underlying files untouched, only the index lines combined). The original ≤195 target wasn't achievable without dropping entries.
 
@@ -124,7 +124,7 @@ Closes #4.
 - Add new community-standards files (all already present, health already 100%; no edits expected per plan).
 - Modify CHANGELOG history.
 
-**Personal memory state (NOT in this repo; written to `~/.claude/projects/c--Repo/memory/`)**:
+**Personal memory state (NOT in this repo; written to `~/.claude/projects/<project>/memory/`)**:
 - New: `project_claude_code_blueprint.md` (identity, Not-Planned boundaries, conventions, community surfaces)
 - New: `project_blueprint_memory_path_a.md` (Path A migration details, skill paths, Kiyoraka attribution)
 - New: `feedback_subagent_audit_verification.md` (parallel-grep pattern for subagent audit false negatives)
@@ -203,7 +203,7 @@ Closes #4.
 
 **Honest disclosure** — this is editor-pass quality, NOT native-speaker authorship. I am not a native ja/ko/zh speaker. Community issues #6/#7/#8 remain open as lower-priority — native-speaker PRs still very welcome.
 
-**Translation style policy logged as ADR** in personal memory (decisions.md, AI-MemoryCore commit `443070e`).
+**Translation style policy logged as ADR** in personal memory.
 
 **Merged**
 - [PR #5](https://github.com/faizkhairi/claude-code-blueprint/pull/5) (@liziyuan10): expanded `skills/review/SKILL.md` description with output-shape metadata (GO/NO-GO + severity-grouped findings). Author corrected `MODERATE` → `MEDIUM` per review feedback to stay consistent with the skill body's severity ladder. Squash-merged as `4949a05`.
@@ -435,7 +435,7 @@ Closes #4.
 - 17 natural-language-triggered skills
 - 10 hook scripts covering 10 lifecycle events
 - 5 path-scoped behavioral rules
-- Memory system template (AI-MemoryCore compatible)
+- Memory system template
 - Complete [settings-template.json](examples/settings-template.json) with categorized permissions
 - [CLAUDE.md](CLAUDE.md) behavioral rules template
 - [ARCHITECTURE.md](docs/ARCHITECTURE.md) with component relationship and agent ecosystem diagrams
