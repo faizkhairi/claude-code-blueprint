@@ -139,7 +139,7 @@ The short answer: **barely.** Here's why:
 
 For perspective: a typical 30-turn coding session uses 50,000-200,000+ tokens. The blueprint adds ~2,300 tokens (~1-5% overhead). Meanwhile, one prevented wrong-approach-then-redo cycle saves 5,000-20,000 tokens. **The blueprint saves more than it costs.**
 
-**Subscription users (Pro, Max):** Start with CLAUDE.md + hooks (the Minimal preset). Hooks are free. CLAUDE.md is a tiny fraction of your usage. Add agents when comfortable.
+**Subscription users (Pro, Max):** Start with CLAUDE.md + hooks (the Minimal preset). Hooks are free. CLAUDE.md is a tiny fraction of your usage. When you want more, the `core` preset is a sensible next step -- a curated set of review/test/deploy skills and two path-scoped rules, without the full specialist ecosystem.
 
 **API billing users:** The blueprint adds roughly 1-3 cents per session. Model tiering (Haiku for docs, Sonnet for code) is your biggest savings lever.
 
