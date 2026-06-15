@@ -39,7 +39,7 @@ curl -o CLAUDE.md https://raw.githubusercontent.com/faizkhairi/claude-code-bluep
 
 这给 Claude Code 三条规则，防止最常见的 AI 编码错误：
 
-**Verify-After-Complete** · **Diagnose-First** · **Plan-Before-Execute**
+**Verify-After-Complete** · **Diagnose-First** · **Plan-First**
 
 准备好深入了解？查看[完整采用路径](#recommended-adoption-path)或[30 分钟初学者指南](../GETTING-STARTED.md)。Claude Code 新手？查看[适用对象](#who-is-this-for)或 [FAQ](../FAQ.md)。
 

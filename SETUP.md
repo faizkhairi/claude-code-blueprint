@@ -13,7 +13,7 @@ Copy one file. Three behavioral rules. No installation needed.
 curl -o CLAUDE.md https://raw.githubusercontent.com/faizkhairi/claude-code-blueprint/main/CLAUDE.md
 ```
 
-This gives Claude Code: **Verify-After-Complete**, **Diagnose-First**, **Plan-Before-Execute**. That's enough to start. Add more when you're ready.
+This gives Claude Code: **Verify-After-Complete**, **Diagnose-First**, **Plan-First**. That's enough to start. Add more when you're ready.
 
 ---
 

@@ -85,7 +85,7 @@ These are the questions we hear most from the community. If yours isn't here, [o
 Welcome. Here's your fastest path:
 
 1. **Right now (60 seconds):** Open [CLAUDE.md](CLAUDE.md) in this repo. Click "Raw" (top-right), copy everything, and paste it into a new file called `CLAUDE.md` in your project's root folder.
-2. **Start using Claude Code normally.** No special prompts needed. Claude automatically reads your CLAUDE.md and follows the three rules inside it (Verify-After-Complete, Diagnose-First, Plan-Before-Execute).
+2. **Start using Claude Code normally.** No special prompts needed. Claude automatically reads your CLAUDE.md and follows the three rules inside it (Verify-After-Complete, Diagnose-First, Plan-First).
 3. **When ready for hooks and agents:** Run `./setup.sh --preset=standard` from a cloned copy, or [let Claude set it up for you](GETTING-STARTED.md#let-claude-code-set-up-for-you) interactively. See [SETUP.md](SETUP.md) for all options.
 4. **When curious:** Read the [beginner guide](GETTING-STARTED.md#new-to-claude-code-start-here) to understand what Claude Code is and how to access it (Desktop app, VS Code extension, CLI, or web).
 5. **If something breaks:** Check [TROUBLESHOOTING.md](TROUBLESHOOTING.md).
@@ -99,7 +99,7 @@ No installation required. No dependencies. No package manager. Just one markdown
 **No.** This blueprint makes AI coding assistants more predictable and safe -- not a substitute for understanding.
 
 - The **Diagnose-First** rule forces Claude to investigate errors before jumping to fixes. You see the diagnosis process, not just the result.
-- The **Plan-Before-Execute** rule makes Claude explain its approach before writing code. You review and approve the plan, which builds your understanding of the architecture.
+- The **Plan-First** rule makes Claude explain its approach before writing code. You review and approve the plan, which builds your understanding of the architecture.
 - The battle stories in [WHY.md](docs/WHY.md) teach you what goes wrong in real software projects -- these are learning opportunities, not black boxes.
 - The "Learning to code" persona is explicitly supported in the [adoption table](README.md#who-is-this-for). The recommendation is to start with CLAUDE.md and GETTING-STARTED.md only, ignoring agents/skills/memory until you're comfortable.
 - AI helps you move faster, but understanding what you're building and why is still your responsibility.

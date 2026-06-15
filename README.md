@@ -37,7 +37,7 @@ curl -o CLAUDE.md https://raw.githubusercontent.com/faizkhairi/claude-code-bluep
 
 This gives Claude Code three rules that prevent the most common AI coding mistakes:
 
-**Verify-After-Complete** · **Diagnose-First** · **Plan-Before-Execute**
+**Verify-After-Complete** · **Diagnose-First** · **Plan-First**
 
 Ready for more? See the [full adoption path](#recommended-adoption-path) or the [30-minute beginner guide](GETTING-STARTED.md). New to Claude Code? See [who this is for](#who-is-this-for) or the [FAQ](FAQ.md).
 
@@ -258,7 +258,7 @@ Run `./setup.sh` from a cloned or forked copy. Choose a preset (minimal/standard
 | **[FAQ](FAQ.md)** | **[Getting Started](GETTING-STARTED.md)** | **[Troubleshooting](TROUBLESHOOTING.md)** |
 | Top community questions answered | From zero to productive in 30 minutes | Common issues and fixes |
 | **[Setup Guide](SETUP.md)** | **[Case Studies](docs/CASE-STUDIES.md)** | **[Roadmap](docs/ROADMAP.md)** |
-| Automated installer + verification checklist | Adopter stories and before/after metrics | Project direction and what's next |
+| Automated installer + verification checklist | Adopter stories and before/after metrics (submission-driven — be the first) | Project direction and what's next |
 | **[Self-Monitoring](docs/SELF-MONITORING.md)** | | |
 | Optional patterns: gitleaks pre-commit + memory-curator agent | | |
 
