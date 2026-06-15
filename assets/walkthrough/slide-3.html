@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 1280px; height: 720px; overflow: hidden;
+    background: #0a0a0a; color: #e4e4e7;
+    font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace;
+    display: flex; flex-direction: column; justify-content: center; padding: 0 96px;
+    background-image: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(124,58,237,0.06), transparent);
+  }
+  h2 { font-size: 52px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 12px; }
+  .sub { color: #71717a; font-size: 20px; margin-bottom: 40px; }
+  .rows { display: flex; flex-direction: column; gap: 16px; margin-bottom: 36px; }
+  .row {
+    display: flex; align-items: center; gap: 24px;
+    background: linear-gradient(135deg, #18181b 0%, #1a1a2e 100%);
+    border: 1px solid #27272a; border-radius: 12px; padding: 22px 28px;
+  }
+  .tier { font-size: 28px; font-weight: 800; width: 130px; color: #818cf8; }
+  .use { font-size: 19px; color: #d4d4d8; }
+  .footer {
+    position: absolute; bottom: 40px; left: 96px; right: 96px;
+    display: flex; justify-content: space-between; align-items: center; color: #52525b; font-size: 16px;
+  }
+  .url { color: #7c3aed; font-weight: 600; }
+  .stat { color: #34d399; font-weight: 700; }
+</style>
+</head>
+<body>
+  <h2>Model Tiering</h2>
+  <div class="sub">Match the model to the task &mdash; reasoning where it pays, cheap where it doesn't.</div>
+  <div class="rows">
+    <div class="row"><span class="tier">Opus</span><span class="use">Architecture, system design, high-stakes planning</span></div>
+    <div class="row"><span class="tier">Sonnet</span><span class="use">Implementation, review, analysis &mdash; the everyday workhorse</span></div>
+    <div class="row"><span class="tier">Haiku</span><span class="use">Documentation, API specs, summarization</span></div>
+  </div>
+  <div class="sub">Plus: running Playwright via the CLI instead of MCP cuts browser-task context by <span class="stat">~76%</span>.</div>
+  <div class="footer"><span class="url">github.com/faizkhairi/claude-code-blueprint</span><span>3 / 7</span></div>
+</body>
+</html>

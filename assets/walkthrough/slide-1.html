@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 1280px; height: 720px; overflow: hidden;
+    background: #0a0a0a;
+    color: #e4e4e7;
+    font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace;
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 0 96px;
+    background-image: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(124,58,237,0.06), transparent);
+  }
+  .badge {
+    display: inline-block; background: linear-gradient(135deg, #7c3aed, #3b82f6);
+    color: #fff; font-size: 16px; font-weight: 700; letter-spacing: 2px;
+    text-transform: uppercase; padding: 8px 18px; border-radius: 8px; margin-bottom: 36px;
+    width: fit-content;
+  }
+  h1 {
+    font-size: 84px; font-weight: 800; letter-spacing: -1px; line-height: 1.05;
+    background: linear-gradient(135deg, #f4f4f5, #a1a1aa);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    margin-bottom: 24px;
+  }
+  .subtitle { color: #a1a1aa; font-size: 26px; line-height: 1.5; max-width: 880px; margin-bottom: 44px; }
+  .pills { display: flex; gap: 14px; }
+  .pill {
+    background: rgba(39,39,42,0.6); border: 1px solid #3f3f46; border-radius: 8px;
+    padding: 10px 18px; font-size: 16px; color: #a1a1aa;
+  }
+  .pill b { color: #818cf8; font-weight: 600; }
+  .footer {
+    position: absolute; bottom: 40px; left: 96px; right: 96px;
+    display: flex; justify-content: space-between; align-items: center;
+    color: #52525b; font-size: 16px;
+  }
+  .url { color: #7c3aed; font-weight: 600; }
+</style>
+</head>
+<body>
+  <div class="badge">● Open Source</div>
+  <h1>Claude Code<br>Blueprint</h1>
+  <div class="subtitle">A battle-tested reference architecture for Claude Code power users. Not a plugin to install &mdash; a blueprint to learn from and adapt.</div>
+  <div class="pills">
+    <span class="pill"><b>Claude Code</b> 2.1.150</span>
+    <span class="pill"><b>MIT</b> Licensed</span>
+    <span class="pill"><b>Zero</b> Dependencies</span>
+  </div>
+  <div class="footer"><span class="url">github.com/faizkhairi/claude-code-blueprint</span><span>1 / 7</span></div>
+</body>
+</html>
