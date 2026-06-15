@@ -1,0 +1,33 @@
+# Checks every Markdown file for broken links on push and pull request.
+# Its main job is to catch broken *relative* links (e.g. a doc pointing at
+# a moved or renamed file) before they reach main. External links are checked
+# too, but flaky/rate-limited hosts (badges, etc.) are excluded in .lycheeignore.
+name: Link Check
+
+on:
+  push:
+    branches: [main]
+    paths: ["**/*.md"]
+  pull_request:
+    paths: ["**/*.md"]
+
+permissions:
+  contents: read
+
+jobs:
+  links:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check links with lychee
+        uses: lycheeverse/lychee-action@v2
+        with:
+          # Scan all Markdown. --no-progress keeps CI logs clean.
+          # 429 (rate-limited) is accepted so a throttled host does not fail the build.
+          args: >-
+            --no-progress
+            --accept 200,429
+            "**/*.md"
+          # Fail the job if any link is broken.
+          fail: true

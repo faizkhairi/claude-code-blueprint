@@ -60,7 +60,7 @@ Add to your `~/.claude/settings.json`:
 
 - Claude asks before editing ESLint, Prettier, TypeScript, or build configs
 - Automatic "did you verify?" reminder after every source file edit
-- CLAUDE.md rules guide Claude's behavior (~80% compliance)
+- CLAUDE.md rules guide Claude's behavior (followed most of the time, but not guaranteed)
 
 ### What you don't get (and don't need yet)
 

@@ -130,7 +130,7 @@ Common issues and fixes. Search this page (Ctrl+F) for your error message or sym
 
 2. **Conflicting plugin instructions.** Plugins can inject their own instructions that compete with yours. Audit installed plugins and disable any that override CLAUDE.md or inject prompts on SessionStart. See [README.md](README.md#plugin-compatibility).
 
-3. **Rule is guidance, not enforcement.** CLAUDE.md rules are followed ~80% of the time -- they're guidelines, not guarantees. If something MUST happen, make it a [hook](hooks/). Hooks fire 100% of the time.
+3. **Rule is guidance, not enforcement.** CLAUDE.md rules are followed most of the time -- but they're guidelines, not guarantees. If something MUST happen, make it a [hook](hooks/). Hooks fire deterministically, every time.
 
 ### "Path-scoped rules not loading"
 

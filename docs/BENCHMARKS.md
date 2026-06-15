@@ -200,9 +200,9 @@ The blueprint's model tiering keeps costs close to all-Sonnet pricing while rese
 | Session context lost on crash | Lost completely | **Serialized to disk** | PreCompact + SessionEnd hooks |
 | Cost tracking | Unknown spending | **JSONL metrics per session** | `cost-tracker.sh` |
 
-### Hook Compliance: 100% vs ~80%
+### Hook Compliance: deterministic vs best-effort
 
-CLAUDE.md instructions are followed approximately 80% of the time (the model occasionally forgets or deprioritizes rules). Hooks execute deterministically on every matching event -- 100% compliance, zero exceptions. This is why enforcement belongs in hooks, and guidance belongs in CLAUDE.md.
+CLAUDE.md instructions are followed most of the time, but not always -- the model occasionally forgets or deprioritizes a rule. Hooks execute deterministically on every matching event, with no exceptions. This is why enforcement belongs in hooks, and guidance belongs in CLAUDE.md.
 
 ---
 

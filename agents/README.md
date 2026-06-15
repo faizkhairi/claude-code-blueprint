@@ -89,7 +89,7 @@ Agents are powerful but imperfect. Common failure modes:
 
 ## Why Agents Might Ignore Instructions
 
-CLAUDE.md rules and agent instructions are guidance, not guarantees. Compliance is approximately 80% -- high but not absolute. Reasons agents may deviate:
+CLAUDE.md rules and agent instructions are guidance, not guarantees. They are followed most of the time -- high, but not absolute. Reasons agents may deviate:
 
 - **Context window limits**: Long or complex instructions may get compressed during context management, reducing attention to specific rules.
 - **Competing instructions**: If multiple sources (CLAUDE.md, agent frontmatter, user prompt) give conflicting guidance, the agent resolves the conflict unpredictably.

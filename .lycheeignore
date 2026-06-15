@@ -1,0 +1,10 @@
+# Hosts excluded from the CI link check (.github/workflows/link-check.yml).
+# These are valid URLs that rate-limit or time out under automated checking,
+# which would otherwise fail the build on unrelated PRs.
+
+# Badge images (Stars/Forks/License/etc.) -- shields.io throttles CI traffic.
+https://img.shields.io
+
+# Placeholder/example hosts used in documentation and sample configs.
+https://internal.example.com
+https://gitea.mycompany.com

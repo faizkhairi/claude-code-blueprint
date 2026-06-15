@@ -144,7 +144,7 @@ curl -o CLAUDE.md https://raw.githubusercontent.com/faizkhairi/claude-code-bluep
 </details>
 
 <details>
-<summary><strong>10 个 Hooks</strong> -- 确定性的生命周期自动化（100% 遵循率，不同于 CLAUDE.md 规则的约 80%）</summary>
+<summary><strong>10 个 Hooks</strong> -- 确定性的生命周期自动化（每次确定性触发，不同于 CLAUDE.md 规则并非始终被遵循）</summary>
 
 &nbsp;
 
@@ -196,7 +196,7 @@ curl -o CLAUDE.md https://raw.githubusercontent.com/faizkhairi/claude-code-bluep
 
 ## Philosophy
 
-1. **Hooks 用于强制执行，CLAUDE.md 用于指导** -- Hooks 100% 触发。CLAUDE.md 指令约 80% 被遵循。如果某件事必须发生，就把它做成 hook。
+1. **Hooks 用于强制执行，CLAUDE.md 用于指导** -- Hooks 100% 触发。CLAUDE.md 指令在大多数情况下会被遵循，但无法保证 -- 模型可能会遗忘规则或降低其优先级。如果某件事必须发生，就把它做成 hook。
 
 2. **Agent 范围的知识，不是全局臃肿** -- 设计原则放在 frontend agent，而不是每次会话的上下文。安全模式放在 security-reviewer，而不是 CLAUDE.md。
 

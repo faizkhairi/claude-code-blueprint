@@ -1,6 +1,6 @@
 # Hooks
 
-8 lifecycle hooks + 2 utility scripts, covering 10 lifecycle events. Hooks are deterministic (100% compliance) vs CLAUDE.md instructions (~80%).
+8 lifecycle hooks + 2 utility scripts, covering 10 lifecycle events. Hooks are deterministic (they fire every time) vs CLAUDE.md instructions (followed most of the time, but not guaranteed).
 
 ## Hook Lifecycle
 
