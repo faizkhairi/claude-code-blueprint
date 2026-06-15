@@ -251,7 +251,7 @@ Rules use frontmatter with `trigger` field (`glob`, `always_on`, `manual`). Root
 
 **Aider** -> `CONVENTIONS.md` loaded via `--read CONVENTIONS.md` or `/read` in-chat. Marked as read-only and cached with prompt caching. Config hierarchy: `~/.aider.conf.yml` (global) -> repo root -> CWD, with later files taking priority. No native auto-discovery of rules files.
 
-**What to copy:** Take the [CLAUDE.md](CLAUDE.md) template. Paste the rules into your tool's equivalent file(s). The content is tool-agnostic -- only the file name, split, and format change.
+**What to copy:** Take the [CLAUDE.md](../CLAUDE.md) template. Paste the rules into your tool's equivalent file(s). The content is tool-agnostic -- only the file name, split, and format change.
 
 ---
 

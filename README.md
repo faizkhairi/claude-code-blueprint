@@ -54,6 +54,23 @@ See [SETUP.md](SETUP.md) for all setup options including a verification checklis
 
 ---
 
+## What It Costs You (Token Budget)
+
+Every file you copy is a recurring per-session context cost. Here is what each component costs and when it loads, so you can decide what to add. Numbers are measured from the actual files (~4 characters per token):
+
+| Component | Token Cost | When It Loads |
+|-----------|-----------|---------------|
+| **CLAUDE.md** | ~2,300 | Every session start |
+| **An always-on rule** (session-lifecycle) | ~700 | Every session |
+| **A path-scoped rule** (testing, schema, api) | ~850-1,450 | Only when editing matching files — otherwise **zero** |
+| **A skill** (review-full, test-check, deploy-check) | ~480-1,070 | Only when its trigger phrase is used |
+| **Hooks** (all of them) | **Zero** | They run outside Claude's context |
+| **An agent** (per spawn) | Full context window | Only when you invoke it |
+
+**The economics:** hooks cost zero tokens, and path-scoped rules cost nothing until you touch a matching file. The recurring baseline is just CLAUDE.md (~2,300 tokens, roughly 3-5% of a typical session) — and a single prevented redo cycle saves far more than that. See the [full breakdown and savings math](docs/BENCHMARKS.md#token-cost-per-component).
+
+---
+
 ## Who Is This For?
 
 **Any developer, any framework, any skill level.** The blueprint configures Claude Code's behavior -- it doesn't care what language or framework your project uses.
@@ -142,7 +159,7 @@ See [skills/README.md](skills/README.md) for customization and placeholder varia
 </details>
 
 <details>
-<summary><strong>10 Hooks</strong> -- Deterministic lifecycle automation (100% compliance, unlike ~80% for CLAUDE.md rules)</summary>
+<summary><strong>10 Hooks</strong> -- Deterministic lifecycle automation (always fire, unlike CLAUDE.md rules which the model can deprioritize)</summary>
 
 &nbsp;
 
@@ -194,7 +211,7 @@ See [rules/README.md](rules/README.md) for creating custom rules.
 
 ## Philosophy
 
-1. **Hooks for enforcement, CLAUDE.md for guidance** -- Hooks fire 100% of the time. CLAUDE.md instructions are followed ~80%. If something MUST happen, make it a hook.
+1. **Hooks for enforcement, CLAUDE.md for guidance** -- Hooks fire deterministically every time. CLAUDE.md instructions are followed most of the time, but not guaranteed -- the model can forget or deprioritize a rule. If something MUST happen, make it a hook.
 
 2. **Agent-scoped knowledge, not global bloat** -- Design principles live in the frontend agent, not in every session's context. Security patterns live in the security-reviewer, not in CLAUDE.md.
 

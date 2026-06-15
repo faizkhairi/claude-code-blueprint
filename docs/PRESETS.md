@@ -2,7 +2,7 @@
 
 Not sure where to start? Pick the preset that matches your situation. Each lists exactly which files to copy and the minimal settings.json to wire them up.
 
-See [README.md](README.md#who-is-this-for) for which preset matches your profile.
+See [README.md](../README.md#who-is-this-for) for which preset matches your profile.
 
 ---
 
@@ -16,9 +16,9 @@ See [README.md](README.md#who-is-this-for) for which preset matches your profile
 
 | Source | Destination | Purpose |
 |--------|-------------|---------|
-| [`CLAUDE.md`](CLAUDE.md) | Your project root | Behavioral rules (biggest single impact) |
-| [`hooks/protect-config.sh`](hooks/protect-config.sh) | `~/.claude/hooks/` | Block accidental config weakening |
-| [`hooks/notify-file-changed.sh`](hooks/notify-file-changed.sh) | `~/.claude/hooks/` | Remind to verify after source edits |
+| [`CLAUDE.md`](../CLAUDE.md) | Your project root | Behavioral rules (biggest single impact) |
+| [`hooks/protect-config.sh`](../hooks/protect-config.sh) | `~/.claude/hooks/` | Block accidental config weakening |
+| [`hooks/notify-file-changed.sh`](../hooks/notify-file-changed.sh) | `~/.claude/hooks/` | Remind to verify after source edits |
 
 ### Settings
 
@@ -60,7 +60,7 @@ Add to your `~/.claude/settings.json`:
 
 - Claude asks before editing ESLint, Prettier, TypeScript, or build configs
 - Automatic "did you verify?" reminder after every source file edit
-- CLAUDE.md rules guide Claude's behavior (~80% compliance)
+- CLAUDE.md rules guide Claude's behavior (followed most of the time, but not guaranteed)
 
 ### What you don't get (and don't need yet)
 
@@ -80,17 +80,17 @@ Add to your `~/.claude/settings.json`:
 
 | Source | Destination | Purpose |
 |--------|-------------|---------|
-| [`hooks/block-git-push.sh`](hooks/block-git-push.sh) | `~/.claude/hooks/` | Protect specific remotes from accidental pushes |
-| [`hooks/cost-tracker.sh`](hooks/cost-tracker.sh) | `~/.claude/hooks/` | Track token spending to JSONL |
-| [`hooks/session-checkpoint.sh`](hooks/session-checkpoint.sh) | `~/.claude/hooks/` | Crash recovery timestamps |
-| [`hooks/post-commit-review.sh`](hooks/post-commit-review.sh) | `~/.claude/hooks/` | Post-commit review reminders |
-| [`agents/verify-plan.md`](agents/verify-plan.md) | `~/.claude/agents/` | 7-point mechanical plan verification |
-| [`agents/code-reviewer.md`](agents/code-reviewer.md) | `~/.claude/agents/` | Independent code review agent |
-| [`examples/settings-template.json`](examples/settings-template.json) | `~/.claude/settings.json` | Full settings (customize paths + permissions) |
+| [`hooks/block-git-push.sh`](../hooks/block-git-push.sh) | `~/.claude/hooks/` | Protect specific remotes from accidental pushes |
+| [`hooks/cost-tracker.sh`](../hooks/cost-tracker.sh) | `~/.claude/hooks/` | Track token spending to JSONL |
+| [`hooks/session-checkpoint.sh`](../hooks/session-checkpoint.sh) | `~/.claude/hooks/` | Crash recovery timestamps |
+| [`hooks/post-commit-review.sh`](../hooks/post-commit-review.sh) | `~/.claude/hooks/` | Post-commit review reminders |
+| [`agents/verify-plan.md`](../agents/verify-plan.md) | `~/.claude/agents/` | 7-point mechanical plan verification |
+| [`agents/code-reviewer.md`](../agents/code-reviewer.md) | `~/.claude/agents/` | Independent code review agent |
+| [`examples/settings-template.json`](../examples/settings-template.json) | `~/.claude/settings.json` | Full settings (customize paths + permissions) |
 
 ### Settings
 
-Use the full [`settings-template.json`](examples/settings-template.json) as your base. Customize:
+Use the full [`settings-template.json`](../examples/settings-template.json) as your base. Customize:
 
 1. Replace all `YourUser` paths with your actual username (Windows: `C:/Users/YourUser/`, macOS: `/Users/youruser/`, Linux: `/home/youruser/`)
 2. Adjust the `allow` list for your stack (remove tools you don't use)
@@ -118,11 +118,11 @@ Use the full [`settings-template.json`](examples/settings-template.json) as your
 
 | Category | Source | Destination |
 |----------|--------|-------------|
-| **All agents** | [`agents/*.md`](agents/) | `~/.claude/agents/` |
-| **All hooks** | [`hooks/*.sh`](hooks/) | `~/.claude/hooks/` |
-| **Skills you need** | [`skills/*/SKILL.md`](skills/) | `~/.claude/skills/*/SKILL.md` |
-| **Rules** | [`rules/*.md`](rules/) | `~/.claude/rules/` |
-| **Memory (opt-in)** | [`memory/`](memory/) | Built-in, enabled via setup.sh |
+| **All agents** | [`agents/*.md`](../agents/) | `~/.claude/agents/` |
+| **All hooks** | [`hooks/*.sh`](../hooks/) | `~/.claude/hooks/` |
+| **Skills you need** | [`skills/*/SKILL.md`](../skills/) | `~/.claude/skills/*/SKILL.md` |
+| **Rules** | [`rules/*.md`](../rules/) | `~/.claude/rules/` |
+| **Memory (opt-in)** | [`memory/`](../memory/) | Built-in, enabled via setup.sh |
 
 ### What you get (beyond Standard)
 
@@ -137,7 +137,7 @@ Use the full [`settings-template.json`](examples/settings-template.json) as your
 1. **Remove agents you don't need.** A Python project doesn't need `frontend-specialist.md`.
 2. **Pick skills that match your workflow.** Start with `review-full`, `test-check`, and `deploy-check`. Add others as needed.
 3. **Customize rules for your stack.** Edit `database-schema.md` for your ORM patterns, `api-endpoints.md` for your framework conventions.
-4. **Enable memory persistence.** Answer Y when `./setup.sh` asks about memory, or read [memory/README.md](memory/README.md) for the manual setup.
+4. **Enable memory persistence.** Answer Y when `./setup.sh` asks about memory, or read [memory/README.md](../memory/README.md) for the manual setup.
 
 ---
 
@@ -151,8 +151,8 @@ Use the full [`settings-template.json`](examples/settings-template.json) as your
 
 | Source | Destination | Purpose |
 |--------|-------------|---------|
-| [`CLAUDE.md`](CLAUDE.md) | Project root | Rules for the CI agent |
-| [`hooks/block-git-push.sh`](hooks/block-git-push.sh) | CI environment | Prevent pushes to protected branches |
+| [`CLAUDE.md`](../CLAUDE.md) | Project root | Rules for the CI agent |
+| [`hooks/block-git-push.sh`](../hooks/block-git-push.sh) | CI environment | Prevent pushes to protected branches |
 
 ### Settings
 

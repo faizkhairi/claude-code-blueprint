@@ -1,0 +1,21 @@
+# Hosts excluded from the CI link check (.github/workflows/link-check.yml).
+# These are valid URLs that rate-limit or time out under automated checking,
+# which would otherwise fail the build on unrelated PRs.
+
+# Badge images (Stars/Forks/License/etc.) -- shields.io throttles CI traffic.
+https://img.shields.io
+
+# Valid URL that returns 403 to automated checkers (anti-bot protection).
+https://claude.ai
+
+# Placeholder/example hosts used in documentation and sample configs.
+https://internal.example.com
+https://gitea.mycompany.com
+
+# GitHub web-relative paths (resolve on github.com, not as local files).
+.*/discussions$
+
+# CHANGELOG entries are dated history that may reference since-renamed paths.
+# (Their links described the repo state at the time of that release.)
+.*memory-template/.*
+.*skills/init-project/.*

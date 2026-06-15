@@ -8,9 +8,9 @@
 
 [![Stars](https://img.shields.io/github/stars/faizkhairi/claude-code-blueprint?style=flat)](https://github.com/faizkhairi/claude-code-blueprint/stargazers)
 [![Forks](https://img.shields.io/github/forks/faizkhairi/claude-code-blueprint?style=flat)](https://github.com/faizkhairi/claude-code-blueprint/network/members)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](../LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-2.1.150-blueviolet)](https://docs.anthropic.com/en/docs/claude-code)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](../CONTRIBUTING.md)
 
 **11 agents** · **17 skills** · **10 hooks** · **5 rules** -- 在真实项目中验证
 
@@ -144,7 +144,7 @@ curl -o CLAUDE.md https://raw.githubusercontent.com/faizkhairi/claude-code-bluep
 </details>
 
 <details>
-<summary><strong>10 个 Hooks</strong> -- 确定性的生命周期自动化（100% 遵循率，不同于 CLAUDE.md 规则的约 80%）</summary>
+<summary><strong>10 个 Hooks</strong> -- 确定性的生命周期自动化（每次确定性触发，不同于 CLAUDE.md 规则并非始终被遵循）</summary>
 
 &nbsp;
 
@@ -180,7 +180,7 @@ curl -o CLAUDE.md https://raw.githubusercontent.com/faizkhairi/claude-code-bluep
 | session-lifecycle | 始终 | 会话启动/结束行为 |
 | memory-session | `**/memory/**` | 内存仓库会话管理 |
 
-参见 [rules/README.md](rules/README.md) 了解如何创建自定义规则。
+参见 [rules/README.md](../rules/README.md) 了解如何创建自定义规则。
 
 </details>
 
@@ -196,7 +196,7 @@ curl -o CLAUDE.md https://raw.githubusercontent.com/faizkhairi/claude-code-bluep
 
 ## Philosophy
 
-1. **Hooks 用于强制执行，CLAUDE.md 用于指导** -- Hooks 100% 触发。CLAUDE.md 指令约 80% 被遵循。如果某件事必须发生，就把它做成 hook。
+1. **Hooks 用于强制执行，CLAUDE.md 用于指导** -- Hooks 100% 触发。CLAUDE.md 指令在大多数情况下会被遵循，但无法保证 -- 模型可能会遗忘规则或降低其优先级。如果某件事必须发生，就把它做成 hook。
 
 2. **Agent 范围的知识，不是全局臃肿** -- 设计原则放在 frontend agent，而不是每次会话的上下文。安全模式放在 security-reviewer，而不是 CLAUDE.md。
 
