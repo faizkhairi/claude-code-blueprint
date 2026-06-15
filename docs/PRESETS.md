@@ -108,6 +108,41 @@ Use the full [`settings-template.json`](../examples/settings-template.json) as y
 
 ---
 
+## Core
+
+**For:** Developer who wants a curated, broadly-useful set without the full specialist ecosystem.
+**Setup time:** 20 minutes.
+**Impact:** Everything in Standard, plus review/test/deploy skills and the two most broadly-useful path-scoped rules -- no stack assumptions, no memory system required.
+
+### Files to copy (everything in Standard, plus)
+
+| Source | Destination | Purpose |
+|--------|-------------|---------|
+| [`agents/security-reviewer.md`](../agents/security-reviewer.md) | `~/.claude/agents/` | OWASP / auth / injection review |
+| [`agents/qa-tester.md`](../agents/qa-tester.md) | `~/.claude/agents/` | Unit / integration / E2E test generation |
+| [`skills/review-full/`](../skills/review-full/) | `~/.claude/skills/` | Multi-perspective code review |
+| [`skills/review-diff/`](../skills/review-diff/) | `~/.claude/skills/` | Fast anti-pattern scan of a diff |
+| [`skills/test-check/`](../skills/test-check/) | `~/.claude/skills/` | Run the test suite and report |
+| [`skills/deploy-check/`](../skills/deploy-check/) | `~/.claude/skills/` | Pre-deploy checklist |
+| [`skills/db-check/`](../skills/db-check/) | `~/.claude/skills/` | Schema integrity check |
+| [`skills/changelog/`](../skills/changelog/) | `~/.claude/skills/` | Generate a changelog from git history |
+| [`rules/testing.md`](../rules/testing.md) | `~/.claude/rules/` | Test conventions (loads only when editing test files) |
+| [`rules/database-schema.md`](../rules/database-schema.md) | `~/.claude/rules/` | Schema patterns (loads only when editing schema files) |
+
+### What you get (beyond Standard)
+
+- Two read-only review agents: security review and test generation
+- Six natural-language skills covering review, testing, deploy, DB, and changelog workflows
+- Two path-scoped rules that cost zero context tokens until you actually edit a matching file
+- A sensible middle ground: more capability than Standard, without installing the full 17-skill / 11-agent set you may never use
+
+### What you don't get (and may not need)
+
+- The stack-specific specialist agents (backend / frontend / DevOps / etc.) -- add via Full when your work calls for them
+- The session/memory skills and the memory system -- enable those when you want cross-session persistence
+
+---
+
 ## Full
 
 **For:** Team or power user wanting the complete production setup.
@@ -201,8 +236,9 @@ Moving from one preset to the next is additive -- you never need to redo earlier
 
 ```
 Minimal → Standard:  Add 4 hooks + 2 agents + full settings.json
-Standard → Full:     Add remaining agents, skills, rules, memory
+Standard → Core:     Add 2 review agents + 6 skills + 2 path-scoped rules
+Core → Full:         Add remaining agents, skills, rules, memory
 Any → CI/CD:         Separate concern -- CI uses its own settings, not your dev settings
 ```
 
-The recommended path: start Minimal, use it for a week, then upgrade to Standard when you notice gaps. Move to Full only when you're actively using agents and skills in your workflow.
+The recommended path: start Minimal, use it for a week, then upgrade to Standard when you notice gaps. Step up to Core when you want review/test/deploy skills without the full ecosystem. Move to Full only when you're actively using the specialist agents and the wider skill set in your workflow.
