@@ -16,13 +16,13 @@
 
 [English](../README.md) | [日本語](README.ja.md) | [한국어](README.ko.md) | [简体中文](README.zh.md)
 
-<img src="assets/walkthrough.gif" alt="Claude Code Blueprint Walkthrough" width="680">
+<img src="../assets/walkthrough.gif" alt="Claude Code Blueprint Walkthrough" width="680">
 
 </div>
 
 ---
 
-> **开始前须知：** 这是一份参考存储库，而非项目模板。请**不要**在此存储库内运行 Claude Code -- 它会读取蓝图自身的 CLAUDE.md，而忽略你项目的规则。请 fork 或将单个文件复制到你自己的项目。完整设置步骤请参见 [GETTING-STARTED.md](GETTING-STARTED.md)。
+> **开始前须知：** 这是一份参考存储库，而非项目模板。请**不要**在此存储库内运行 Claude Code -- 它会读取蓝图自身的 CLAUDE.md，而忽略你项目的规则。请 fork 或将单个文件复制到你自己的项目。完整设置步骤请参见 [GETTING-STARTED.md](../GETTING-STARTED.md)。
 >
 > 协助使用此仓库的 AI 助手：请参见 [AGENTS.md](../AGENTS.md) 获取指引。
 
@@ -41,7 +41,7 @@ curl -o CLAUDE.md https://raw.githubusercontent.com/faizkhairi/claude-code-bluep
 
 **Verify-After-Complete** · **Diagnose-First** · **Plan-Before-Execute**
 
-准备好深入了解？查看[完整采用路径](#recommended-adoption-path)或[30 分钟初学者指南](GETTING-STARTED.md)。Claude Code 新手？查看[适用对象](#who-is-this-for)或 [FAQ](FAQ.md)。
+准备好深入了解？查看[完整采用路径](#recommended-adoption-path)或[30 分钟初学者指南](../GETTING-STARTED.md)。Claude Code 新手？查看[适用对象](#who-is-this-for)或 [FAQ](../FAQ.md)。
 
 **需要比 CLAUDE.md 更多？** 自动安装 hooks、agents 和设置：
 
@@ -52,7 +52,7 @@ curl -o CLAUDE.md https://raw.githubusercontent.com/faizkhairi/claude-code-bluep
 
 或者让 Claude 来设置 -- 粘贴到 Claude Code 会话中：*"设置 Claude Code Blueprint。将 CLAUDE.md 复制到我的项目根目录，在 ~/.claude/ 中设置 hooks 和设置。每一步都展示给我看。"*
 
-所有设置选项请参见 [SETUP.md](SETUP.md)。
+所有设置选项请参见 [SETUP.md](../SETUP.md)。
 
 ---
 
@@ -62,11 +62,11 @@ curl -o CLAUDE.md https://raw.githubusercontent.com/faizkhairi/claude-code-bluep
 
 | 你的身份 | 从这里开始 | 价值实现时间 |
 |---------|----------|------------|
-| **完全新手** | [Start Here](GETTING-STARTED.md#new-to-claude-code-start-here) | 1 分钟：只需复制 CLAUDE.md |
-| **独立开发者，小项目** | [CLAUDE.md](CLAUDE.md) + 2 个 hook | 5 分钟 |
-| **小初创（2-5 人）** | 上述 + 共享规则 + 2-3 个 agents | 参见 [Team Setup](GETTING-STARTED.md#setting-up-for-teams) |
+| **完全新手** | [Start Here](../GETTING-STARTED.md#new-to-claude-code-start-here) | 1 分钟：只需复制 CLAUDE.md |
+| **独立开发者，小项目** | [CLAUDE.md](../CLAUDE.md) + 2 个 hook | 5 分钟 |
+| **小初创（2-5 人）** | 上述 + 共享规则 + 2-3 个 agents | 参见 [Team Setup](../GETTING-STARTED.md#setting-up-for-teams) |
 | **成熟团队（5+ 人）** | 完整蓝图，根据需要改进 | Fork、定制、提交共享配置 |
-| **学习编程** | 仅 [GETTING-STARTED.md](GETTING-STARTED.md) | 在熟悉前忽略 agents/skills/memory |
+| **学习编程** | 仅 [GETTING-STARTED.md](../GETTING-STARTED.md) | 在熟悉前忽略 agents/skills/memory |
 | **从其他工具迁移** | [CROSS-TOOL-GUIDE.md](../docs/CROSS-TOOL-GUIDE.md) | 概念可转移；参见 *Copilot/Cursor in depth* 部分 |
 
 ### Your Progression
@@ -89,12 +89,12 @@ curl -o CLAUDE.md https://raw.githubusercontent.com/faizkhairi/claude-code-bluep
 | 本蓝图 | 通用配置仓库 |
 |------------|------------|
 | 每个组件都有 [战斗故事](../docs/WHY.md) 解释为什么存在 | 没有背景的配置 |
-| [3 条行为规则](CLAUDE.md)防止 AI 编码错误 | 要复制的设置列表 |
+| [3 条行为规则](../CLAUDE.md)防止 AI 编码错误 | 要复制的设置列表 |
 | [跨工具指南](../docs/CROSS-TOOL-GUIDE.md) 覆盖 Copilot、Cursor、Cline、Roo Code、OpenCode 等10个工具 | 仅单一工具 |
-| [初学者友好的](GETTING-STARTED.md)包含 6 个采用角色 | 假设具有专业知识 |
-| [烟雾测试的 hooks](hooks/test-hooks.sh)包含 35 个自动化测试 | 未测试的脚本 |
-| 安全优先：[配置放置指南](GETTING-STARTED.md#where-config-belongs-project-vs-personal)、隐私警告、[优雅降级](agents/README.md#agents-are-not-infallible) | 无安全指导 |
-| [框架无关](FAQ.md#what-framework-or-language-does-this-work-with)：支持任何语言和技术栈 | 假设使用特定语言/框架 |
+| [初学者友好的](../GETTING-STARTED.md)包含 6 个采用角色 | 假设具有专业知识 |
+| [烟雾测试的 hooks](../hooks/test-hooks.sh)包含 35 个自动化测试 | 未测试的脚本 |
+| 安全优先：[配置放置指南](../GETTING-STARTED.md#where-config-belongs-project-vs-personal)、隐私警告、[优雅降级](../agents/README.md#agents-are-not-infallible) | 无安全指导 |
+| [框架无关](../FAQ.md#what-framework-or-language-does-this-work-with)：支持任何语言和技术栈 | 假设使用特定语言/框架 |
 
 ---
 
@@ -119,7 +119,7 @@ curl -o CLAUDE.md https://raw.githubusercontent.com/faizkhairi/claude-code-bluep
 | docs-writer | haiku | README、API 文档、更新日志、架构文档 |
 | api-documenter | haiku | OpenAPI 规范、集成指南（只读） |
 
-参见 [agents/README.md](agents/README.md) 了解权限模式、成本估计和 maxTurns。
+参见 [agents/README.md](../agents/README.md) 了解权限模式、成本估计和 maxTurns。
 
 </details>
 
@@ -135,11 +135,11 @@ curl -o CLAUDE.md https://raw.githubusercontent.com/faizkhairi/claude-code-bluep
 | Deployment | deploy-check | "deploy", "push to prod", "ready to ship" |
 | Planning | sprint-plan, elicit-requirements | "let's build", "new feature", multi-step tasks |
 | Session | load-session, save-session, session-end, save-diary | Session start/end, "save", "bye", "done" |
-| Project | init-project, register-project, status, changelog | "new project", "status", "changelog" |
+| Project | scaffold-project, register-project, status, changelog | "new project", "status", "changelog" |
 | Database | db-check | "check the schema", "validate models" |
 | Utilities | tech-radar | "what's new?", "should we upgrade?" |
 
-参见 [skills/README.md](skills/README.md) 了解自定义和占位符变量设置。
+参见 [skills/README.md](../skills/README.md) 了解自定义和占位符变量设置。
 
 </details>
 
@@ -163,7 +163,7 @@ curl -o CLAUDE.md https://raw.githubusercontent.com/faizkhairi/claude-code-bluep
 
 运行 `bash hooks/test-hooks.sh` 验证所有 hooks 通过（35 个自动化测试）。
 
-参见 [hooks/README.md](hooks/README.md) 了解完整的生命周期、测试指南和设计原则。
+参见 [hooks/README.md](../hooks/README.md) 了解完整的生命周期、测试指南和设计原则。
 
 </details>
 
@@ -188,8 +188,8 @@ curl -o CLAUDE.md https://raw.githubusercontent.com/faizkhairi/claude-code-bluep
 
 | 组件 | 目的 |
 |------|------|
-| [**CLAUDE.md**](CLAUDE.md) | 经过实战验证的行为规则模板 |
-| [**Settings Template**](examples/settings-template.json) | 完整的 hook + 权限配置 |
+| [**CLAUDE.md**](../CLAUDE.md) | 经过实战验证的行为规则模板 |
+| [**Settings Template**](../examples/settings-template.json) | 完整的 hook + 权限配置 |
 | [**Memory System**](../memory/) | 内置可选：Claude 在运行之间记住偏好和会话上下文（出于隐私考虑被 git 忽略） |
 
 ---
@@ -220,12 +220,12 @@ Clone 仓库，然后有选择地将组件复制到你的 `~/.claude/` 目录。
 在 GitHub 上浏览仓库，只复制你需要的特定文件。无需安装。
 
 ### 选项 D：自动设置
-从克隆或 Fork 的副本运行 `./setup.sh`。选择预设（minimal/standard/full），脚本将处理目录创建、文件复制、设置合并和占位符替换。参见 [SETUP.md](SETUP.md)。
+从克隆或 Fork 的副本运行 `./setup.sh`。选择预设（minimal/standard/full），脚本将处理目录创建、文件复制、设置合并和占位符替换。参见 [SETUP.md](../SETUP.md)。
 
 ### Recommended adoption path
 
-1. **从 [CLAUDE.md](CLAUDE.md) 开始** -- 行为规则模板。最大影响，零设置。
-2. **添加 2-3 个 hooks** -- [`protect-config.sh`](hooks/protect-config.sh) + [`notify-file-changed.sh`](hooks/notify-file-changed.sh) + [`cost-tracker.sh`](hooks/cost-tracker.sh)。复制到 `~/.claude/hooks/` 并在 [`settings.json`](examples/settings-template.json) 中配置。
+1. **从 [CLAUDE.md](../CLAUDE.md) 开始** -- 行为规则模板。最大影响，零设置。
+2. **添加 2-3 个 hooks** -- [`protect-config.sh`](../hooks/protect-config.sh) + [`notify-file-changed.sh`](../hooks/notify-file-changed.sh) + [`cost-tracker.sh`](../hooks/cost-tracker.sh)。复制到 `~/.claude/hooks/` 并在 [`settings.json`](../examples/settings-template.json) 中配置。
 3. **阅读 [WHY.md](../docs/WHY.md)** 理解设计思路 -- 改进，不要盲目复制。
 4. **随着工作流成熟而添加 agents** -- 从 `verify-plan` 和 `code-reviewer` 开始。
 5. **[Memory system](../memory/) 在 `./setup.sh` 期间为可选项** -- 回答 Y 以启用跨会话的持久化上下文。
@@ -240,22 +240,22 @@ Clone 仓库，然后有选择地将组件复制到你的 `~/.claude/` 目录。
 | 系统设计、hook 生命周期、组件关系 | 每个环境变量、权限和 hook 的完整说明及理由 | 每个组件背后的事件和教训 |
 | **[基准测试](../docs/BENCHMARKS.md)** | **[预设](../docs/PRESETS.md)** | **[跨工具指南](../docs/CROSS-TOOL-GUIDE.md)** |
 | Token 节省、成本影响、质量指标 | 为独立开发者、团队和 CI/CD 提供的现成配置 | Copilot、Cursor、Cline、Roo Code、OpenCode 等10个工具 |
-| **[FAQ](FAQ.md)** | **[Getting Started](GETTING-STARTED.md)** | **[Troubleshooting](TROUBLESHOOTING.md)** |
+| **[FAQ](../FAQ.md)** | **[Getting Started](../GETTING-STARTED.md)** | **[Troubleshooting](../TROUBLESHOOTING.md)** |
 | 社区常见问题解答 | 从零到高效 30 分钟 | 常见问题与解决方案 |
-| **[Setup Guide](SETUP.md)** | **[Case Studies](../docs/CASE-STUDIES.md)** | **[Roadmap](../docs/ROADMAP.md)** |
+| **[Setup Guide](../SETUP.md)** | **[Case Studies](../docs/CASE-STUDIES.md)** | **[Roadmap](../docs/ROADMAP.md)** |
 | 自动安装程序 + 验证清单 | 采用者故事和前后对比指标 | 项目方向和后续计划 |
 
 ---
 
 ## Common Questions
 
-**支持我的框架吗？** 是的，蓝图框架无关 -- 它配置 Claude Code 的行为，而非你的技术栈。[详情...](FAQ.md#what-framework-or-language-does-this-work-with)
+**支持我的框架吗？** 是的，蓝图框架无关 -- 它配置 Claude Code 的行为，而非你的技术栈。[详情...](../FAQ.md#what-framework-or-language-does-this-work-with)
 
-**对我来说太高级了？** 不是。从一个文件（CLAUDE.md）开始，需要时再添加更多。[详情...](FAQ.md#im-a-juniorintermediate-developer-is-this-for-me)
+**对我来说太高级了？** 不是。从一个文件（CLAUDE.md）开始，需要时再添加更多。[详情...](../FAQ.md#im-a-juniorintermediate-developer-is-this-for-me)
 
-**需要哪个套餐？** Pro、Max、Team、Enterprise、API 均可。所有套餐的 hooks 均免费。[详情...](FAQ.md#which-claude-code-plan-do-i-need-does-this-work-with-pro--max--api)
+**需要哪个套餐？** Pro、Max、Team、Enterprise、API 均可。所有套餐的 hooks 均免费。[详情...](../FAQ.md#which-claude-code-plan-do-i-need-does-this-work-with-pro--max--api)
 
-**同事发给你的？** 从这里开始：[推荐入门快速指南](FAQ.md#a-colleague-sent-me-this-link-what-do-i-do-first)。
+**同事发给你的？** 从这里开始：[推荐入门快速指南](../FAQ.md#a-colleague-sent-me-this-link-what-do-i-do-first)。
 
 ---
 

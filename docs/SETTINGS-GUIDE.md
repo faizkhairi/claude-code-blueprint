@@ -16,7 +16,7 @@ These live under the `"env"` key in `settings.json` and control Claude Code's ru
 
 **What it does:** Enables multi-agent spawning -- the ability for Claude to launch specialized subagents that run in parallel with independent context windows.
 
-**Why it matters:** Without this, the entire [agents/](agents/) directory in this blueprint is non-functional. The Agent tool won't appear, `subagent_type` has no effect, and skills that orchestrate multiple agents (like the review skill spawning code-reviewer + security-reviewer + db-analyst in parallel) silently degrade to single-agent mode.
+**Why it matters:** Without this, the entire [agents/](agents/) directory in this blueprint is non-functional. The Agent tool won't appear, `subagent_type` has no effect, and skills that orchestrate multiple agents (like the review-full skill spawning code-reviewer + security-reviewer + db-analyst in parallel) silently degrade to single-agent mode.
 
 **Default:** Not set (disabled). You must explicitly enable it.
 
@@ -325,7 +325,7 @@ The Stop hook uses `"model": "sonnet"` for its security verification prompt. Thi
 ### What Drives Cost Up
 
 1. **Stop hook (Sonnet on every response):** Each response triggers a Sonnet security review. In a 50-response session, that's 50 additional Sonnet invocations.
-2. **Parallel agent spawns:** The review skill spawns up to 3 agents simultaneously. Each agent has its own context window and token budget.
+2. **Parallel agent spawns:** The review-full skill spawns up to 3 agents simultaneously. Each agent has its own context window and token budget.
 3. **Always-thinking + high effort:** Extended thinking generates additional tokens that are billed. `effortLevel: "high"` increases this further.
 4. **Agent teams:** Sessions with active agent teams use roughly 7x more tokens than standard sessions (per Anthropic's official docs).
 5. **Playwright MCP vs CLI:** The Playwright MCP server streams full DOM accessibility trees into context (~114K tokens per task). Running `npx playwright test` via Bash uses ~27K tokens for the same work -- a 76% reduction. Use MCP for interactive browser exploration; use CLI for test execution.

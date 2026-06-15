@@ -37,10 +37,10 @@ Verified measurements from actual blueprint files (March 2026). Token estimates 
 | **rules/api-endpoints.md** | 3.4 KB | ~850 tokens | Editing API route files only | 0-1 per session |
 | **rules/session-lifecycle.md** | 2.8 KB | ~700 tokens | Always active | Once per session |
 | **rules/memory-session.md** | 0.7 KB | ~185 tokens | Editing memory files only | Rare |
-| **skills/review** | 4.3 KB | ~1,070 tokens | When you ask for a review | 0-1 per session |
+| **skills/review-full** | 4.3 KB | ~1,070 tokens | When you ask for a review | 0-1 per session |
 | **skills/deploy-check** | 1.9 KB | ~480 tokens | When you mention deploying | 0-1 per session |
 | **skills/test-check** | 1.9 KB | ~480 tokens | When you mention testing | 0-1 per session |
-| **Hooks (all 10)** | N/A | **Zero** | Run as external processes | Every relevant event |
+| **Hooks (all, zero-token)** | N/A | **Zero** | Run as external processes | Every relevant event |
 | **Agents (per spawn)** | Varies | Full context window | Only when invoked | 0-3 per session |
 
 > **Key insight:** Hooks are the blueprint's primary enforcement mechanism AND they cost zero tokens. This is by design -- enforcement that costs nothing means you never have to choose between safety and budget.
@@ -142,7 +142,7 @@ A gradual adoption timeline for budget-conscious users:
 | **Week 1** | Add hooks (protect-config, notify-file-changed, cost-tracker) | Zero additional | **Minimal** |
 | **Week 2** | Add `block-git-push` and `session-checkpoint` hooks | Zero additional | Minimal+ |
 | **Month 1** | Add `verify-plan` agent | ~1 agent spawn/session | Moving toward Standard |
-| **Month 2** | Add `code-reviewer` agent + `review` skill | ~1-2 spawns/session | **Standard** |
+| **Month 2** | Add `code-reviewer` agent + `review-full` skill | ~1-2 spawns/session | **Standard** |
 | **Month 3+** | Evaluate: am I hitting usage limits? | -- | Decision point |
 
 **At the decision point:**
@@ -172,7 +172,7 @@ Based on [Anthropic's pricing](https://docs.anthropic.com/en/docs/about-claude/p
 |--------------|---------------------|-------|
 | Light (5-10 responses, no agents) | ~$1-3 | CLAUDE.md + hooks only |
 | Standard (20-50 responses, occasional agents) | ~$5-8 | Standard preset |
-| Heavy (100+ responses, parallel agents) | ~$10-15 | Full preset with review skill |
+| Heavy (100+ responses, parallel agents) | ~$10-15 | Full preset with review-full skill |
 | Stop hook overhead | ~$1-2/day additional | Sonnet security review on every response |
 
 ### Model Tiering Impact

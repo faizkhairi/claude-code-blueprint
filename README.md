@@ -128,12 +128,12 @@ See [agents/README.md](agents/README.md) for permission modes, cost estimates, a
 
 | Category | Skills | Triggers |
 |----------|--------|----------|
-| Code Quality | review, review-diff | "is this secure?", "scan diff", "check for vulnerabilities" |
+| Code Quality | review-full, review-diff | "is this secure?", "scan diff", "check for vulnerabilities" |
 | Testing | test-check, e2e-check | "run the tests", "browser test", "are tests passing?" |
 | Deployment | deploy-check | "deploy", "push to prod", "ready to ship" |
 | Planning | sprint-plan, elicit-requirements | "let's build", "new feature", multi-step tasks |
 | Session | load-session, save-session, session-end, save-diary | Session start/end, "save", "bye", "done" |
-| Project | init-project, register-project, status, changelog | "new project", "status", "changelog" |
+| Project | scaffold-project, register-project, status, changelog | "new project", "status", "changelog" |
 | Database | db-check | "check the schema", "validate models" |
 | Utilities | tech-radar | "what's new?", "should we upgrade?" |
 
@@ -154,7 +154,7 @@ See [skills/README.md](skills/README.md) for customization and placeholder varia
 | PostToolUse (Write/Edit) | notify-file-changed.sh | Verify reminder |
 | PostToolUse (Bash) | post-commit-review.sh | Post-commit review |
 | PreCompact | precompact-state.sh | Serialize state to disk |
-| Stop | security check + cost-tracker.sh | Last defense + metrics |
+| Stop | security check + cost-tracker.sh + session-checkpoint.sh | Last defense + metrics |
 | SessionEnd | session-checkpoint.sh | Guaranteed final save |
 
 Plus 2 utility scripts: `verify-mcp-sync.sh` (MCP config checker) and `status-line.sh` (branch/project status). The 11th file in the folder is `test-hooks.sh` — the local test harness, run via `bash hooks/test-hooks.sh` to verify all hooks. It's not deployed to `~/.claude/hooks/` and isn't counted in the "10 hooks" total.

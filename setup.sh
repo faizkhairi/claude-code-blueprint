@@ -33,7 +33,7 @@ FULL_AGENTS=(api-documenter.md backend-specialist.md db-analyst.md devops-engine
              docs-writer.md frontend-specialist.md project-architect.md
              qa-tester.md security-reviewer.md)
 SKILL_DIRS=(changelog db-check deploy-check e2e-check elicit-requirements
-            init-project load-session register-project review review-diff
+            scaffold-project load-session register-project review-full review-diff
             save-diary save-session session-end sprint-plan status tech-radar test-check)
 RULE_FILES=(api-endpoints.md database-schema.md memory-session.md
             session-lifecycle.md testing.md)
@@ -210,7 +210,7 @@ parse_args() {
 check_prerequisites() {
   local missing=0
 
-  for required in "CLAUDE.md" "hooks/protect-config.sh" "agents/verify-plan.md" "skills/review/SKILL.md" "examples/settings-template.json"; do
+  for required in "CLAUDE.md" "hooks/protect-config.sh" "agents/verify-plan.md" "skills/review-full/SKILL.md" "examples/settings-template.json"; do
     if [ ! -f "${SCRIPT_DIR}/${required}" ]; then
       log_error "Missing: ${required}"
       missing=1
@@ -458,13 +458,22 @@ replace_placeholders() {
   log_info "Memory persistence is an opt-in feature."
   log_info "When enabled, Claude remembers preferences, decisions, and session"
   log_info "context across sessions on this machine. Memory lives in ./memory/"
-  log_info "and is git-ignored by default (won't leak if you push your fork)."
+  log_info "Session, reminders, and diary are git-ignored (won't leak if you push"
+  log_info "your fork); preferences/identity/decisions stay tracked by default."
   echo ""
   read -r -p "  Enable persistent memory? [Y/n]: " memory_choice
   memory_choice="${memory_choice:-Y}"
   if [[ "$memory_choice" =~ ^[Yy] ]]; then
-    log_ok "Memory enabled. Storing in ./memory/ (git-ignored for privacy)."
+    log_ok "Memory enabled. session + reminders + diary are git-ignored; preferences/identity/decisions stay tracked unless you uncomment them in memory/.gitignore."
     rm -f "${CLAUDE_DIR}/.memory-disabled" 2>/dev/null || true
+    # Seed personal session/reminders files from the tracked .example templates
+    # (only if the real, git-ignored file does not already exist — never overwrite).
+    for mem in session reminders; do
+      if [ ! -f "memory/core/${mem}.md" ] && [ -f "memory/core/${mem}.md.example" ]; then
+        cp "memory/core/${mem}.md.example" "memory/core/${mem}.md" 2>/dev/null \
+          && log_info "Seeded memory/core/${mem}.md from template (this file is git-ignored)."
+      fi
+    done
   else
     log_info "Memory disabled. Skills load-session/save-session/save-diary/session-end will be no-ops."
     touch "${CLAUDE_DIR}/.memory-disabled" 2>/dev/null || true
@@ -590,7 +599,7 @@ print_summary() {
   echo "  1. Copy CLAUDE.md to your project root (if not done)"
   echo "  2. Start Claude Code in your project: cd your-project && claude"
   echo "  3. Review ~/.claude/settings.json and adjust permissions"
-  echo "  4. Read WHY.md to understand the reasoning behind each component"
+  echo "  4. Read docs/WHY.md to understand the reasoning behind each component"
   if [ "$PRESET" = "full" ]; then
     echo "  5. Read agents/README.md for model tiering and cost guidance"
   fi

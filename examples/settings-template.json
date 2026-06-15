@@ -235,7 +235,7 @@
 
     "Stop": [
       {
-        "__cost_note": "This Stop hook runs Sonnet on EVERY response. In a 50-response session, this adds ~50 Sonnet calls (cost impact: see TROUBLESHOOTING.md#cost-higher-than-expected). Remove if cost is a concern.",
+        "__cost_note": "This Stop hook runs Sonnet on EVERY response. In a 50-response session, this adds ~50 Sonnet calls (cost impact: see TROUBLESHOOTING.md#cost-is-higher-than-expected). Remove if cost is a concern.",
         "hooks": [
           {
             "type": "prompt",

@@ -135,7 +135,7 @@ Use the full [`settings-template.json`](examples/settings-template.json) as your
 ### Customization
 
 1. **Remove agents you don't need.** A Python project doesn't need `frontend-specialist.md`.
-2. **Pick skills that match your workflow.** Start with `review`, `test-check`, and `deploy-check`. Add others as needed.
+2. **Pick skills that match your workflow.** Start with `review-full`, `test-check`, and `deploy-check`. Add others as needed.
 3. **Customize rules for your stack.** Edit `database-schema.md` for your ORM patterns, `api-endpoints.md` for your framework conventions.
 4. **Enable memory persistence.** Answer Y when `./setup.sh` asks about memory, or read [memory/README.md](memory/README.md) for the manual setup.
 
