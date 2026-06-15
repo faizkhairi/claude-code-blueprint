@@ -5,8 +5,9 @@
 # Badge images (Stars/Forks/License/etc.) -- shields.io throttles CI traffic.
 https://img.shields.io
 
-# Valid URL that returns 403 to automated checkers (anti-bot protection).
+# Valid URLs that return 403 to automated checkers (anti-bot protection).
 https://claude.ai
+https://kiro.dev
 
 # Placeholder/example hosts used in documentation and sample configs.
 https://internal.example.com
