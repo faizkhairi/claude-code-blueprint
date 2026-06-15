@@ -2,7 +2,7 @@
 
 Not sure where to start? Pick the preset that matches your situation. Each lists exactly which files to copy and the minimal settings.json to wire them up.
 
-See [README.md](README.md#who-is-this-for) for which preset matches your profile.
+See [README.md](../README.md#who-is-this-for) for which preset matches your profile.
 
 ---
 
