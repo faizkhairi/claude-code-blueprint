@@ -161,7 +161,7 @@ You can run **Claude Code inside Cursor** *and* use **Cursor's own Agent / Chat*
 
 ### Skills on Cursor Agent
 
-To reuse the **idea** of this blueprint's skills (load-session, review, deploy-check, etc.) under Cursor's Agent:
+To reuse the **idea** of this blueprint's skills (load-session, review-full, deploy-check, etc.) under Cursor's Agent:
 
 - Add folders under **`~/.cursor/skills/<skill-name>/SKILL.md`** with YAML frontmatter (`name`, `description`, ...) as Cursor documents.
 - **Optional:** On one machine, **directory junctions** (Windows) or **symlinks** (macOS/Linux) from `~/.cursor/skills/foo` -> `~/.claude/skills/foo` avoid maintaining two copies -- but **edits apply to both**; do not "fix for Cursor only" inside a shared file without affecting Claude Code.

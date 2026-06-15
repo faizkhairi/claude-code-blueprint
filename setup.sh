@@ -469,9 +469,14 @@ replace_placeholders() {
     # Seed personal session/reminders files from the tracked .example templates
     # (only if the real, git-ignored file does not already exist — never overwrite).
     for mem in session reminders; do
-      if [ ! -f "memory/core/${mem}.md" ] && [ -f "memory/core/${mem}.md.example" ]; then
-        cp "memory/core/${mem}.md.example" "memory/core/${mem}.md" 2>/dev/null \
-          && log_info "Seeded memory/core/${mem}.md from template (this file is git-ignored)."
+      mem_real="${SCRIPT_DIR}/memory/core/${mem}.md"
+      mem_tmpl="${SCRIPT_DIR}/memory/core/${mem}.md.example"
+      if [ ! -f "$mem_real" ] && [ -f "$mem_tmpl" ]; then
+        if cp "$mem_tmpl" "$mem_real"; then
+          log_info "Seeded memory/core/${mem}.md from template (this file is git-ignored)."
+        else
+          log_warn "Could not seed memory/core/${mem}.md (copy failed) -- create it manually if needed."
+        fi
       fi
     done
   else
