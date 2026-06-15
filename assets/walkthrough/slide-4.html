@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 1280px; height: 720px; overflow: hidden;
+    background: #0a0a0a; color: #e4e4e7;
+    font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace;
+    display: flex; flex-direction: column; justify-content: center; padding: 0 96px;
+    background-image: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(59,130,246,0.06), transparent);
+  }
+  h2 { font-size: 52px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 12px; }
+  .sub { color: #71717a; font-size: 20px; margin-bottom: 40px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .card {
+    background: linear-gradient(135deg, #18181b 0%, #1a1a2e 100%);
+    border: 1px solid #27272a; border-radius: 14px; padding: 26px 28px;
+  }
+  .event { font-size: 22px; font-weight: 700; color: #818cf8; margin-bottom: 8px; }
+  .what { font-size: 16px; color: #a1a1aa; line-height: 1.5; }
+  .what code { color: #34d399; background: rgba(52,211,153,0.08); padding: 1px 6px; border-radius: 4px; }
+  .footer {
+    position: absolute; bottom: 40px; left: 96px; right: 96px;
+    display: flex; justify-content: space-between; align-items: center; color: #52525b; font-size: 16px;
+  }
+  .url { color: #7c3aed; font-weight: 600; }
+</style>
+</head>
+<body>
+  <h2>Hook Lifecycle</h2>
+  <div class="sub">Hooks fire deterministically on every matching event &mdash; enforcement that can't be skipped or forgotten.</div>
+  <div class="grid">
+    <div class="card"><div class="event">PreToolUse</div><div class="what"><code>block-git-push.sh</code> guards remotes &middot; <code>protect-config.sh</code> guards build/lint configs</div></div>
+    <div class="card"><div class="event">PostToolUse</div><div class="what"><code>notify-file-changed.sh</code> verify reminder &middot; <code>post-commit-review.sh</code> review nudge</div></div>
+    <div class="card"><div class="event">PreCompact</div><div class="what"><code>precompact-state.sh</code> serializes working state before the context window compacts</div></div>
+    <div class="card"><div class="event">Stop / SessionEnd</div><div class="what">Last-line security check &middot; cost tracking &middot; <code>session-checkpoint.sh</code> final save</div></div>
+  </div>
+  <div class="footer"><span class="url">github.com/faizkhairi/claude-code-blueprint</span><span>4 / 7</span></div>
+</body>
+</html>
