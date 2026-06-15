@@ -86,7 +86,11 @@ log_error() { echo "  [ERROR] $*" >&2; }
 log_dry()   { echo "  [DRY]   $*"; }
 
 confirm() {
-  if [ "$AUTO_YES" = true ]; then return 0; fi
+  # Auto-confirm when --yes is set OR stdin is not a TTY (piped/redirected/CI).
+  # A bare `read` against a non-TTY hits EOF and, under `set -e`, aborts the whole
+  # install. Returning 0 here means "proceed with the default" -- correct for an
+  # unattended run. Covers all callers (safe_copy, offer_claude_md, replace_placeholders).
+  if [ "$AUTO_YES" = true ] || ! [ -t 0 ]; then return 0; fi
   local prompt="$1 [y/N] "
   read -r -p "  $prompt" response
   case "$response" in
@@ -275,7 +279,11 @@ create_directories() {
 
   for dir in "${dirs[@]}"; do
     if [ "$DRY_RUN" = true ]; then
-      [ ! -d "$dir" ] && log_dry "Would create: $dir"
+      # Full if/then -- a bare `[ ! -d ] && cmd` returns 1 when the dir exists,
+      # and as the loop body's last statement that aborts the whole script under `set -e`.
+      if [ ! -d "$dir" ]; then
+        log_dry "Would create: $dir"
+      fi
     else
       if [ ! -d "$dir" ]; then
         mkdir -p "$dir"
@@ -488,8 +496,8 @@ replace_placeholders() {
   log_info "Session, reminders, and diary are git-ignored (won't leak if you push"
   log_info "your fork); preferences/identity/decisions stay tracked by default."
   echo ""
-  if [ "$AUTO_YES" = true ]; then
-    memory_choice="Y"   # --yes means non-interactive: default memory on, don't block on read
+  if [ "$AUTO_YES" = true ] || ! [ -t 0 ]; then
+    memory_choice="Y"   # --yes / non-TTY: default memory on, don't block on read (EOF would abort under set -e)
   else
     read -r -p "  Enable persistent memory? [Y/n]: " memory_choice
   fi
@@ -535,8 +543,8 @@ replace_placeholders() {
   user_name="$(git config user.name 2>/dev/null || whoami)"
 
   echo ""
-  if [ "$AUTO_YES" = true ]; then
-    # Non-interactive: accept the auto-detected name + default projects root, don't block on read.
+  if [ "$AUTO_YES" = true ] || ! [ -t 0 ]; then
+    # --yes / non-TTY: accept the auto-detected name + default projects root, don't block on read.
     projects_root="$HOME/projects"
   else
     read -r -p "  Your name [$user_name]: " input
@@ -604,10 +612,14 @@ verify_installation() {
     fi
   fi
 
-  # Check for unreplaced placeholders
+  # Check for unreplaced placeholders.
+  # Guard the GREP itself with `|| true` INSIDE the pipeline: under `set -euo pipefail`
+  # a no-match grep exits 1, which fails the whole pipeline and aborts the command
+  # substitution (set -e). Neutralising grep's exit before the pipe means pipefail has
+  # nothing to propagate, so a clean "0" is captured on the no-match (happy) path.
   local remaining
-  remaining="$(grep -r '{PROJECTS_ROOT}\|{CLAUDE_CONFIG_PATH}\|{USER_NAME}\|{MEMORY_MD_PATH}\|{BOILERPLATE_NAME}' "${CLAUDE_DIR}/" 2>/dev/null | wc -l || echo 0)"
-  remaining="$(echo "$remaining" | tr -d ' ')"
+  remaining="$( { grep -rho '{PROJECTS_ROOT}\|{CLAUDE_CONFIG_PATH}\|{USER_NAME}\|{MEMORY_MD_PATH}\|{BOILERPLATE_NAME}' "${CLAUDE_DIR}/" 2>/dev/null || true; } | wc -l | tr -d '[:space:]')"
+  remaining="${remaining:-0}"
   if [ "$remaining" -gt 0 ]; then
     log_warn "${remaining} unreplaced placeholder(s) remain. Run: grep -r '{' ~/.claude/ | grep -E '{[A-Z_]+}'"
   else
