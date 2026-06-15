@@ -243,7 +243,7 @@ check_prerequisites() {
 # ============================================================
 
 select_preset() {
-  if [ -n "$PRESET" ]; then return; fi
+  if [ -n "$PRESET" ]; then return 0; fi
 
   echo "  Choose a preset:"
   echo ""
@@ -317,7 +317,7 @@ install_agents() {
     agents+=("${FULL_AGENTS[@]}")
   fi
 
-  if [ ${#agents[@]} -eq 0 ]; then return; fi
+  if [ ${#agents[@]} -eq 0 ]; then return 0; fi
 
   echo ""
   log_info "Installing agents (${#agents[@]} files)..."
@@ -333,7 +333,7 @@ install_skills() {
   elif [ "$PRESET" = "full" ]; then
     skills=("${SKILL_DIRS[@]}")
   else
-    return
+    return 0   # minimal/standard install no skills; explicit 0 so `set -e` doesn't abort
   fi
 
   echo ""
@@ -350,7 +350,7 @@ install_rules() {
   elif [ "$PRESET" = "full" ]; then
     rules=("${RULE_FILES[@]}")
   else
-    return
+    return 0   # minimal/standard install no rules; explicit 0 so `set -e` doesn't abort
   fi
 
   echo ""
@@ -361,7 +361,7 @@ install_rules() {
 }
 
 install_settings() {
-  if [ "$PRESET" = "minimal" ]; then return; fi
+  if [ "$PRESET" = "minimal" ]; then return 0; fi
 
   local src="${SCRIPT_DIR}/examples/settings-template.json"
   local dst="${CLAUDE_DIR}/settings.json"
@@ -488,7 +488,11 @@ replace_placeholders() {
   log_info "Session, reminders, and diary are git-ignored (won't leak if you push"
   log_info "your fork); preferences/identity/decisions stay tracked by default."
   echo ""
-  read -r -p "  Enable persistent memory? [Y/n]: " memory_choice
+  if [ "$AUTO_YES" = true ]; then
+    memory_choice="Y"   # --yes means non-interactive: default memory on, don't block on read
+  else
+    read -r -p "  Enable persistent memory? [Y/n]: " memory_choice
+  fi
   memory_choice="${memory_choice:-Y}"
   if [[ "$memory_choice" =~ ^[Yy] ]]; then
     log_ok "Memory enabled. session + reminders + diary are git-ignored; preferences/identity/decisions stay tracked unless you uncomment them in memory/.gitignore."
@@ -531,11 +535,16 @@ replace_placeholders() {
   user_name="$(git config user.name 2>/dev/null || whoami)"
 
   echo ""
-  read -r -p "  Your name [$user_name]: " input
-  user_name="${input:-$user_name}"
+  if [ "$AUTO_YES" = true ]; then
+    # Non-interactive: accept the auto-detected name + default projects root, don't block on read.
+    projects_root="$HOME/projects"
+  else
+    read -r -p "  Your name [$user_name]: " input
+    user_name="${input:-$user_name}"
 
-  read -r -p "  Projects root directory [~/projects]: " input
-  projects_root="${input:-$HOME/projects}"
+    read -r -p "  Projects root directory [~/projects]: " input
+    projects_root="${input:-$HOME/projects}"
+  fi
   projects_root="$(normalize_path_for_json "$projects_root")"
 
   echo ""
