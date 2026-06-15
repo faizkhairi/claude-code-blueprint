@@ -1,0 +1,32 @@
+# Runs the installer test matrix on any change to setup.sh, the settings template,
+# or the tests themselves. It exercises every preset across fresh / re-run / non-TTY /
+# dry-run / piped scenarios and asserts the installer never crashes and never wires a
+# hook it did not install. Catches the set -e / schema-drift / preset-mismatch bug class.
+name: Install Test
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "setup.sh"
+      - "examples/settings-template.json"
+      - "tests/**"
+      - ".github/workflows/install-test.yml"
+  pull_request:
+    paths:
+      - "setup.sh"
+      - "examples/settings-template.json"
+      - "tests/**"
+      - ".github/workflows/install-test.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  install-matrix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run installer matrix
+        run: bash tests/install-matrix.sh

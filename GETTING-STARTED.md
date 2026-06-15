@@ -149,7 +149,7 @@ See [BENCHMARKS.md](docs/BENCHMARKS.md#token-cost-per-component) for the complet
 
 ### Important: Placeholder Variables
 
-Several files in this blueprint contain placeholder variables like `./memory`, `{PROJECTS_ROOT}`, and `{CLAUDE_CONFIG_PATH}`. You must replace these with your actual paths before use. See [skills/README.md](skills/README.md#required-replace-placeholder-variables) for the full list and platform-specific examples.
+Several files in this blueprint contain placeholder variables like `{PROJECTS_ROOT}` and `{CLAUDE_CONFIG_PATH}`. You must replace these with your actual paths before use (the `./setup.sh` installer does this for you). Note that `./memory/` is not a placeholder -- it is the built-in opt-in memory folder shipped with the blueprint, and needs no replacement. See [skills/README.md](skills/README.md#required-replace-placeholder-variables) for the full list and platform-specific examples.
 
 ### Ready for More?
 

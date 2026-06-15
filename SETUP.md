@@ -81,7 +81,7 @@ After any setup method, verify these items:
 - [ ] `~/.claude/settings.json` exists and is valid JSON
 - [ ] `~/.claude/agents/` contains agent definitions (Standard, Core, or Full)
 - [ ] `~/.claude/skills/` contains skill directories (Core or Full)
-- [ ] Placeholder variables are replaced (`grep -r './memory' ~/.claude/`)
+- [ ] Placeholder variables are replaced (`grep -rE '\{[A-Z_]+\}' ~/.claude/` returns nothing; `./memory/` is built-in, not a placeholder)
 - [ ] Hooks pass syntax check (see Verify section below)
 
 ---

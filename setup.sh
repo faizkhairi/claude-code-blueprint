@@ -86,7 +86,11 @@ log_error() { echo "  [ERROR] $*" >&2; }
 log_dry()   { echo "  [DRY]   $*"; }
 
 confirm() {
-  if [ "$AUTO_YES" = true ]; then return 0; fi
+  # Auto-confirm when --yes is set OR stdin is not a TTY (piped/redirected/CI).
+  # A bare `read` against a non-TTY hits EOF and, under `set -e`, aborts the whole
+  # install. Returning 0 here means "proceed with the default" -- correct for an
+  # unattended run. Covers all callers (safe_copy, offer_claude_md, replace_placeholders).
+  if [ "$AUTO_YES" = true ] || ! [ -t 0 ]; then return 0; fi
   local prompt="$1 [y/N] "
   read -r -p "  $prompt" response
   case "$response" in
@@ -275,7 +279,11 @@ create_directories() {
 
   for dir in "${dirs[@]}"; do
     if [ "$DRY_RUN" = true ]; then
-      [ ! -d "$dir" ] && log_dry "Would create: $dir"
+      # Full if/then -- a bare `[ ! -d ] && cmd` returns 1 when the dir exists,
+      # and as the loop body's last statement that aborts the whole script under `set -e`.
+      if [ ! -d "$dir" ]; then
+        log_dry "Would create: $dir"
+      fi
     else
       if [ ! -d "$dir" ]; then
         mkdir -p "$dir"
@@ -361,17 +369,19 @@ install_rules() {
 }
 
 install_settings() {
-  if [ "$PRESET" = "minimal" ]; then return 0; fi
-
+  # Every preset gets a settings.json so its installed hooks are actually wired
+  # (minimal previously returned early, leaving its 2 hooks copied but never fired).
+  # We ship ONE template and prune it down to the hooks this preset installed
+  # (prune_settings_to_installed_hooks) -- so the wiring always matches reality.
   local src="${SCRIPT_DIR}/examples/settings-template.json"
   local dst="${CLAUDE_DIR}/settings.json"
 
   echo ""
   if [ "$DRY_RUN" = true ]; then
     if [ -f "$dst" ]; then
-      log_dry "Would merge settings-template.json into existing settings.json"
+      log_dry "Would merge settings-template.json into existing settings.json (then prune to installed hooks)"
     else
-      log_dry "Would copy settings-template.json -> settings.json"
+      log_dry "Would copy settings-template.json -> settings.json (then prune to installed hooks)"
     fi
     return
   fi
@@ -379,6 +389,7 @@ install_settings() {
   if [ ! -f "$dst" ]; then
     cp "$src" "$dst"
     log_ok "Created: settings.json"
+    prune_settings_to_installed_hooks "$dst"
     return
   fi
 
@@ -390,7 +401,7 @@ install_settings() {
     local py
     py="$(command -v python3 2>/dev/null || command -v python)"
     "$py" - "$dst" "$src" << 'PYMERGE'
-import json, sys
+import json, os, sys
 
 existing_path, template_path = sys.argv[1], sys.argv[2]
 
@@ -399,21 +410,41 @@ with open(existing_path) as f:
 with open(template_path) as f:
     template = json.load(f)
 
-# Merge hooks: for each event, append hooks not already present
+# Merge hooks. The Claude Code schema makes each event a LIST of matcher-blocks:
+#   "hooks": { "PreToolUse": [ { "matcher": "Bash", "hooks": [ {type, command|prompt} ] } ] }
+# So we merge per matcher-block (keyed by its "matcher"), and within a matched block we
+# append inner hooks not already present, keyed by (type, command|prompt) so command and
+# prompt hooks both dedup correctly. This makes re-running the installer idempotent.
+def hook_key(h):
+    # Stable identity for an inner hook entry: its command, else its prompt, else its type.
+    return (h.get("type", ""), h.get("command", h.get("prompt", "")))
+
 if "hooks" in template:
-    if "hooks" not in existing:
+    if "hooks" not in existing or not isinstance(existing.get("hooks"), dict):
         existing["hooks"] = {}
-    for event, event_data in template["hooks"].items():
-        if event not in existing["hooks"]:
-            existing["hooks"][event] = event_data
-        else:
-            # Merge hook arrays within the event
-            existing_cmds = set()
-            for h in existing["hooks"][event].get("hooks", []):
-                existing_cmds.add(h.get("command", ""))
-            for h in event_data.get("hooks", []):
-                if h.get("command", "") not in existing_cmds:
-                    existing["hooks"][event].setdefault("hooks", []).append(h)
+    for event, tmpl_blocks in template["hooks"].items():
+        # Each event value is a list of matcher-blocks.
+        if not isinstance(tmpl_blocks, list):
+            continue
+        if event not in existing["hooks"] or not isinstance(existing["hooks"][event], list):
+            existing["hooks"][event] = []
+        existing_blocks = existing["hooks"][event]
+        # Index existing matcher-blocks by their matcher (default "" = no matcher).
+        by_matcher = {b.get("matcher", ""): b for b in existing_blocks if isinstance(b, dict)}
+        for tblock in tmpl_blocks:
+            if not isinstance(tblock, dict):
+                continue
+            m = tblock.get("matcher", "")
+            if m not in by_matcher:
+                existing_blocks.append(tblock)
+                by_matcher[m] = tblock
+            else:
+                eblock = by_matcher[m]
+                seen = {hook_key(h) for h in eblock.get("hooks", []) if isinstance(h, dict)}
+                for h in tblock.get("hooks", []):
+                    if isinstance(h, dict) and hook_key(h) not in seen:
+                        eblock.setdefault("hooks", []).append(h)
+                        seen.add(hook_key(h))
 
 # Merge env: add keys that don't exist
 if "env" in template:
@@ -422,6 +453,11 @@ if "env" in template:
     for k, v in template["env"].items():
         if k not in existing["env"]:
             existing["env"][k] = v
+
+# Add statusLine if the template defines one and the user has none (don't overwrite theirs).
+# Placed before the prune pass so a preset that didn't install status-line.sh still drops it.
+if "statusLine" in template and "statusLine" not in existing:
+    existing["statusLine"] = template["statusLine"]
 
 # Merge permissions.allow: append entries not present
 if "permissions" in template and "allow" in template["permissions"]:
@@ -434,18 +470,100 @@ if "permissions" in template and "allow" in template["permissions"]:
         if perm not in existing_perms:
             existing["permissions"]["allow"].append(perm)
 
-with open(existing_path, "w") as f:
+# Atomic write: temp file + os.replace, so a crash mid-write can't truncate the
+# user's settings.json (install_settings also keeps a backup as a second safety net).
+tmp_path = existing_path + ".tmp"
+with open(tmp_path, "w") as f:
     json.dump(existing, f, indent=2)
     f.write("\n")
+os.replace(tmp_path, existing_path)
 
 print("  [OK]    Merged settings.json (hooks, env, permissions)")
 PYMERGE
+    prune_settings_to_installed_hooks "$dst"
   else
     log_warn "Python not found. Cannot auto-merge settings.json."
     cp "$src" "${dst}.blueprint-template"
     log_info "Saved template as: settings.json.blueprint-template"
     log_info "Manually merge hooks/permissions from the template into your existing settings.json."
   fi
+}
+
+# Remove command-hook entries that reference a blueprint hook script NOT installed
+# under <claude>/hooks/ (e.g. FULL-only hooks wired by the shared template on a core
+# install). Prunes now-empty matcher-blocks and now-empty events. Prompt-type hooks
+# (no file) are always kept; user hooks pointing outside <claude>/hooks/ are untouched.
+prune_settings_to_installed_hooks() {
+  local settings="$1"
+  command -v python3 >/dev/null 2>&1 || command -v python >/dev/null 2>&1 || return 0
+  local py
+  py="$(command -v python3 2>/dev/null || command -v python)"
+  "$py" - "$settings" "${CLAUDE_DIR}/hooks" << 'PYPRUNE'
+import json, os, re, sys
+
+settings_path, hooks_dir = sys.argv[1], sys.argv[2]
+try:
+    with open(settings_path) as f:
+        data = json.load(f)
+except Exception:
+    sys.exit(0)  # nothing safe to do; leave as-is
+
+hooks = data.get("hooks")
+if not isinstance(hooks, dict):
+    sys.exit(0)
+
+# Match a hook script path that lives under <claude>/hooks/ and grab its basename.
+HOOKS_REF = re.compile(r'/hooks/([^"\'\s]+\.sh)')
+
+def keep(inner):
+    # Keep anything without a command (prompt-type hooks have no file dependency).
+    cmd = inner.get("command") if isinstance(inner, dict) else None
+    if not cmd:
+        return True
+    m = HOOKS_REF.search(cmd)
+    if not m:
+        return True  # command points somewhere else (user's own hook) -- leave it
+    return os.path.isfile(os.path.join(hooks_dir, m.group(1)))
+
+removed = 0
+for event in list(hooks.keys()):
+    blocks = hooks[event]
+    if not isinstance(blocks, list):
+        continue
+    new_blocks = []
+    for block in blocks:
+        if not isinstance(block, dict):
+            new_blocks.append(block)
+            continue
+        inner = block.get("hooks", [])
+        if isinstance(inner, list):
+            kept = [h for h in inner if keep(h)]
+            removed += len(inner) - len(kept)
+            block["hooks"] = kept
+            if not kept:
+                continue  # drop matcher-block with no remaining hooks
+        new_blocks.append(block)
+    if new_blocks:
+        hooks[event] = new_blocks
+    else:
+        del hooks[event]  # drop event with no remaining matcher-blocks
+
+# statusLine is a separate top-level key, not under "hooks", but it also references a
+# hook script (status-line.sh, FULL-only). Drop it if its script wasn't installed.
+sl = data.get("statusLine")
+if isinstance(sl, dict) and not keep(sl):
+    del data["statusLine"]
+    removed += 1
+
+tmp_path = settings_path + ".tmp"
+with open(tmp_path, "w") as f:
+    json.dump(data, f, indent=2)
+    f.write("\n")
+os.replace(tmp_path, settings_path)  # atomic: never leave a half-written settings.json
+
+if removed:
+    print("  [OK]    Pruned %d hook(s) not installed by this preset" % removed)
+PYPRUNE
 }
 
 offer_claude_md() {
@@ -488,8 +606,8 @@ replace_placeholders() {
   log_info "Session, reminders, and diary are git-ignored (won't leak if you push"
   log_info "your fork); preferences/identity/decisions stay tracked by default."
   echo ""
-  if [ "$AUTO_YES" = true ]; then
-    memory_choice="Y"   # --yes means non-interactive: default memory on, don't block on read
+  if [ "$AUTO_YES" = true ] || ! [ -t 0 ]; then
+    memory_choice="Y"   # --yes / non-TTY: default memory on, don't block on read (EOF would abort under set -e)
   else
     read -r -p "  Enable persistent memory? [Y/n]: " memory_choice
   fi
@@ -515,8 +633,8 @@ replace_placeholders() {
     touch "${CLAUDE_DIR}/.memory-disabled" 2>/dev/null || true
   fi
 
-  # Check if any non-memory placeholders exist in installed files
-  if ! grep -rq '{PROJECTS_ROOT}\|{CLAUDE_CONFIG_PATH}\|{USER_NAME}' "${CLAUDE_DIR}/" 2>/dev/null; then
+  # Check if any installer-replaceable placeholders exist in installed files
+  if ! grep -rq '{PROJECTS_ROOT}\|{CLAUDE_CONFIG_PATH}\|{USER_NAME}\|{MEMORY_MD_PATH}' "${CLAUDE_DIR}/" 2>/dev/null; then
     return
   fi
 
@@ -530,13 +648,15 @@ replace_placeholders() {
   fi
 
   # Auto-detect what we can
-  local claude_config_path user_name projects_root
+  local claude_config_path user_name projects_root memory_md_path
   claude_config_path="$(normalize_path_for_json "$CLAUDE_DIR")"
   user_name="$(git config user.name 2>/dev/null || whoami)"
+  # Global auto-memory index, derived from the config path (see skills/README.md).
+  memory_md_path="${claude_config_path}/memory/MEMORY.md"
 
   echo ""
-  if [ "$AUTO_YES" = true ]; then
-    # Non-interactive: accept the auto-detected name + default projects root, don't block on read.
+  if [ "$AUTO_YES" = true ] || ! [ -t 0 ]; then
+    # --yes / non-TTY: accept the auto-detected name + default projects root, don't block on read.
     projects_root="$HOME/projects"
   else
     read -r -p "  Your name [$user_name]: " input
@@ -553,10 +673,11 @@ replace_placeholders() {
   local target_dirs=("${CLAUDE_DIR}/hooks" "${CLAUDE_DIR}/agents" "${CLAUDE_DIR}/skills" "${CLAUDE_DIR}/rules")
   for dir in "${target_dirs[@]}"; do
     [ ! -d "$dir" ] && continue
-    find "$dir" -type f -name '*.md' -o -name '*.sh' 2>/dev/null | while read -r file; do
+    find "$dir" -type f \( -name '*.md' -o -name '*.sh' \) 2>/dev/null | while read -r file; do
       sed_inplace "s|{CLAUDE_CONFIG_PATH}|${claude_config_path}|g" "$file" 2>/dev/null || true
       sed_inplace "s|{USER_NAME}|${user_name}|g" "$file" 2>/dev/null || true
       sed_inplace "s|{PROJECTS_ROOT}|${projects_root}|g" "$file" 2>/dev/null || true
+      sed_inplace "s|{MEMORY_MD_PATH}|${memory_md_path}|g" "$file" 2>/dev/null || true
     done
   done
 
@@ -604,10 +725,17 @@ verify_installation() {
     fi
   fi
 
-  # Check for unreplaced placeholders
+  # Check for unreplaced placeholders.
+  # Guard the GREP itself with `|| true` INSIDE the pipeline: under `set -euo pipefail`
+  # a no-match grep exits 1, which fails the whole pipeline and aborts the command
+  # substitution (set -e). Neutralising grep's exit before the pipe means pipefail has
+  # nothing to propagate, so a clean "0" is captured on the no-match (happy) path.
   local remaining
-  remaining="$(grep -r '{PROJECTS_ROOT}\|{CLAUDE_CONFIG_PATH}\|{USER_NAME}\|{MEMORY_MD_PATH}\|{BOILERPLATE_NAME}' "${CLAUDE_DIR}/" 2>/dev/null | wc -l || echo 0)"
-  remaining="$(echo "$remaining" | tr -d ' ')"
+  # {BOILERPLATE_NAME} is intentionally left for the user to set in their own copy of the
+  # scaffold-project skill (it names THEIR template repo, e.g. "nuxt-boilerplate"), so it is
+  # not an installer responsibility -- excluded from this check to avoid a permanent false WARN.
+  remaining="$( { grep -rho '{PROJECTS_ROOT}\|{CLAUDE_CONFIG_PATH}\|{USER_NAME}\|{MEMORY_MD_PATH}' "${CLAUDE_DIR}/" 2>/dev/null || true; } | wc -l | tr -d '[:space:]')"
+  remaining="${remaining:-0}"
   if [ "$remaining" -gt 0 ]; then
     log_warn "${remaining} unreplaced placeholder(s) remain. Run: grep -r '{' ~/.claude/ | grep -E '{[A-Z_]+}'"
   else
