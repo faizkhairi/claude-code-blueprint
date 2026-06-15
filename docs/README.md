@@ -9,7 +9,7 @@ For getting started, see the [root README](../README.md) instead.
 - **[ARCHITECTURE.md](ARCHITECTURE.md)** — System design, hook lifecycle, component relationships
 - **[BENCHMARKS.md](BENCHMARKS.md)** — Token cost per component, plan-by-plan breakdown
 - **[CASE-STUDIES.md](CASE-STUDIES.md)** — Adopter stories and before/after metrics (empty by default — submissions welcome)
-- **[CROSS-TOOL-GUIDE.md](CROSS-TOOL-GUIDE.md)** — How the patterns map to Cursor, Copilot, Cline, Roo Code, OpenCode, and 5 more (10 tools total)
+- **[CROSS-TOOL-GUIDE.md](CROSS-TOOL-GUIDE.md)** — How the patterns map to Cursor, Copilot, Cline, Roo Code, OpenCode, and more (10 other tools)
 - **[PRESETS.md](PRESETS.md)** — Ready-to-copy configurations for solo, team, and CI/CD
 - **[ROADMAP.md](ROADMAP.md)** — Project direction and what's next
 - **[SELF-MONITORING.md](SELF-MONITORING.md)** — Optional patterns: gitleaks pre-commit + memory-curator agent
