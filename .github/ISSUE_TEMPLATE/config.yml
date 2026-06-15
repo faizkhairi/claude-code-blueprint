@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Question or help (Q&A)
+    url: https://github.com/faizkhairi/claude-code-blueprint/discussions/categories/q-a
+    about: For "how do I..." questions and usage help, please open a Discussion instead of an issue.
+  - name: Show & Tell
+    url: https://github.com/faizkhairi/claude-code-blueprint/discussions/categories/show-and-tell
+    about: Share how you adapted the blueprint, or what your setup looks like in practice.

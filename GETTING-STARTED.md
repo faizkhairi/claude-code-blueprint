@@ -17,7 +17,7 @@ This is a collection of configuration files that make Claude Code smarter, safer
 Welcome. Here's your fastest path:
 
 1. **Right now (60 seconds):** Open [CLAUDE.md](CLAUDE.md) in this repo. Click "Raw" (top-right), copy everything, and paste it into a new file called `CLAUDE.md` in your project's root folder.
-2. **Start using Claude Code normally.** No special prompts needed. Claude automatically reads CLAUDE.md and follows the three rules inside it (Verify-After-Complete, Diagnose-First, Plan-Before-Execute).
+2. **Start using Claude Code normally.** No special prompts needed. Claude automatically reads CLAUDE.md and follows the three rules inside it (Verify-After-Complete, Diagnose-First, Plan-First).
 3. **When curious:** Read the rest of this section to understand what Claude Code is and how to access it.
 4. **When ready for more:** Follow the [recommended adoption path](README.md#recommended-adoption-path) to add hooks, agents, and skills incrementally.
 
@@ -169,19 +169,25 @@ Before you begin, make sure you have:
 | **npm** | v9+ (ships with Node) | `npm --version` | Included with Node.js |
 | **Git** | v2.30+ | `git --version` | [git-scm.com](https://git-scm.com) |
 | **Bash shell** | Any | `bash --version` | macOS/Linux: built-in. Windows: see [Windows Notes](#windows-notes) |
-| **Anthropic API key** | With active billing | — | See below |
+| **Claude Code access** | A Claude subscription (Pro/Max/Team/Enterprise) **or** an Anthropic API key | — | See below |
 
-### API Key Setup
+### Claude Code Access
+
+Claude Code authenticates one of two ways -- you only need one:
+
+**Option A -- Claude subscription (recommended for most people).** If you have a Claude Pro, Max, Team, or Enterprise plan, just run `claude` and sign in with your Claude account in the browser. No API key needed.
+
+**Option B -- Anthropic API key (usage-based billing).** If you prefer to pay per token via the API:
 
 1. Sign up or log in at [console.anthropic.com](https://console.anthropic.com)
-2. Navigate to **API Keys** and create a new key
-3. **Enable billing** under the Billing section -- Claude Code requires an active billing plan
-4. Set the key in your environment:
+2. Navigate to **API Keys**, create a new key, and enable billing under the Billing section
+3. Set the key in your environment:
    ```bash
    # Add to your shell profile (~/.bashrc, ~/.zshrc, etc.)
    export ANTHROPIC_API_KEY="sk-ant-..."
    ```
-5. Verify by running `claude` -- it should start without asking for a key
+
+Then run `claude` to start. Note: if you have a subscription **and** an `ANTHROPIC_API_KEY` set, the API key takes precedence -- `unset ANTHROPIC_API_KEY` to use your subscription instead.
 
 ### Enable Agent Teams (Required for Agents)
 
@@ -656,7 +662,7 @@ If you're adopting this blueprint across a team (startup, company, open source p
 1. **Fork this blueprint** (or your team's adapted version) as a reference
 2. **Copy hooks** from the blueprint to `~/.claude/hooks/` on the developer's machine
 3. **Copy settings-template.json** to `~/.claude/settings.json` and customize paths (especially `additionalDirectories`)
-4. **Set the API key** -- each developer needs their own Anthropic API key with billing enabled
+4. **Set up Claude Code access** -- each developer signs in with their own Claude subscription, or sets their own Anthropic API key
 
 ### Permission Modes for Teams
 

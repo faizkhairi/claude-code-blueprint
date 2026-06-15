@@ -39,7 +39,7 @@ curl -o CLAUDE.md https://raw.githubusercontent.com/faizkhairi/claude-code-bluep
 
 이렇게 하면 Claude Code에 가장 흔한 AI 코딩 실수를 방지하는 3가지 규칙을 제공합니다:
 
-**Verify-After-Complete** · **Diagnose-First** · **Plan-Before-Execute**
+**Verify-After-Complete** · **Diagnose-First** · **Plan-First**
 
 더 알고 싶으신가요? [전체 도입 경로](#recommended-adoption-path)를 보거나 [30분 초보자 가이드](../GETTING-STARTED.md)를 참조하세요. Claude Code가 처음이신가요? [대상자](#who-is-this-for)를 확인하거나 [FAQ](../FAQ.md)를 참조하세요.
 
