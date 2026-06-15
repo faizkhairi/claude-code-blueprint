@@ -407,21 +407,41 @@ with open(existing_path) as f:
 with open(template_path) as f:
     template = json.load(f)
 
-# Merge hooks: for each event, append hooks not already present
+# Merge hooks. The Claude Code schema makes each event a LIST of matcher-blocks:
+#   "hooks": { "PreToolUse": [ { "matcher": "Bash", "hooks": [ {type, command|prompt} ] } ] }
+# So we merge per matcher-block (keyed by its "matcher"), and within a matched block we
+# append inner hooks not already present, keyed by (type, command|prompt) so command and
+# prompt hooks both dedup correctly. This makes re-running the installer idempotent.
+def hook_key(h):
+    # Stable identity for an inner hook entry: its command, else its prompt, else its type.
+    return (h.get("type", ""), h.get("command", h.get("prompt", "")))
+
 if "hooks" in template:
-    if "hooks" not in existing:
+    if "hooks" not in existing or not isinstance(existing.get("hooks"), dict):
         existing["hooks"] = {}
-    for event, event_data in template["hooks"].items():
-        if event not in existing["hooks"]:
-            existing["hooks"][event] = event_data
-        else:
-            # Merge hook arrays within the event
-            existing_cmds = set()
-            for h in existing["hooks"][event].get("hooks", []):
-                existing_cmds.add(h.get("command", ""))
-            for h in event_data.get("hooks", []):
-                if h.get("command", "") not in existing_cmds:
-                    existing["hooks"][event].setdefault("hooks", []).append(h)
+    for event, tmpl_blocks in template["hooks"].items():
+        # Each event value is a list of matcher-blocks.
+        if not isinstance(tmpl_blocks, list):
+            continue
+        if event not in existing["hooks"] or not isinstance(existing["hooks"][event], list):
+            existing["hooks"][event] = []
+        existing_blocks = existing["hooks"][event]
+        # Index existing matcher-blocks by their matcher (default "" = no matcher).
+        by_matcher = {b.get("matcher", ""): b for b in existing_blocks if isinstance(b, dict)}
+        for tblock in tmpl_blocks:
+            if not isinstance(tblock, dict):
+                continue
+            m = tblock.get("matcher", "")
+            if m not in by_matcher:
+                existing_blocks.append(tblock)
+                by_matcher[m] = tblock
+            else:
+                eblock = by_matcher[m]
+                seen = {hook_key(h) for h in eblock.get("hooks", []) if isinstance(h, dict)}
+                for h in tblock.get("hooks", []):
+                    if isinstance(h, dict) and hook_key(h) not in seen:
+                        eblock.setdefault("hooks", []).append(h)
+                        seen.add(hook_key(h))
 
 # Merge env: add keys that don't exist
 if "env" in template:
