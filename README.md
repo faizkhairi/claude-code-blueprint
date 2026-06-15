@@ -99,7 +99,7 @@ Add agents, skills, rules, and memory as your workflow matures. The `core` prese
 
 ## What Makes This Different
 
-Other repos give you **135 agents**. We give you **11** -- and explain why each one exists.
+Other repos dump dozens of agents on you. We give you **11** -- and explain why each one exists.
 
 | This Blueprint | Generic Config Repos |
 |---------------|---------------------|

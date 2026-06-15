@@ -84,7 +84,7 @@ curl -o CLAUDE.md https://raw.githubusercontent.com/faizkhairi/claude-code-bluep
 
 ## What Makes This Different
 
-其他仓库给你 **135 个 agents**。我们给你 **11 个** -- 并解释每个为什么存在。
+其他仓库给你 **数十个 agents**。我们给你 **11 个** -- 并解释每个为什么存在。
 
 | 本蓝图 | 通用配置仓库 |
 |------------|------------|
