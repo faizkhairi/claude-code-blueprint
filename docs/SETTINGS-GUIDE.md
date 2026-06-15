@@ -169,7 +169,7 @@ Claude Code has four permission modes, each balancing safety against productivit
 "defaultMode": "auto"
 ```
 
-The auto mode classifier (runs on Sonnet 4.6) reviews each non-allow-listed action against 26 built-in safety rules (force push, data exfiltration, production deploys, `curl | bash`, etc.). It approves safe actions and blocks risky ones -- no manual prompting needed.
+The auto mode classifier (runs on Sonnet) reviews each non-allow-listed action against 26 built-in safety rules (force push, data exfiltration, production deploys, `curl | bash`, etc.). It approves safe actions and blocks risky ones -- no manual prompting needed.
 
 **Key facts about auto mode:**
 - Allow-listed commands bypass the classifier entirely (saves tokens and latency)
@@ -318,9 +318,9 @@ The Stop hook uses `"model": "sonnet"` for its security verification prompt. Thi
 
 | Model | Input (per 1M tokens) | Output (per 1M tokens) | Used By |
 |-------|----------------------|------------------------|---------|
-| Opus 4.6 | $5 | $25 | project-architect agent |
-| Sonnet 4.6 | $3 | $15 | 8 implementation/review agents + Stop hook |
-| Haiku 4.5 | $1 | $5 | docs-writer, api-documenter agents |
+| Opus | $5 | $25 | project-architect agent |
+| Sonnet | $3 | $15 | 8 implementation/review agents + Stop hook |
+| Haiku | $1 | $5 | docs-writer, api-documenter agents |
 
 ### What Drives Cost Up
 
