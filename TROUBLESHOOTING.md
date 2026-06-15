@@ -262,19 +262,15 @@ See [GETTING-STARTED.md](GETTING-STARTED.md#windows-notes) for the full Windows 
 
 ### "Skills show 'file not found' for ./memory"
 
-**Symptoms:** A skill like load-session or save-session fails with an error about a path containing literal curly braces, e.g., `./memory/core/session.md not found`.
+**Symptoms:** A skill like load-session or save-session fails with an error such as `./memory/core/session.md not found`.
 
-**Cause:** Placeholder variables in skill files haven't been replaced with your actual paths.
+**Cause:** `./memory/` is the built-in opt-in memory folder, not a placeholder. The error means memory was not enabled (so the folder was never created), or you are running Claude from a directory that has no `./memory/` folder. Memory paths are relative to your current working directory.
 
-**Fix:** Search your skills directory for unreplaced variables:
+**Fix:**
+1. Enable memory: run `./setup.sh` and choose Yes at the memory prompt. This creates `./memory/` and removes the `~/.claude/.memory-disabled` marker.
+2. Run Claude from the directory that holds your `./memory/` folder (memory is per-project / per-cwd).
 
-```bash
-grep -r './memory' ~/.claude/skills/
-grep -r '{CLAUDE_CONFIG_PATH}' ~/.claude/skills/
-grep -r '{PROJECTS_ROOT}' ~/.claude/skills/
-```
-
-Replace each placeholder with your actual path. See [skills/README.md](skills/README.md#required-replace-placeholder-variables) for the full list and platform-specific examples.
+This is separate from the `{...}` placeholder variables (`{CLAUDE_CONFIG_PATH}`, `{PROJECTS_ROOT}`, `{MEMORY_MD_PATH}`). To check for those, see [skills/README.md](skills/README.md#required-replace-placeholder-variables).
 
 ---
 
