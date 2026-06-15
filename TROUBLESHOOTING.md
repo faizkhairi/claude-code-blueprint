@@ -349,12 +349,13 @@ See [agents/README.md](agents/README.md#what-happens-when-maxturns-is-reached) f
 
 3. **Python is on PATH:** Run `python --version` or `python3 --version`. If neither works, install Python: `winget install Python.Python.3`
 
-4. **Path format:** In `settings.json`, use forward slashes or tilde for hook paths:
-   - Works: `bash "~/.claude/hooks/protect-config.sh"`
+4. **Path format:** In `settings.json`, use `$HOME` or a forward-slash absolute path for hook commands:
+   - Works: `bash "$HOME/.claude/hooks/protect-config.sh"`
    - Works: `bash "/c/Users/YourUser/.claude/hooks/protect-config.sh"`
+   - Fails: `bash "~/.claude/hooks/protect-config.sh"` (a quoted `~` is a literal character -- it does not expand)
    - Fails: `bash "C:\Users\YourUser\.claude\hooks\protect-config.sh"`
 
-5. **Tilde expansion:** If `~` doesn't resolve, use an absolute path with forward slashes: `bash "/c/Users/YourUser/.claude/hooks/script.sh"`
+5. **Tilde expansion:** A `~` inside double quotes is NOT expanded by the shell, so `bash "~/.claude/..."` fails to find the file. Use `$HOME` (expands inside double quotes) or an absolute forward-slash path: `bash "$HOME/.claude/hooks/script.sh"`
 
 ---
 

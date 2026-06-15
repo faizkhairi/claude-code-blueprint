@@ -144,7 +144,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"~/.claude/hooks/session-start.sh\""
+            "command": "bash \"$HOME/.claude/hooks/session-start.sh\""
           }
         ]
       }
@@ -156,7 +156,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"~/.claude/hooks/block-git-push.sh\""
+            "command": "bash \"$HOME/.claude/hooks/block-git-push.sh\""
           }
         ]
       },
@@ -165,7 +165,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"~/.claude/hooks/protect-config.sh\""
+            "command": "bash \"$HOME/.claude/hooks/protect-config.sh\""
           }
         ]
       }
@@ -177,7 +177,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"~/.claude/hooks/notify-file-changed.sh\"",
+            "command": "bash \"$HOME/.claude/hooks/notify-file-changed.sh\"",
             "async": true
           }
         ]
@@ -187,7 +187,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"~/.claude/hooks/post-commit-review.sh\"",
+            "command": "bash \"$HOME/.claude/hooks/post-commit-review.sh\"",
             "async": true
           }
         ]
@@ -211,7 +211,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"~/.claude/hooks/precompact-state.sh\"",
+            "command": "bash \"$HOME/.claude/hooks/precompact-state.sh\"",
             "async": false
           },
           {
@@ -244,12 +244,12 @@
           },
           {
             "type": "command",
-            "command": "bash \"~/.claude/hooks/session-checkpoint.sh\"",
+            "command": "bash \"$HOME/.claude/hooks/session-checkpoint.sh\"",
             "async": true
           },
           {
             "type": "command",
-            "command": "bash \"~/.claude/hooks/cost-tracker.sh\"",
+            "command": "bash \"$HOME/.claude/hooks/cost-tracker.sh\"",
             "async": true
           }
         ]
@@ -261,7 +261,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"~/.claude/hooks/session-checkpoint.sh\"",
+            "command": "bash \"$HOME/.claude/hooks/session-checkpoint.sh\"",
             "async": false
           }
         ]
@@ -271,7 +271,7 @@
 
   "statusLine": {
     "type": "command",
-    "command": "bash \"~/.claude/hooks/status-line.sh\""
+    "command": "bash \"$HOME/.claude/hooks/status-line.sh\""
   },
 
   "alwaysThinkingEnabled": true,
