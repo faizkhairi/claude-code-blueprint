@@ -8,9 +8,9 @@
 
 [![Stars](https://img.shields.io/github/stars/faizkhairi/claude-code-blueprint?style=flat)](https://github.com/faizkhairi/claude-code-blueprint/stargazers)
 [![Forks](https://img.shields.io/github/forks/faizkhairi/claude-code-blueprint?style=flat)](https://github.com/faizkhairi/claude-code-blueprint/network/members)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](../LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-2.1.150-blueviolet)](https://docs.anthropic.com/en/docs/claude-code)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](../CONTRIBUTING.md)
 
 **11 agents** · **17 skills** · **10 hooks** · **5 rules** -- 在真实项目中验证
 
@@ -180,7 +180,7 @@ curl -o CLAUDE.md https://raw.githubusercontent.com/faizkhairi/claude-code-bluep
 | session-lifecycle | 始终 | 会话启动/结束行为 |
 | memory-session | `**/memory/**` | 内存仓库会话管理 |
 
-参见 [rules/README.md](rules/README.md) 了解如何创建自定义规则。
+参见 [rules/README.md](../rules/README.md) 了解如何创建自定义规则。
 
 </details>
 

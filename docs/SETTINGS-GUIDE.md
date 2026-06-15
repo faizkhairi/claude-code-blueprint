@@ -1,6 +1,6 @@
 # Settings Guide
 
-Companion to [settings-template.json](examples/settings-template.json). Every setting explained with context, defaults, and rationale.
+Companion to [settings-template.json](../examples/settings-template.json). Every setting explained with context, defaults, and rationale.
 
 ---
 
@@ -16,7 +16,7 @@ These live under the `"env"` key in `settings.json` and control Claude Code's ru
 
 **What it does:** Enables multi-agent spawning -- the ability for Claude to launch specialized subagents that run in parallel with independent context windows.
 
-**Why it matters:** Without this, the entire [agents/](agents/) directory in this blueprint is non-functional. The Agent tool won't appear, `subagent_type` has no effect, and skills that orchestrate multiple agents (like the review-full skill spawning code-reviewer + security-reviewer + db-analyst in parallel) silently degrade to single-agent mode.
+**Why it matters:** Without this, the entire [agents/](../agents/) directory in this blueprint is non-functional. The Agent tool won't appear, `subagent_type` has no effect, and skills that orchestrate multiple agents (like the review-full skill spawning code-reviewer + security-reviewer + db-analyst in parallel) silently degrade to single-agent mode.
 
 **Default:** Not set (disabled). You must explicitly enable it.
 
@@ -96,7 +96,7 @@ Auto-deletes Claude Code session data older than 60 days. This includes conversa
 
 **What it does:** When `true`, Claude Code injects default git usage instructions into every session's context. When `false`, those instructions are suppressed.
 
-**Why false:** This blueprint provides its own git rules via [CLAUDE.md](CLAUDE.md) (Diagnose-First Rule checks `git status` first) and hooks (`block-git-push.sh` prevents accidental pushes). The default instructions conflict with these custom rules and waste context tokens.
+**Why false:** This blueprint provides its own git rules via [CLAUDE.md](../CLAUDE.md) (Diagnose-First Rule checks `git status` first) and hooks (`block-git-push.sh` prevents accidental pushes). The default instructions conflict with these custom rules and waste context tokens.
 
 **When to set true:** If you're not using custom git rules and want Claude's default git behavior.
 
@@ -182,7 +182,7 @@ The auto mode classifier (runs on Sonnet 4.6) reviews each non-allow-listed acti
 - **New users:** Don't set this. Use the default mode until you trust your setup.
 - **Power users with hooks:** `"auto"` is the sweet spot -- intelligent safety without prompt fatigue. The allow list becomes a performance optimization, not a security boundary.
 - **CI/CD pipelines:** `"dontAsk"` is still better here -- predictable behavior, no classifier overhead.
-- **Teams:** See [GETTING-STARTED.md](GETTING-STARTED.md#setting-up-for-teams).
+- **Teams:** See [GETTING-STARTED.md](../GETTING-STARTED.md#setting-up-for-teams).
 
 ### autoMode.environment
 
@@ -244,7 +244,7 @@ The `allow` list in the template is organized by category. Here's what each allo
 | **Build + Deploy** | `docker`, `vercel`, `./gradlew` | Building containers, deploying, running Gradle tasks. |
 | **CLI Utilities** | `curl`, `ls`, `jq`, `chmod`, `unzip`, `echo`, `sort`, `cut`, `tr`, `tee`, `code` | Common shell utilities for investigation and scripting. |
 | **Web Access** | `raw.githubusercontent.com`, `api.github.com`, `registry.npmjs.org`, `WebSearch` | Fetching files from GitHub, checking npm registry, web searches. |
-| **MCP Tools** | Playwright browser tools, Context7 docs | Browser automation and documentation lookup. See [GETTING-STARTED.md](GETTING-STARTED.md#mcp-servers--giving-claude-superpowers) for setup. |
+| **MCP Tools** | Playwright browser tools, Context7 docs | Browser automation and documentation lookup. See [GETTING-STARTED.md](../GETTING-STARTED.md#mcp-servers--giving-claude-superpowers) for setup. |
 | **Skills** | `update-config` | Allows Claude to modify settings via the update-config skill. |
 
 ### additionalDirectories
@@ -343,7 +343,7 @@ From [Anthropic's Claude Code documentation](https://docs.anthropic.com/en/docs/
 
 ### How to Track Your Actual Costs
 
-The blueprint includes [cost-tracker.sh](hooks/cost-tracker.sh) as a Stop hook that logs session costs to a JSONL file. Check your metrics at `~/.claude/metrics/costs.jsonl` for actual spending data.
+The blueprint includes [cost-tracker.sh](../hooks/cost-tracker.sh) as a Stop hook that logs session costs to a JSONL file. Check your metrics at `~/.claude/metrics/costs.jsonl` for actual spending data.
 
 ### How to Reduce Costs
 

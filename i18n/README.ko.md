@@ -8,9 +8,9 @@
 
 [![Stars](https://img.shields.io/github/stars/faizkhairi/claude-code-blueprint?style=flat)](https://github.com/faizkhairi/claude-code-blueprint/stargazers)
 [![Forks](https://img.shields.io/github/forks/faizkhairi/claude-code-blueprint?style=flat)](https://github.com/faizkhairi/claude-code-blueprint/network/members)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](../LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-2.1.150-blueviolet)](https://docs.anthropic.com/en/docs/claude-code)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](../CONTRIBUTING.md)
 
 **11 agents** · **17 skills** · **10 hooks** · **5 rules** -- 실제 프로젝트에서 검증됨
 
@@ -180,7 +180,7 @@ CLAUDE.md를 프로젝트에 복사하세요. 3개의 행동 규칙. 즉각적�
 | session-lifecycle | 항상 | 세션 시작/종료 동작 |
 | memory-session | `**/memory/**` | 메모리 저장소 세션 관리 |
 
-[rules/README.md](rules/README.md)에서 커스텀 규칙 생성을 참조하세요.
+[rules/README.md](../rules/README.md)에서 커스텀 규칙 생성을 참조하세요.
 
 </details>
 
