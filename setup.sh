@@ -28,6 +28,11 @@ MINIMAL_HOOKS=(protect-config.sh notify-file-changed.sh)
 STANDARD_HOOKS=(block-git-push.sh cost-tracker.sh session-checkpoint.sh post-commit-review.sh)
 STANDARD_AGENTS=(verify-plan.md code-reviewer.md)
 
+# Core adds two review agents + a curated, broadly-useful skill/rule set on top of Standard.
+CORE_AGENTS=(security-reviewer.md qa-tester.md)
+CORE_SKILLS=(review-full review-diff test-check deploy-check db-check changelog)
+CORE_RULES=(testing.md database-schema.md)
+
 FULL_HOOKS=(session-start.sh precompact-state.sh status-line.sh verify-mcp-sync.sh)
 FULL_AGENTS=(api-documenter.md backend-specialist.md db-analyst.md devops-engineer.md
              docs-writer.md frontend-specialist.md project-architect.md
@@ -55,7 +60,7 @@ print_usage() {
   echo "Install Claude Code Blueprint components to ~/.claude/"
   echo ""
   echo "Options:"
-  echo "  --preset=PRESET   Skip menu. PRESET: minimal, standard, full"
+  echo "  --preset=PRESET   Skip menu. PRESET: minimal, standard, core, full"
   echo "  --dry-run          Preview what would be installed (no changes)"
   echo "  --yes              Auto-confirm all prompts"
   echo "  --help             Show this help message"
@@ -63,6 +68,7 @@ print_usage() {
   echo "Presets:"
   echo "  minimal   3 files   CLAUDE.md + 2 hooks (60 seconds)"
   echo "  standard  10 files  + 4 hooks, 2 agents, settings.json (5 minutes)"
+  echo "  core      20 files  + 2 review agents, 6 skills, 2 rules (curated, broadly useful)"
   echo "  full      45 files  + all agents, skills, rules (10 minutes)"
   echo ""
   echo "Examples:"
@@ -197,8 +203,8 @@ parse_args() {
     shift
   done
 
-  if [ -n "$PRESET" ] && [[ ! "$PRESET" =~ ^(minimal|standard|full)$ ]]; then
-    log_error "Invalid preset: $PRESET (must be minimal, standard, or full)"
+  if [ -n "$PRESET" ] && [[ ! "$PRESET" =~ ^(minimal|standard|core|full)$ ]]; then
+    log_error "Invalid preset: $PRESET (must be minimal, standard, core, or full)"
     exit 1
   fi
 }
@@ -243,17 +249,19 @@ select_preset() {
   echo ""
   echo "    1) Minimal   -- CLAUDE.md + 2 hooks (config protection, edit verification)"
   echo "    2) Standard  -- + 4 more hooks, 2 agents, settings.json"
-  echo "    3) Full      -- + all 11 agents, 17 skills, 5 rules (everything)"
+  echo "    3) Core      -- + 2 review agents, 6 universal skills, 2 path-scoped rules"
+  echo "    4) Full      -- + all 11 agents, 17 skills, 5 rules (everything)"
   echo ""
-  echo "  Not sure? Start with Standard. You can run this script again to add more later."
+  echo "  Not sure? Start with Standard or Core. You can run this script again to add more later."
   echo ""
-  read -r -p "  Select [1/2/3]: " choice
+  read -r -p "  Select [1/2/3/4]: " choice
 
   case "$choice" in
     1) PRESET="minimal" ;;
     2) PRESET="standard" ;;
-    3) PRESET="full" ;;
-    *) log_error "Invalid choice. Please enter 1, 2, or 3."; exit 1 ;;
+    3) PRESET="core" ;;
+    4) PRESET="full" ;;
+    *) log_error "Invalid choice. Please enter 1, 2, 3, or 4."; exit 1 ;;
   esac
   echo ""
 }
@@ -280,7 +288,7 @@ create_directories() {
 install_hooks() {
   local hooks=("${MINIMAL_HOOKS[@]}")
 
-  if [[ "$PRESET" == "standard" || "$PRESET" == "full" ]]; then
+  if [[ "$PRESET" == "standard" || "$PRESET" == "core" || "$PRESET" == "full" ]]; then
     hooks+=("${STANDARD_HOOKS[@]}")
   fi
   if [ "$PRESET" = "full" ]; then
@@ -297,8 +305,13 @@ install_hooks() {
 install_agents() {
   local agents=()
 
-  if [[ "$PRESET" == "standard" || "$PRESET" == "full" ]]; then
+  if [[ "$PRESET" == "standard" || "$PRESET" == "core" || "$PRESET" == "full" ]]; then
     agents+=("${STANDARD_AGENTS[@]}")
+  fi
+  # Core-only: security-reviewer + qa-tester. Full gets these via FULL_AGENTS instead,
+  # so this rung must NOT fire for full (it would install them twice).
+  if [ "$PRESET" = "core" ]; then
+    agents+=("${CORE_AGENTS[@]}")
   fi
   if [ "$PRESET" = "full" ]; then
     agents+=("${FULL_AGENTS[@]}")
@@ -314,21 +327,35 @@ install_agents() {
 }
 
 install_skills() {
-  if [ "$PRESET" != "full" ]; then return; fi
+  local skills=()
+  if [ "$PRESET" = "core" ]; then
+    skills=("${CORE_SKILLS[@]}")
+  elif [ "$PRESET" = "full" ]; then
+    skills=("${SKILL_DIRS[@]}")
+  else
+    return
+  fi
 
   echo ""
-  log_info "Installing skills (${#SKILL_DIRS[@]} skills)..."
-  for skill in "${SKILL_DIRS[@]}"; do
+  log_info "Installing skills (${#skills[@]} skills)..."
+  for skill in "${skills[@]}"; do
     safe_copy "${SCRIPT_DIR}/skills/${skill}/SKILL.md" "${CLAUDE_DIR}/skills/${skill}/SKILL.md" "skill"
   done
 }
 
 install_rules() {
-  if [ "$PRESET" != "full" ]; then return; fi
+  local rules=()
+  if [ "$PRESET" = "core" ]; then
+    rules=("${CORE_RULES[@]}")
+  elif [ "$PRESET" = "full" ]; then
+    rules=("${RULE_FILES[@]}")
+  else
+    return
+  fi
 
   echo ""
-  log_info "Installing rules (${#RULE_FILES[@]} files)..."
-  for rule in "${RULE_FILES[@]}"; do
+  log_info "Installing rules (${#rules[@]} files)..."
+  for rule in "${rules[@]}"; do
     safe_copy "${SCRIPT_DIR}/rules/${rule}" "${CLAUDE_DIR}/rules/${rule}" "rule"
   done
 }
@@ -605,7 +632,7 @@ print_summary() {
   echo "  2. Start Claude Code in your project: cd your-project && claude"
   echo "  3. Review ~/.claude/settings.json and adjust permissions"
   echo "  4. Read docs/WHY.md to understand the reasoning behind each component"
-  if [ "$PRESET" = "full" ]; then
+  if [[ "$PRESET" == "core" || "$PRESET" == "full" ]]; then
     echo "  5. Read agents/README.md for model tiering and cost guidance"
   fi
   echo ""

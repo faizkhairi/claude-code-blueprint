@@ -93,7 +93,7 @@ Copy CLAUDE.md into your project. Three behavioral rules. Immediate impact.
 Add 2-3 hooks. Zero token cost. Automated config protection and edit verification.
 
 **Level 3 -- Customize as you grow (ongoing)**
-Add agents, skills, rules, and memory as your workflow matures. See [Presets](docs/PRESETS.md) for ready-to-copy configurations.
+Add agents, skills, rules, and memory as your workflow matures. The `core` preset is a good next step -- a curated set of review/test/deploy skills and two path-scoped rules, without the full specialist ecosystem. See [Presets](docs/PRESETS.md) for ready-to-copy configurations.
 
 ---
 
@@ -235,7 +235,7 @@ Clone the repo, then selectively copy components into your `~/.claude/` director
 Browse the repo on GitHub and copy only the specific files you need. No installation required.
 
 ### Option D: Automated Setup
-Run `./setup.sh` from a cloned or forked copy. Choose a preset (minimal/standard/full) and the script handles directory creation, file copying, settings merge, and placeholder replacement. See [SETUP.md](SETUP.md).
+Run `./setup.sh` from a cloned or forked copy. Choose a preset (minimal/standard/core/full) and the script handles directory creation, file copying, settings merge, and placeholder replacement. See [SETUP.md](SETUP.md).
 
 ### Recommended adoption path
 
