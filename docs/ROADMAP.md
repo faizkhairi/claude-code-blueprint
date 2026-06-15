@@ -13,7 +13,7 @@ The blueprint is a **Claude Harness** — a reference architecture for configuri
 - **SETUP.md** -- Action-focused setup guide with checklist and verification commands
 - **Beginner accessibility** -- Persona table above the fold, Level 1/2/3 progression, "Got This Link from a Colleague?" flow
 - **Framework-agnostic signaling** -- Hero subtitle, comparison table, GitHub topics and description updated
-- **Cross-tool guide** -- 10 tools mapped (Copilot, Cursor, Cline, Roo Code, OpenCode, Codex CLI, Gemini CLI, Windsurf, and more)
+- **Cross-tool guide** -- 10 other tools mapped (Copilot, Cursor, Cline, Roo Code, OpenCode, Codex CLI, Gemini CLI, Amazon Q, Windsurf, Aider)
 - **Hook smoke tests** -- 35 automated tests in `hooks/test-hooks.sh` (run locally)
 - **3 localized READMEs** -- Japanese, Korean, Simplified Chinese landing pages (English root + 3 translations = 4 README files total)
 - **Built-in opt-in memory** -- Setup.sh prompts to enable persistent session memory; no external repo required

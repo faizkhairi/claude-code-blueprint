@@ -105,7 +105,7 @@ Other repos give you **135 agents**. We give you **11** -- and explain why each 
 |---------------|---------------------|
 | Every component has a [battle story](docs/WHY.md) explaining why it exists | Configs without context |
 | [3 behavioral rules](CLAUDE.md) that prevent AI coding mistakes | Lists of settings to copy |
-| [Cross-tool guide](docs/CROSS-TOOL-GUIDE.md) for 10 tools (Copilot, Cursor, Cline, Roo Code, OpenCode, and more) | Single-tool only |
+| [Cross-tool guide](docs/CROSS-TOOL-GUIDE.md) for 10 other tools (Copilot, Cursor, Cline, Roo Code, OpenCode, and more) | Single-tool only |
 | [Beginner-friendly](GETTING-STARTED.md) with 6 adoption personas | Assumed expertise |
 | [Smoke-tested hooks](hooks/test-hooks.sh) with 35 automated tests | Untested scripts |
 | Safety-first: [config placement guide](GETTING-STARTED.md#where-config-belongs-project-vs-personal), privacy warnings, [graceful degradation](agents/README.md#agents-are-not-infallible) | No safety guidance |
@@ -254,7 +254,7 @@ Run `./setup.sh` from a cloned or forked copy. Choose a preset (minimal/standard
 | **[Architecture](docs/ARCHITECTURE.md)** | **[Settings Guide](docs/SETTINGS-GUIDE.md)** | **[Battle Stories](docs/WHY.md)** |
 | System design, hook lifecycle, component relationships | Every env var, permission, and hook explained with rationale | The incidents and lessons behind every component |
 | **[Benchmarks](docs/BENCHMARKS.md)** | **[Presets](docs/PRESETS.md)** | **[Cross-Tool Guide](docs/CROSS-TOOL-GUIDE.md)** |
-| Token savings, cost impact, quality metrics | Ready-to-copy configs for solo, team, and CI/CD | Copilot, Cursor, Cline, Roo Code, OpenCode, and 5 more (10 tools total) |
+| Token savings, cost impact, quality metrics | Ready-to-copy configs for solo, team, and CI/CD | Copilot, Cursor, Cline, Roo Code, OpenCode, and more (10 other tools) |
 | **[FAQ](FAQ.md)** | **[Getting Started](GETTING-STARTED.md)** | **[Troubleshooting](TROUBLESHOOTING.md)** |
 | Top community questions answered | From zero to productive in 30 minutes | Common issues and fixes |
 | **[Setup Guide](SETUP.md)** | **[Case Studies](docs/CASE-STUDIES.md)** | **[Roadmap](docs/ROADMAP.md)** |
