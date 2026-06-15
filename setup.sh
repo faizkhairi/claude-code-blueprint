@@ -401,7 +401,7 @@ install_settings() {
     local py
     py="$(command -v python3 2>/dev/null || command -v python)"
     "$py" - "$dst" "$src" << 'PYMERGE'
-import json, sys
+import json, os, sys
 
 existing_path, template_path = sys.argv[1], sys.argv[2]
 
@@ -470,9 +470,13 @@ if "permissions" in template and "allow" in template["permissions"]:
         if perm not in existing_perms:
             existing["permissions"]["allow"].append(perm)
 
-with open(existing_path, "w") as f:
+# Atomic write: temp file + os.replace, so a crash mid-write can't truncate the
+# user's settings.json (install_settings also keeps a backup as a second safety net).
+tmp_path = existing_path + ".tmp"
+with open(tmp_path, "w") as f:
     json.dump(existing, f, indent=2)
     f.write("\n")
+os.replace(tmp_path, existing_path)
 
 print("  [OK]    Merged settings.json (hooks, env, permissions)")
 PYMERGE
@@ -551,9 +555,11 @@ if isinstance(sl, dict) and not keep(sl):
     del data["statusLine"]
     removed += 1
 
-with open(settings_path, "w") as f:
+tmp_path = settings_path + ".tmp"
+with open(tmp_path, "w") as f:
     json.dump(data, f, indent=2)
     f.write("\n")
+os.replace(tmp_path, settings_path)  # atomic: never leave a half-written settings.json
 
 if removed:
     print("  [OK]    Pruned %d hook(s) not installed by this preset" % removed)

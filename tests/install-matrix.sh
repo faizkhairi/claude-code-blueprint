@@ -14,6 +14,11 @@
 #
 # Usage: bash tests/install-matrix.sh
 # Exit:  0 if every case passes, 1 otherwise.
+#
+# Known gap: the fully-interactive TTY path (a human answering the prompts) is not
+# exercised -- piped/redirected stdin auto-confirms via the non-TTY guard. Testing the
+# interactive path would need expect/pexpect, which is out of scope for a portable CI
+# matrix; the interactive read is also the simplest, lowest-regression-risk path.
 
 set -uo pipefail
 
@@ -156,6 +161,7 @@ for preset in "${PRESETS[@]}"; do
   H="$(new_home)"; ERR="$(mktemp)"
   HOME="$H" bash "$SETUP" --preset="$preset" </dev/null >/dev/null 2>"$ERR"; code=$?
   ok=0; assert_clean_run "$preset/non-TTY < /dev/null" "$H" "$ERR" "$code" || ok=1
+  assert_settings_wiring "$preset/non-TTY (wiring)" "$H" || ok=1
   record "$preset: non-TTY (--preset, no --yes, < /dev/null)" "$ok"
   rm -rf "$H" "$ERR"
 
