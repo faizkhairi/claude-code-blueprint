@@ -369,17 +369,19 @@ install_rules() {
 }
 
 install_settings() {
-  if [ "$PRESET" = "minimal" ]; then return 0; fi
-
+  # Every preset gets a settings.json so its installed hooks are actually wired
+  # (minimal previously returned early, leaving its 2 hooks copied but never fired).
+  # We ship ONE template and prune it down to the hooks this preset installed
+  # (prune_settings_to_installed_hooks) -- so the wiring always matches reality.
   local src="${SCRIPT_DIR}/examples/settings-template.json"
   local dst="${CLAUDE_DIR}/settings.json"
 
   echo ""
   if [ "$DRY_RUN" = true ]; then
     if [ -f "$dst" ]; then
-      log_dry "Would merge settings-template.json into existing settings.json"
+      log_dry "Would merge settings-template.json into existing settings.json (then prune to installed hooks)"
     else
-      log_dry "Would copy settings-template.json -> settings.json"
+      log_dry "Would copy settings-template.json -> settings.json (then prune to installed hooks)"
     fi
     return
   fi
@@ -387,6 +389,7 @@ install_settings() {
   if [ ! -f "$dst" ]; then
     cp "$src" "$dst"
     log_ok "Created: settings.json"
+    prune_settings_to_installed_hooks "$dst"
     return
   fi
 
@@ -468,12 +471,88 @@ with open(existing_path, "w") as f:
 
 print("  [OK]    Merged settings.json (hooks, env, permissions)")
 PYMERGE
+    prune_settings_to_installed_hooks "$dst"
   else
     log_warn "Python not found. Cannot auto-merge settings.json."
     cp "$src" "${dst}.blueprint-template"
     log_info "Saved template as: settings.json.blueprint-template"
     log_info "Manually merge hooks/permissions from the template into your existing settings.json."
   fi
+}
+
+# Remove command-hook entries that reference a blueprint hook script NOT installed
+# under <claude>/hooks/ (e.g. FULL-only hooks wired by the shared template on a core
+# install). Prunes now-empty matcher-blocks and now-empty events. Prompt-type hooks
+# (no file) are always kept; user hooks pointing outside <claude>/hooks/ are untouched.
+prune_settings_to_installed_hooks() {
+  local settings="$1"
+  command -v python3 >/dev/null 2>&1 || command -v python >/dev/null 2>&1 || return 0
+  local py
+  py="$(command -v python3 2>/dev/null || command -v python)"
+  "$py" - "$settings" "${CLAUDE_DIR}/hooks" << 'PYPRUNE'
+import json, os, re, sys
+
+settings_path, hooks_dir = sys.argv[1], sys.argv[2]
+try:
+    with open(settings_path) as f:
+        data = json.load(f)
+except Exception:
+    sys.exit(0)  # nothing safe to do; leave as-is
+
+hooks = data.get("hooks")
+if not isinstance(hooks, dict):
+    sys.exit(0)
+
+# Match a hook script path that lives under <claude>/hooks/ and grab its basename.
+HOOKS_REF = re.compile(r'/hooks/([^"\'\s]+\.sh)')
+
+def keep(inner):
+    # Keep anything without a command (prompt-type hooks have no file dependency).
+    cmd = inner.get("command") if isinstance(inner, dict) else None
+    if not cmd:
+        return True
+    m = HOOKS_REF.search(cmd)
+    if not m:
+        return True  # command points somewhere else (user's own hook) -- leave it
+    return os.path.isfile(os.path.join(hooks_dir, m.group(1)))
+
+removed = 0
+for event in list(hooks.keys()):
+    blocks = hooks[event]
+    if not isinstance(blocks, list):
+        continue
+    new_blocks = []
+    for block in blocks:
+        if not isinstance(block, dict):
+            new_blocks.append(block)
+            continue
+        inner = block.get("hooks", [])
+        if isinstance(inner, list):
+            kept = [h for h in inner if keep(h)]
+            removed += len(inner) - len(kept)
+            block["hooks"] = kept
+            if not kept:
+                continue  # drop matcher-block with no remaining hooks
+        new_blocks.append(block)
+    if new_blocks:
+        hooks[event] = new_blocks
+    else:
+        del hooks[event]  # drop event with no remaining matcher-blocks
+
+# statusLine is a separate top-level key, not under "hooks", but it also references a
+# hook script (status-line.sh, FULL-only). Drop it if its script wasn't installed.
+sl = data.get("statusLine")
+if isinstance(sl, dict) and not keep(sl):
+    del data["statusLine"]
+    removed += 1
+
+with open(settings_path, "w") as f:
+    json.dump(data, f, indent=2)
+    f.write("\n")
+
+if removed:
+    print("  [OK]    Pruned %d hook(s) not installed by this preset" % removed)
+PYPRUNE
 }
 
 offer_claude_md() {
