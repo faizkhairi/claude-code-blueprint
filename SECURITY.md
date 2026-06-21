@@ -13,7 +13,7 @@ This repository contains configuration files (markdown, shell scripts, JSON temp
 If you discover a security issue in any blueprint component (e.g., a hook script that could be exploited, a permission template that's too permissive, or a skill that could leak sensitive data), please:
 
 1. **Do NOT open a public issue**
-2. **Email**: Open a private security advisory via GitHub's [Security Advisories](https://github.com/faizkhairi/claude-code-blueprint/security/advisories/new)
+2. **Report**: Open a private security advisory via GitHub's [Security Advisories](https://github.com/faizkhairi/claude-code-blueprint/security/advisories/new)
 3. Include:
    - Which component is affected (hook, skill, agent, settings template)
    - Description of the vulnerability

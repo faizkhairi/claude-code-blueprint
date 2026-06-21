@@ -14,6 +14,8 @@ paths:
 ---
 ```
 
+> Note: always-on rules (e.g. `session-lifecycle.md`, `memory-session.md`) intentionally omit the `paths` field — they apply globally, not to a path glob.
+
 ## Rules in This Blueprint
 
 | Rule | Activates On | Purpose |

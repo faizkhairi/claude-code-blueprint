@@ -220,7 +220,7 @@ Clone 仓库，然后有选择地将组件复制到你的 `~/.claude/` 目录。
 在 GitHub 上浏览仓库，只复制你需要的特定文件。无需安装。
 
 ### 选项 D：自动设置
-从克隆或 Fork 的副本运行 `./setup.sh`。选择预设（minimal/standard/full），脚本将处理目录创建、文件复制、设置合并和占位符替换。参见 [SETUP.md](../SETUP.md)。
+从克隆或 Fork 的副本运行 `./setup.sh`。选择预设（minimal/standard/core/full），脚本将处理目录创建、文件复制、设置合并和占位符替换。参见 [SETUP.md](../SETUP.md)。
 
 ### Recommended adoption path
 

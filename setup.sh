@@ -66,7 +66,7 @@ print_usage() {
   echo "  --help             Show this help message"
   echo ""
   echo "Presets:"
-  echo "  minimal   3 files   CLAUDE.md + 2 hooks (60 seconds)"
+  echo "  minimal   4 files   CLAUDE.md + 2 hooks + settings.json (60 seconds)"
   echo "  standard  10 files  + 4 hooks, 2 agents, settings.json (5 minutes)"
   echo "  core      20 files  + 2 review agents, 6 skills, 2 rules (curated, broadly useful)"
   echo "  full      45 files  + all agents, skills, rules (10 minutes)"
@@ -258,6 +258,10 @@ select_preset() {
   echo ""
   echo "  Not sure? Start with Standard or Core. You can run this script again to add more later."
   echo ""
+  if ! [ -t 0 ]; then
+    log_error "No preset selected and not a TTY. Pass --preset=minimal|standard|core|full (or --yes)."
+    exit 1
+  fi
   read -r -p "  Select [1/2/3/4]: " choice
 
   case "$choice" in
@@ -634,7 +638,7 @@ replace_placeholders() {
   fi
 
   # Check if any installer-replaceable placeholders exist in installed files
-  if ! grep -rq '{PROJECTS_ROOT}\|{CLAUDE_CONFIG_PATH}\|{USER_NAME}\|{MEMORY_MD_PATH}' "${CLAUDE_DIR}/" 2>/dev/null; then
+  if ! grep -rqE '\{PROJECTS_ROOT\}|\{CLAUDE_CONFIG_PATH\}|\{USER_NAME\}|\{MEMORY_MD_PATH\}' "${CLAUDE_DIR}/" 2>/dev/null; then
     return
   fi
 

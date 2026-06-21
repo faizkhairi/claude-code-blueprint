@@ -9,7 +9,7 @@ The blueprint is a **Claude Harness** — a reference architecture for configuri
 ## Completed
 
 - **FAQ.md** -- 9 community questions answered (framework support, skill levels, plans, tools)
-- **setup.sh** -- Interactive installer with 3 presets (minimal/standard/full)
+- **setup.sh** -- Interactive installer with 4 presets (minimal/standard/core/full)
 - **SETUP.md** -- Action-focused setup guide with checklist and verification commands
 - **Beginner accessibility** -- Persona table above the fold, Level 1/2/3 progression, "Got This Link from a Colleague?" flow
 - **Framework-agnostic signaling** -- Hero subtitle, comparison table, GitHub topics and description updated
