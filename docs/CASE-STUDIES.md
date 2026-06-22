@@ -4,7 +4,7 @@ Real-world adopter stories. Before/after metrics, workflow changes, lessons lear
 
 ---
 
-## No case studies submitted yet — be the first
+## No Case Studies Submitted Yet — Be the First
 
 This file ships empty intentionally. We don't fabricate case studies, and we don't list ourselves as the canonical example (we'd be marking our own homework).
 
@@ -12,7 +12,7 @@ If you've adopted the blueprint and have something to share, we'd love a PR. The
 
 ---
 
-## How to submit
+## How to Submit
 
 1. **Fork** [the repo](https://github.com/faizkhairi/claude-code-blueprint) and create a branch.
 2. **Add a new H2 section** below this one using the template below.
@@ -22,7 +22,7 @@ For less formal sharing, post in [Discussions > Show & Tell](https://github.com/
 
 ---
 
-## Submission template
+## Submission Template
 
 Copy this and fill it in. Skip any field that doesn't apply.
 
@@ -62,7 +62,7 @@ Copy this and fill it in. Skip any field that doesn't apply.
 
 ---
 
-## What we hope to see
+## What We Hope to See
 
 Honest, specific stories. Not endorsements. Not marketing. The blueprint exists because someone learned hard lessons in production; case studies pay that forward.
 

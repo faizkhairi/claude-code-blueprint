@@ -2,7 +2,7 @@
 
 This project evolves based on real-world usage and community feedback. If you want to influence the direction, open a [Discussion](https://github.com/faizkhairi/claude-code-blueprint/discussions/categories/ideas) or submit a PR.
 
-The blueprint is a **Claude Harness** — a reference architecture for configuring Claude Code itself. It is intentionally framework-agnostic and tool-agnostic. Roadmap items must serve adoption, understanding, or community engagement around that mission. Items that contradict it (framework recipes, scaffolders, build tooling) are explicitly out of scope — see "Not Planned" below.
+The Claude Code Blueprint is a reference architecture for configuring Claude Code itself. It is intentionally framework-agnostic and tool-agnostic. Roadmap items must serve adoption, understanding, or community engagement around that mission. Items that contradict it (framework recipes, scaffolders, build tooling) are explicitly out of scope — see "Not Planned" below.
 
 ---
 

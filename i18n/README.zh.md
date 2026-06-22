@@ -9,7 +9,7 @@
 [![Stars](https://img.shields.io/github/stars/faizkhairi/claude-code-blueprint?style=flat)](https://github.com/faizkhairi/claude-code-blueprint/stargazers)
 [![Forks](https://img.shields.io/github/forks/faizkhairi/claude-code-blueprint?style=flat)](https://github.com/faizkhairi/claude-code-blueprint/network/members)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](../LICENSE)
-[![Claude Code](https://img.shields.io/badge/Claude%20Code-2.1.150-blueviolet)](https://docs.anthropic.com/en/docs/claude-code)
+[![Claude Code](https://img.shields.io/badge/Claude%20Code-compatible-blueviolet)](https://docs.anthropic.com/en/docs/claude-code)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](../CONTRIBUTING.md)
 
 **12 agents** · **17 skills** · **12 hooks** · **6 rules** -- 在真实项目中验证
@@ -53,6 +53,23 @@ curl -o CLAUDE.md https://raw.githubusercontent.com/faizkhairi/claude-code-bluep
 或者让 Claude 来设置 -- 粘贴到 Claude Code 会话中：*"设置 Claude Code Blueprint。将 CLAUDE.md 复制到我的项目根目录，在 ~/.claude/ 中设置 hooks 和设置。每一步都展示给我看。"*
 
 所有设置选项请参见 [SETUP.md](../SETUP.md)。
+
+---
+
+## What It Costs You (Token Budget)
+
+你复制的每个文件都是每次会话重复产生的上下文成本。下表列出了各组件的成本及其加载时机，供你决定添加哪些内容。数值均从实际文件测量得出（约每 token 4 个字符）：
+
+| 组件 | Token 成本 | 加载时机 |
+|-----------|-----------|--------------|
+| **CLAUDE.md** | ~2,300 | 每次会话开始时 |
+| **常驻规则**（session-lifecycle） | ~700 | 每次会话 |
+| **路径范围规则**（testing、schema、api） | ~850-1,450 | 仅当编辑匹配文件时 — 否则**为零** |
+| **技能**（review-full、test-check、deploy-check） | ~480-1,070 | 仅当使用其触发词时 |
+| **Hooks**（全部） | **为零** | 在 Claude 上下文之外运行 |
+| **agent**（每次生成） | 完整上下文窗口 | 仅当你调用时 |
+
+**经济性分析：** hooks 不消耗任何 token，路径范围规则在你修改对应文件之前不产生任何成本。循环产生的基础成本只有 CLAUDE.md（~2,300 token，约占典型会话的 3-5%）——而避免一次返工节省的远不止于此。参见[完整的组件成本明细与节省计算](../docs/BENCHMARKS.md#token-cost-per-component)。
 
 ---
 
