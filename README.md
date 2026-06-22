@@ -227,17 +227,9 @@ See [rules/README.md](rules/README.md) for creating custom rules.
 
 ## Getting Started
 
-### Option A: Fork (recommended)
-Fork this repo to customize it as your own living reference. You can pull upstream updates later as the blueprint evolves.
+[Quick Start](#quick-start) above is the fast path -- copy `CLAUDE.md` and you're going in 60 seconds. When you want more: **[SETUP.md](SETUP.md)** covers every install option (fork, clone, cherry-pick, or `./setup.sh` with presets), and **[GETTING-STARTED.md](GETTING-STARTED.md)** walks a complete beginner through it step by step.
 
-### Option B: Clone + Copy
-Clone the repo, then selectively copy components into your `~/.claude/` directory.
-
-### Option C: Cherry-pick
-Browse the repo on GitHub and copy only the specific files you need. No installation required.
-
-### Option D: Automated Setup
-Run `./setup.sh` from a cloned or forked copy. Choose a preset (minimal/standard/core/full) and the script handles directory creation, file copying, settings merge, and placeholder replacement. See [SETUP.md](SETUP.md).
+Then grow into the rest with this order:
 
 ### Recommended adoption path
 
