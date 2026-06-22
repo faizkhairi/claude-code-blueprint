@@ -19,7 +19,7 @@ This is a collection of configuration files that make Claude Code smarter, safer
 Welcome. Here's your fastest path:
 
 1. **Right now (60 seconds):** Open [CLAUDE.md](CLAUDE.md) in this repo. Click "Raw" (top-right), copy everything, and paste it into a new file called `CLAUDE.md` in your project's root folder.
-2. **Start using Claude Code normally.** No special prompts needed. Claude automatically reads CLAUDE.md and follows the three rules inside it (Verify-After-Complete, Diagnose-First, Plan-First).
+2. **Start using Claude Code normally.** No special prompts needed. Claude automatically reads CLAUDE.md and follows the four rules inside it (Verify-After-Complete, Diagnose-First, Plan-First, Verify-Before-Exit-Plan).
 3. **When curious:** Read the rest of this section to understand what Claude Code is and how to access it.
 4. **When ready for more:** Follow the [recommended adoption path](README.md#recommended-adoption-path) to add hooks, agents, and skills incrementally.
 

@@ -28,29 +28,30 @@
 
 ## Quick Start
 
-Copy one file. Get four behavioral rules. Done in 60 seconds.
+**Do this first.** Copy one file into your project and you're done in 60 seconds:
 
 ```bash
 # In your project root
 curl -o CLAUDE.md https://raw.githubusercontent.com/faizkhairi/claude-code-blueprint/main/CLAUDE.md
 ```
 
-This gives Claude Code three rules that prevent the most common AI coding mistakes:
+That gives Claude Code four behavioral rules that prevent the most common AI coding mistakes: **Verify-After-Complete** · **Diagnose-First** · **Plan-First** · **Verify-Before-Exit-Plan**. That's the whole first step — try it, then come back for more.
 
-**Verify-After-Complete** · **Diagnose-First** · **Plan-First**
+<details>
+<summary><strong>Want more than CLAUDE.md?</strong> (hooks, agents, settings)</summary>
 
-Ready for more? See the [full adoption path](#recommended-adoption-path) or the [30-minute beginner guide](GETTING-STARTED.md). New to Claude Code? See [who this is for](#who-is-this-for) or the [FAQ](FAQ.md).
-
-**Want more than CLAUDE.md?** Install hooks, agents, and settings automatically:
+Once CLAUDE.md is working, add the rest. Easiest path -- run the installer from a cloned/forked copy:
 
 ```bash
-# From a cloned/forked copy of this repo
 ./setup.sh --preset=standard
 ```
 
 Or let Claude do it -- paste into a Claude Code session: *"Set up the Claude Code Blueprint. Copy CLAUDE.md to my project root, set up hooks and settings in ~/.claude/. Show me each step."*
 
-See [SETUP.md](SETUP.md) for all setup options including a verification checklist.
+For every install option (fork / clone / cherry-pick / presets) plus a verification checklist, see **[SETUP.md](SETUP.md)**.
+</details>
+
+**New to Claude Code, or want the guided version?** The **[beginner guide](GETTING-STARTED.md)** walks you through the same thing step by step. Curious who this is for? See [Who Is This For](#who-is-this-for) below.
 
 ---
 
@@ -227,7 +228,7 @@ See [rules/README.md](rules/README.md) for creating custom rules.
 
 ## Getting Started
 
-[Quick Start](#quick-start) above is the fast path -- copy `CLAUDE.md` and you're going in 60 seconds. When you want more: **[SETUP.md](SETUP.md)** covers every install option (fork, clone, cherry-pick, or `./setup.sh` with presets), and **[GETTING-STARTED.md](GETTING-STARTED.md)** walks a complete beginner through it step by step.
+[Quick Start](#quick-start) above is the fast path -- copy `CLAUDE.md` and you're going in 60 seconds. For the next step, pick the doc that fits you: **new to Claude Code?** Read **[GETTING-STARTED.md](GETTING-STARTED.md)** (concepts + a guided walkthrough). **Just want the install commands and presets?** Go straight to **[SETUP.md](SETUP.md)** (every option + a verification checklist).
 
 Then grow into the rest with this order:
 
