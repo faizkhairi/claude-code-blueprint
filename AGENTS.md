@@ -7,7 +7,7 @@ You are an AI assistant (Claude, Cursor, Codex, Gemini, or other) helping a user
 A **library of ready-to-copy files** (CLAUDE.md, hooks, agents, skills, rules) that a developer mixes into their own project to make Claude Code more reliable and consistent. It is **not** software to install — there is no package, no binary, no `npm install`.
 
 The user typically does one of three things:
-1. **Copy `CLAUDE.md` only** (60-second adoption) — gets 3 behavioral rules
+1. **Copy `CLAUDE.md` only** (60-second adoption) — gets 4 behavioral rules
 2. **Run `./setup.sh --preset=standard`** — copies hooks + settings + rules + opt-in memory
 3. **Fork and adapt** — clone, edit, commit shared config to their team
 

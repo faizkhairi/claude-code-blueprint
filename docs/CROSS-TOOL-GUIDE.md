@@ -99,7 +99,7 @@ Agent profiles are Markdown files with YAML frontmatter:
 name: security-reviewer
 description: Reviews code for security vulnerabilities
 tools: ["read", "search", "edit"]
-model: claude-opus-4-6
+model: claude-opus-4-8
 ---
 Review the code for OWASP Top 10 vulnerabilities...
 ```

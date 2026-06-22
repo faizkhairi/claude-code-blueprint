@@ -9,7 +9,7 @@
 [![Stars](https://img.shields.io/github/stars/faizkhairi/claude-code-blueprint?style=flat)](https://github.com/faizkhairi/claude-code-blueprint/stargazers)
 [![Forks](https://img.shields.io/github/forks/faizkhairi/claude-code-blueprint?style=flat)](https://github.com/faizkhairi/claude-code-blueprint/network/members)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Claude Code](https://img.shields.io/badge/Claude%20Code-2.1.150-blueviolet)](https://docs.anthropic.com/en/docs/claude-code)
+[![Claude Code](https://img.shields.io/badge/Claude%20Code-compatible-blueviolet)](https://docs.anthropic.com/en/docs/claude-code)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
 **11 agents** · **17 skills** · **10 hooks** · **5 rules** — copy only what you need, or install a preset (minimal / standard / core / full)
@@ -87,7 +87,7 @@ Every file you copy is a recurring per-session context cost. Here is what each c
 ### Your Progression
 
 **Level 1 -- Start here (60 seconds)**
-Copy CLAUDE.md into your project. Three behavioral rules. Immediate impact.
+Copy CLAUDE.md into your project. Four behavioral rules. Immediate impact.
 
 **Level 2 -- Add safety nets (5 minutes)**
 Add 2-3 hooks. Zero token cost. Automated config protection and edit verification.
@@ -104,7 +104,7 @@ Other repos dump dozens of agents on you. We give you **11** -- and explain why 
 | This Blueprint | Generic Config Repos |
 |---------------|---------------------|
 | Every component has a [battle story](docs/WHY.md) explaining why it exists | Configs without context |
-| [3 behavioral rules](CLAUDE.md) that prevent AI coding mistakes | Lists of settings to copy |
+| [4 behavioral rules](CLAUDE.md) that prevent AI coding mistakes | Lists of settings to copy |
 | [Cross-tool guide](docs/CROSS-TOOL-GUIDE.md) for 10 other tools (Copilot, Cursor, Cline, Roo Code, OpenCode, and more) | Single-tool only |
 | [Beginner-friendly](GETTING-STARTED.md) with 6 adoption personas | Assumed expertise |
 | [Smoke-tested hooks](hooks/test-hooks.sh) with 35 automated tests | Untested scripts |
@@ -174,7 +174,7 @@ See [skills/README.md](skills/README.md) for customization and placeholder varia
 | Stop | security check + cost-tracker.sh + session-checkpoint.sh | Last defense + metrics |
 | SessionEnd | session-checkpoint.sh | Guaranteed final save |
 
-Plus 2 utility scripts: `verify-mcp-sync.sh` (MCP config checker) and `status-line.sh` (branch/project status). The 11th file in the folder is `test-hooks.sh` — the local test harness, run via `bash hooks/test-hooks.sh` to verify all hooks. It's not deployed to `~/.claude/hooks/` and isn't counted in the "10 hooks" total.
+Plus 2 utility scripts: `verify-mcp-sync.sh` (MCP config checker) and `status-line.sh` (branch/project status), both deployed by the full preset. The 11th file in the folder is `test-hooks.sh` — the local test harness, run via `bash hooks/test-hooks.sh` to verify all hooks. It's the only one not deployed to `~/.claude/hooks/`, and isn't counted in the "10 hooks" total.
 
 Run `bash hooks/test-hooks.sh` to verify all hooks pass (35 automated tests).
 

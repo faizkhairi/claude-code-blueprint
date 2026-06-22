@@ -6,7 +6,7 @@ Action-focused setup for the Claude Code Blueprint. For explanations and backgro
 
 ## Quick Setup (60 seconds)
 
-Copy one file. Three behavioral rules. No installation needed.
+Copy one file. Four behavioral rules. No installation needed.
 
 ```bash
 # In your project root

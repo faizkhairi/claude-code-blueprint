@@ -26,7 +26,7 @@ winget install gitleaks
 ```bash
 #!/bin/bash
 INPUT=$(cat)
-COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // ""' 2>/dev/null)
+COMMAND=$(echo "$INPUT" | python -c "import sys,json; print(json.load(sys.stdin).get('tool_input',{}).get('command',''))" 2>/dev/null)
 
 # Only intercept git commit (skip non-commit commands)
 if ! echo "$COMMAND" | grep -qE 'git commit( |$)'; then exit 0; fi

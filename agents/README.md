@@ -2,7 +2,7 @@
 
 11 specialized subagents with model tiering, permission modes, and worktree isolation.
 
-## The EXCELLENT Pattern
+## The Standard Agent Pattern
 
 Every agent follows this structure:
 1. **Frontmatter**: name, description, model, tools, maxTurns, permissionMode, memory
