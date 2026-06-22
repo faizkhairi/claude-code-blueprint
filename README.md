@@ -87,14 +87,7 @@ Every file you copy is a recurring per-session context cost. Here is what each c
 
 ### Your Progression
 
-**Level 1 -- Start here (60 seconds)**
-Copy CLAUDE.md into your project. Four behavioral rules. Immediate impact.
-
-**Level 2 -- Add safety nets (5 minutes)**
-Add 2-3 hooks. Zero token cost. Automated config protection and edit verification.
-
-**Level 3 -- Customize as you grow (ongoing)**
-Add agents, skills, rules, and memory as your workflow matures. The `core` preset is a good next step -- a curated set of review/test/deploy skills and two path-scoped rules, without the full specialist ecosystem. See [Presets](docs/PRESETS.md) for ready-to-copy configurations.
+Grow as you need to: start with CLAUDE.md (above), add a few hooks, then add agents/skills/rules as your workflow matures. The `core` preset is a good middle step. The exact order is in the [Recommended adoption path](#recommended-adoption-path) below, and [Presets](docs/PRESETS.md) has ready-to-copy configurations for each tier.
 
 ---
 

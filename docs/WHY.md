@@ -111,7 +111,7 @@ This reduced costs significantly while maintaining quality where it matters.
 
 **What we learned:** Agents that are meant to analyze should not have write access. The temptation to "fix while analyzing" is strong, and without explicit constraints, agents will act on what they find.
 
-**What we built:** Analysis-only agents (`verify-plan`, `code-reviewer`, `security-reviewer`, `db-analyst`, `devops-engineer`, `api-documenter`) use `permissionMode: plan`, which restricts them to read-only tools. They can Read, Grep, and Glob — but not Write, Edit, or Bash. Their findings go into their response, not into the codebase.
+**What we built:** Analysis-only agents (`verify-plan`, `code-reviewer`, `security-reviewer`, `db-analyst`, `devops-engineer`, `api-documenter`, `architecture-reviewer`) use `permissionMode: plan`, which restricts them to read-only tools. They can Read, Grep, and Glob — but not Write, Edit, or Bash. Their findings go into their response, not into the codebase.
 
 ---
 
