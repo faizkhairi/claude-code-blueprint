@@ -8,9 +8,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and the 
 
 ### Added
 
-- `release` skill -- orchestrates a GitHub release (semver bump, CHANGELOG, tag, push, `gh release create`), reusing the changelog skill for notes. [PR #29]
-- `oss-contribute` skill -- end-to-end open-source contribution flow: verify issue availability, match the project's CI conventions, pre-PR leak + triple-check, submit. [PR #29]
-- `npm-publish` skill -- safe public npm publish: pre-publish checklist, passkey/web-auth or token publish, post-publish verification, GitHub release. [PR #29]
 - `testing-general` rule -- framework-agnostic testing conventions (discover-don't-assume, Arrange/Act/Assert, deterministic tests) that complement the stack-specific testing.md. [PR #29]
 - `pre-commit-secret-scan.sh` hook -- runs gitleaks on staged content before `git commit` and blocks the commit if a secret is detected (fails open if gitleaks is not installed). [PR #28]
 - `instructions-loaded.sh` hook -- logs which CLAUDE.md and rules files load into context and why, making path-scoped rule injection observable. [PR #28]
