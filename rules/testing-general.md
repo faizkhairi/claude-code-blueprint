@@ -41,5 +41,5 @@ These apply to ANY project's tests (fires on all test files). A project-specific
 - Run the full suite; it must be GREEN (not "mostly passing").
 - New feature/branch -> matching test exists in the diff.
 - No skipped tests left unexplained; no `console.log`/debug debris in test files.
-- For a public/OSS project, match the repo's OWN lint+test conventions exactly
-  (see the `oss-contribute` skill), not these defaults, where they differ.
+- For a public/OSS project, match the repo's OWN lint+test conventions exactly,
+  not these defaults, where they differ.

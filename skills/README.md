@@ -12,10 +12,8 @@
 | **Planning** | sprint-plan, elicit-requirements | "let's build", "new feature", multi-step tasks |
 | **Session** | load-session, save-session, session-end, save-diary | Session start/end, "save", "bye", "done" |
 | **Project** | scaffold-project, register-project, status, changelog | "new project", "register project", "status" |
-| **Release** | release, npm-publish | "cut a release", "publish to npm", "tag a release" |
 | **Database** | db-check | "check the schema", "database health", "validate models" |
 | **Utilities** | tech-radar | "what's new?", "any updates?", "should we upgrade?" |
-| **Open Source** | oss-contribute | "contribute to", "open a PR to", "submit a PR to <repo>" |
 
 ## Design Principles
 
