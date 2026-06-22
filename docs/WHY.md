@@ -48,6 +48,26 @@ Every component in this blueprint exists because something went wrong without it
 
 ---
 
+### Secret-Scan Hook: Why Block at Commit Time
+
+**What happened:** A config file with a real API key was staged and committed. The key lived in git history from that moment -- even though it was removed in the very next commit, history is forever, and the credential had to be rotated. The commit itself looked routine; nothing flagged it.
+
+**What we learned:** The cheapest place to stop a leaked secret is *before* it enters history. A `.gitignore` only helps if you remember to list the file; a post-hoc scan finds the secret after it's already committed. The commit boundary is the right gate.
+
+**What we built:** A `PreToolUse` hook that runs `gitleaks protect --staged` before any `git commit` and blocks (exit 2) if a secret is detected. This is the one hook that intentionally blocks -- a committed credential is worth stopping. It fails open: if gitleaks isn't installed, it warns once and allows the commit, so it never gets in your way for a missing tool.
+
+---
+
+### InstructionsLoaded Hook: Why Make Rule-Loading Observable
+
+**What happened:** A path-scoped rule (load only when editing schema files) was written, but it wasn't clear whether it actually fired when the relevant files were opened. The rule's effect was indirect, so the only evidence was Claude's behavior -- which is not a reliable signal for "did this specific file load into context?"
+
+**What we learned:** Path-scoped rules are powerful but invisible. You configure a `paths:` glob and trust it works, with no feedback loop. When a rule silently fails to load, you get worse behavior with no error to point at.
+
+**What we built:** An `InstructionsLoaded` hook that logs every CLAUDE.md / rules file as it loads -- with the reason (session start, path-glob match, nested) -- to `~/.claude/logs/instructions-loaded.log`. It's observability only (it can't block), but it turns "I think the rule fired" into an audit trail you can actually check.
+
+---
+
 ## Agents
 
 ### Model Tiering: Why Not All Opus
@@ -58,7 +78,7 @@ Every component in this blueprint exists because something went wrong without it
 
 **What we built:** A three-tier model strategy:
 - **Opus**: Architecture, planning, complex multi-system design (1 agent)
-- **Sonnet**: Implementation, review, analysis, testing (8 agents)
+- **Sonnet**: Implementation, review, analysis, testing (9 agents)
 - **Haiku**: Documentation, API docs (2 agents)
 
 This reduced costs significantly while maintaining quality where it matters.
@@ -72,6 +92,16 @@ This reduced costs significantly while maintaining quality where it matters.
 **What we learned:** Self-review in the same context window has inherent blind spots. The reviewer sees what the author saw — including the author's assumptions. A fresh context window means fresh attention patterns, which catch things that in-context review cannot.
 
 **What we built:** Review agents (`verify-plan`, `code-reviewer`, `security-reviewer`) use `isolation: worktree`, which gives them a clean git worktree and a fresh context window. They see the plan or code cold, without the planning session's assumptions. This consistently catches issues that 3+ rounds of in-context review miss.
+
+---
+
+### Architecture Reviewer: Why Structural Review Needs Its Own Agent
+
+**What happened:** A code review agent approved a refactor -- the code was clean, tested, and followed style conventions. But three weeks later, a simple feature change required edits across seven files, because a UI component had been importing directly from the data layer. The dependency direction was inverted. The code-level review never caught it because each individual file looked fine; the problem was the *relationships between* files.
+
+**What we learned:** Code review and architecture review answer different questions. Code review asks "is this file correct?" Architecture review asks "do these files relate correctly?" A reviewer focused on line-level quality has no reason to trace import chains across directories or flag a god file -- those are structural properties, invisible at the diff level.
+
+**What we built:** A dedicated `architecture-reviewer` agent (sonnet, `permissionMode: plan`, `isolation: worktree`) that checks the things code review misses: dependency direction (imports should flow inward), circular dependencies, god files, dead exports, and feature-vs-layer modularity. It outputs an architecture health score, not a line-by-line critique. Run it after a significant refactor or when picking up an unfamiliar codebase.
 
 ---
 

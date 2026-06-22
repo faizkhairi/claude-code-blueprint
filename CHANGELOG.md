@@ -8,6 +8,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and the 
 
 ### Added
 
+- `pre-commit-secret-scan.sh` hook -- runs gitleaks on staged content before `git commit` and blocks the commit if a secret is detected (fails open if gitleaks is not installed). [PR #28]
+- `instructions-loaded.sh` hook -- logs which CLAUDE.md and rules files load into context and why, making path-scoped rule injection observable. [PR #28]
+- `architecture-reviewer` agent -- structural review (dependency direction, circular deps, god files, dead code, modularity) that complements the line-level code-reviewer. [PR #28]
 - `core` install preset -- a curated middle tier between `standard` and `full`, adding two review agents (security-reviewer, qa-tester), six broadly-useful skills (review-full, review-diff, test-check, deploy-check, db-check, changelog), and two path-scoped rules (testing, database-schema). [PR #14]
 - A token-budget table in the README showing the context cost of each component and when it loads, so you can decide what to copy on a per-token basis. [PR #13]
 - A CI link check (lychee) that verifies every Markdown link on each push and pull request. [PR #13]
