@@ -318,9 +318,9 @@ The Stop hook uses `"model": "sonnet"` for its security verification prompt. Thi
 
 | Model | Input (per 1M tokens) | Output (per 1M tokens) | Used By |
 |-------|----------------------|------------------------|---------|
-| Opus | $5 | $25 | project-architect agent |
-| Sonnet | $3 | $15 | 8 implementation/review agents + Stop hook |
-| Haiku | $1 | $5 | docs-writer, api-documenter agents |
+| Opus | $15 | $75 | project-architect agent |
+| Sonnet | $3 | $15 | 9 implementation/review agents + Stop hook |
+| Haiku | $0.80 | $4 | docs-writer, api-documenter agents |
 
 ### What Drives Cost Up
 

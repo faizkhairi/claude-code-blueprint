@@ -28,7 +28,7 @@
 
 ## Quick Start
 
-Copy one file. Get three behavioral rules. Done in 60 seconds.
+Copy one file. Get four behavioral rules. Done in 60 seconds.
 
 ```bash
 # In your project root
@@ -107,7 +107,7 @@ Other repos dump dozens of agents on you. We give you **12** -- and explain why 
 | [4 behavioral rules](CLAUDE.md) that prevent AI coding mistakes | Lists of settings to copy |
 | [Cross-tool guide](docs/CROSS-TOOL-GUIDE.md) for 10 other tools (Copilot, Cursor, Cline, Roo Code, OpenCode, and more) | Single-tool only |
 | [Beginner-friendly](GETTING-STARTED.md) with 6 adoption personas | Assumed expertise |
-| [Smoke-tested hooks](hooks/test-hooks.sh) with 35 automated tests | Untested scripts |
+| [Smoke-tested hooks](hooks/test-hooks.sh) with 43 automated tests | Untested scripts |
 | Safety-first: [config placement guide](GETTING-STARTED.md#where-config-belongs-project-vs-personal), privacy warnings, [graceful degradation](agents/README.md#agents-are-not-infallible) | No safety guidance |
 | [Framework-agnostic](FAQ.md#what-framework-or-language-does-this-work-with): works with any language and stack | Assumes a specific language/framework |
 
@@ -133,6 +133,7 @@ Other repos dump dozens of agents on you. We give you **12** -- and explain why 
 | verify-plan | sonnet | 7-point mechanical plan verification (read-only) |
 | docs-writer | haiku | README, API docs, changelogs, architecture docs |
 | api-documenter | haiku | OpenAPI specs, integration guides (read-only) |
+| architecture-reviewer | sonnet | Dependency direction, god files, dead code, modularity (read-only) |
 
 See [agents/README.md](agents/README.md) for permission modes, cost estimates, and maxTurns.
 
@@ -176,7 +177,7 @@ See [skills/README.md](skills/README.md) for customization and placeholder varia
 
 Plus 2 utility scripts: `verify-mcp-sync.sh` (MCP config checker) and `status-line.sh` (branch/project status), both deployed by the full preset. The 13th file in the folder is `test-hooks.sh` — the local test harness, run via `bash hooks/test-hooks.sh` to verify all hooks. It's the only one not deployed to `~/.claude/hooks/`, and isn't counted in the "12 hooks" total.
 
-Run `bash hooks/test-hooks.sh` to verify all hooks pass (35 automated tests).
+Run `bash hooks/test-hooks.sh` to verify all hooks pass (43 automated tests).
 
 See [hooks/README.md](hooks/README.md) for the full lifecycle, testing guide, and design principles.
 
@@ -192,6 +193,7 @@ See [hooks/README.md](hooks/README.md) for the full lifecycle, testing guide, an
 | api-endpoints | `**/server/api/**/*.{js,ts}` | API route conventions |
 | database-schema | `**/prisma/**`, `**/drizzle/**`, `**/migrations/**` | Schema design patterns |
 | testing | `**/*.test.*`, `**/*.spec.*` | Test writing conventions |
+| testing-general | `**/*.test.*`, `**/*.spec.*` | Framework-agnostic testing conventions (companion to testing) |
 | session-lifecycle | Always | Session start/end behaviors |
 | memory-session | `**/memory/**` | Memory repository session management |
 

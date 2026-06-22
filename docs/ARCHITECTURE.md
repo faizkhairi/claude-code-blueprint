@@ -79,7 +79,7 @@ Session End
 | Model | Cost | Use For | Agents |
 |-------|------|---------|--------|
 | **Opus** | $$$ | Complex architecture, multi-system planning | project-architect |
-| **Sonnet** | $$ | Implementation, review, analysis | 8 agents (backend, frontend, code-reviewer, etc.) |
+| **Sonnet** | $$ | Implementation, review, analysis | 9 agents (backend, frontend, code-reviewer, etc.) |
 | **Haiku** | $ | Documentation, API docs | docs-writer, api-documenter |
 
 ### When to Use Each Model
