@@ -258,11 +258,13 @@ select_preset() {
   echo ""
   echo "  Not sure? Start with Standard or Core. You can run this script again to add more later."
   echo ""
-  if ! [ -t 0 ]; then
-    log_error "No preset selected and not a TTY. Pass --preset=minimal|standard|core|full (or --yes)."
+  # Read the menu choice. A failed read (EOF / no input on a non-TTY) exits cleanly
+  # instead of hanging; piped input (e.g. `echo 3 | setup.sh`) still works because
+  # read succeeds with the piped value.
+  if ! read -r -p "  Select [1/2/3/4]: " choice; then
+    log_error "No preset selected (no input / EOF). Pass --preset=minimal|standard|core|full (or --yes)."
     exit 1
   fi
-  read -r -p "  Select [1/2/3/4]: " choice
 
   case "$choice" in
     1) PRESET="minimal" ;;
