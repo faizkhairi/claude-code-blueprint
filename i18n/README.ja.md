@@ -9,7 +9,7 @@
 [![Stars](https://img.shields.io/github/stars/faizkhairi/claude-code-blueprint?style=flat)](https://github.com/faizkhairi/claude-code-blueprint/stargazers)
 [![Forks](https://img.shields.io/github/forks/faizkhairi/claude-code-blueprint?style=flat)](https://github.com/faizkhairi/claude-code-blueprint/network/members)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](../LICENSE)
-[![Claude Code](https://img.shields.io/badge/Claude%20Code-2.1.150-blueviolet)](https://docs.anthropic.com/en/docs/claude-code)
+[![Claude Code](https://img.shields.io/badge/Claude%20Code-compatible-blueviolet)](https://docs.anthropic.com/en/docs/claude-code)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](../CONTRIBUTING.md)
 
 **12 agents** · **17 skills** · **12 hooks** · **6 rules** -- 実際のプロジェクトで検証済み
@@ -53,6 +53,23 @@ curl -o CLAUDE.md https://raw.githubusercontent.com/faizkhairi/claude-code-bluep
 または Claude に設定を任せましょう -- Claude Code セッションに貼り付け: *「Claude Code Blueprint をセットアップしてください。CLAUDE.md をプロジェクトルートにコピーし、hook と設定を ~/.claude/ に設定してください。各ステップを見せてください。」*
 
 すべてのセットアップオプションについては [SETUP.md](../SETUP.md) をご覧ください。
+
+---
+
+## What It Costs You (Token Budget)
+
+コピーするファイルはすべて、セッションごとに繰り返し発生するコンテキストコストになります。各コンポーネントのコストとロードされるタイミングを以下に示しますので、何を追加するか判断の参考にしてください。数値は実際のファイルから計測したものです（1トークンあたり約4文字）：
+
+| コンポーネント | トークンコスト | ロードされるタイミング |
+|-----------|-----------|---------------|
+| **CLAUDE.md** | ~2,300 | 毎セッション開始時 |
+| **常時オンのルール**（session-lifecycle） | ~700 | 毎セッション |
+| **パススコープルール**（testing、schema、api） | ~850-1,450 | 対象ファイルを編集するときのみ — それ以外は**ゼロ** |
+| **スキル**（review-full、test-check、deploy-check） | ~480-1,070 | そのトリガーフレーズが使われたときのみ |
+| **Hooks**（すべて） | **ゼロ** | Claude のコンテキスト外で実行される |
+| **agent**（スポーンごと） | フルコンテキストウィンドウ | 呼び出したときのみ |
+
+**経済性：** hooks はトークンを消費せず、パススコープルールは対象ファイルに触れるまでコストがかかりません。繰り返し発生するベースラインは CLAUDE.md のみ（~2,300 トークン、典型的なセッションの約 3-5%）— そして、やり直しを一度防ぐだけでそれをはるかに上回る節約になります。[コンポーネントごとの詳細な内訳と節約計算](../docs/BENCHMARKS.md#token-cost-per-component)をご覧ください。
 
 ---
 
