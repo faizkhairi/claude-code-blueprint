@@ -128,7 +128,7 @@ Common issues and fixes. Search this page (Ctrl+F) for your error message or sym
 
 1. **CLAUDE.md is too long.** Claude Code loads CLAUDE.md into the context window. Very long files (200+ lines) dilute attention -- rules at the bottom get less weight. Keep CLAUDE.md under 100 lines and extract details into topic files or [path-scoped rules](rules/).
 
-2. **Conflicting plugin instructions.** Plugins can inject their own instructions that compete with yours. Audit installed plugins and disable any that override CLAUDE.md or inject prompts on SessionStart. See [README.md](README.md#plugin-compatibility).
+2. **Conflicting plugin instructions.** Plugins can inject their own instructions that compete with yours. Audit installed plugins and disable any that override CLAUDE.md or inject prompts on SessionStart. See [README.md](README.md).
 
 3. **Rule is guidance, not enforcement.** CLAUDE.md rules are followed most of the time -- but they're guidelines, not guarantees. If something MUST happen, make it a [hook](hooks/). Hooks fire deterministically, every time.
 

@@ -60,7 +60,7 @@ You can improve Claude Code in under a minute by adding just one file:
 
 **Step 3.** Start Claude Code in that folder. It automatically reads CLAUDE.md and follows the rules inside it.
 
-**That's it.** You just gave Claude Code three behavioral rules that prevent the most common AI coding mistakes:
+**That's it.** You just gave Claude Code four behavioral rules that prevent the most common AI coding mistakes:
 - **Verify-After-Complete** — Claude must prove its work before saying "done"
 - **Diagnose-First** — Claude investigates before jumping to fixes
 - **Plan-First** — Claude designs an approach before making changes

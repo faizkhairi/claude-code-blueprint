@@ -30,10 +30,10 @@ The user typically does one of three things:
 | `FAQ.md` | Common questions |
 | `TROUBLESHOOTING.md` | Common errors and fixes |
 | `setup.sh` | Interactive installer |
-| `agents/` | 11 reusable agent templates the user can drop into `~/.claude/agents/` |
+| `agents/` | 12 reusable agent templates the user can drop into `~/.claude/agents/` |
 | `skills/` | 17 reusable skill templates for `~/.claude/skills/` |
 | `hooks/` | 10 hook scripts for `~/.claude/hooks/` (plus `test-hooks.sh`, the local test harness — not deployed) |
-| `rules/` | 5 example rule files for `~/.claude/rules/` |
+| `rules/` | 6 example rule files for `~/.claude/rules/` |
 | `examples/` | Reference `settings.json` template (framework-agnostic) |
 | `memory/` | Built-in memory system: enabled via setup.sh (Y/n), git-ignored by default for privacy |
 | `docs/` | Deep reference docs (architecture, benchmarks, settings, etc.) |

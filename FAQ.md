@@ -21,7 +21,7 @@ These are the questions we hear most from the community. If yours isn't here, [o
 
 **Yes.** The blueprint has a graduated adoption path -- you don't need to understand all 12 agents on day one.
 
-- **Level 1 (60 seconds):** Copy [CLAUDE.md](CLAUDE.md) into your project root. This single file gives Claude Code three behavioral rules that prevent the most common AI coding mistakes. No configuration, no terminal commands, no dependencies.
+- **Level 1 (60 seconds):** Copy [CLAUDE.md](CLAUDE.md) into your project root. This single file gives Claude Code four behavioral rules that prevent the most common AI coding mistakes. No configuration, no terminal commands, no dependencies.
 - **Level 2 (5 minutes):** Add 2-3 hooks for automated safety (config protection, edit verification). See [PRESETS.md](docs/PRESETS.md#minimal) for the minimal preset.
 - **Level 3 (ongoing):** Add agents, skills, rules, and memory as your workflow matures. You'll know when you need them.
 - The [Getting Started guide](GETTING-STARTED.md#new-to-claude-code-start-here) assumes zero prior experience and walks you through everything step by step.
@@ -74,7 +74,7 @@ These are the questions we hear most from the community. If yours isn't here, [o
 
 - MCP plugins (Playwright, Context7, Docker) work well alongside the blueprint because they provide capabilities, not behavioral constraints.
 - Plugins that modify CLAUDE.md or inject prompts can interfere. Audit any plugin that touches hooks, session start, or behavioral rules.
-- See the [Plugin Compatibility](README.md#plugin-compatibility) section in the README for specific guidance.
+- See the [Plugin Compatibility](README.md) section in the README for specific guidance.
 
 ---
 

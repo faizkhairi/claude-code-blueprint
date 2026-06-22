@@ -280,7 +280,7 @@ Claude Code lets you create specialized subagents with their own instructions, m
 
 **Windsurf** runs up to 5 parallel Cascade agents using Git worktrees (each gets its own branch), but does not support custom subagent definitions -- they're full Cascade instances, not lightweight task-specific agents.
 
-**Aider** -- single-agent tool with no subagent support. Third-party MCP servers (e.g. `aider-mcp-server`) allow other tools to delegate to Aider, but Aider itself does not spawn sub-agents.
+**Aider** -- single-agent tool with no subagent support. Third-party MCP servers (e.g. `aider-mcp-server`) allow other tools to delegate to Aider, but Aider itself does not spawn subagents.
 
 **What to copy:** The agent `.md` files from this blueprint can be adapted as **skill bodies** under `~/.cursor/skills/`, `.agent.md` profiles for Copilot, agent configs for Amazon Q / OpenCode, or as instruction sets for Codex/Gemini subagents. The pattern -- separate concerns for architecture, implementation, review, and testing -- is tool-agnostic.
 
