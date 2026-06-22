@@ -12,7 +12,7 @@
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-compatible-blueviolet)](https://docs.anthropic.com/en/docs/claude-code)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
-**12 agents** · **17 skills** · **12 hooks** · **5 rules** — copy only what you need, or install a preset (minimal / standard / core / full)
+**12 agents** · **20 skills** · **12 hooks** · **6 rules** — copy only what you need, or install a preset (minimal / standard / core / full)
 
 [English](README.md) | [日本語](i18n/README.ja.md) | [한국어](i18n/README.ko.md) | [简体中文](i18n/README.zh.md)
 
@@ -139,7 +139,7 @@ See [agents/README.md](agents/README.md) for permission modes, cost estimates, a
 </details>
 
 <details>
-<summary><strong>17 Skills</strong> -- Natural-language-triggered workflows (no slash commands needed)</summary>
+<summary><strong>20 Skills</strong> -- Natural-language-triggered workflows (no slash commands needed)</summary>
 
 &nbsp;
 
@@ -183,7 +183,7 @@ See [hooks/README.md](hooks/README.md) for the full lifecycle, testing guide, an
 </details>
 
 <details>
-<summary><strong>5 Rules</strong> -- Path-scoped behavioral constraints (load only when editing matching files)</summary>
+<summary><strong>6 Rules</strong> -- Path-scoped behavioral constraints (load only when editing matching files)</summary>
 
 &nbsp;
 
