@@ -2,6 +2,8 @@
 
 This guide is for anyone who wants to get more out of Claude Code — whether you're a complete beginner or an experienced developer looking to level up your setup. No prior experience required.
 
+> **How to read this:** start with the hands-on path — **[New to Claude Code? Start Here](#new-to-claude-code-start-here)** → **[Prerequisites](#prerequisites)** → **[Your First 30 Minutes](#your-first-30-minutes)**. That gets you a working setup. The deeper topics below (MCP servers, plugins, teams, memory) are optional — read them when you need them. New to the terms (agent, skill, hook, rule)? Jump to **[The Building Blocks (Glossary)](#the-building-blocks-glossary)** any time.
+
 ---
 
 ## New to Claude Code? Start Here
@@ -202,6 +204,98 @@ If you plan to use any of the [12 agents](agents/) in this blueprint, you must e
 ```
 
 Without this, the Agent tool is unavailable and all multi-agent workflows (parallel reviews, sprint planning, specialist agents) are non-functional. See [SETTINGS-GUIDE.md](docs/SETTINGS-GUIDE.md#claude_code_experimental_agent_teams) for the full explanation.
+
+---
+
+## Your First 30 Minutes
+
+Here's what to do right now to get the most out of Claude Code:
+
+### Minute 0-5: Install and Create CLAUDE.md
+
+```bash
+# In your project root
+claude  # start Claude Code
+```
+
+Copy the [CLAUDE.md](CLAUDE.md) from this blueprint into your project root. This alone gives you:
+- Verify-After-Complete rule (prevents "done" without proof)
+- Diagnose-First rule (prevents wasted investigation)
+- Plan-First rule (prevents implementing the wrong approach)
+
+### Minute 5-10: Add Your First Hook
+
+Copy [hooks/protect-config.sh](hooks/protect-config.sh) to `~/.claude/hooks/` and add to your `settings.json`:
+
+```json
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"~/.claude/hooks/protect-config.sh\""
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+This prevents Claude from "fixing" lint errors by disabling lint rules.
+
+### Minute 10-15: Add Context7 MCP
+
+Run this in your terminal:
+
+```bash
+claude mcp add --scope user context7 -- npx -y @upstash/context7-mcp@latest
+```
+
+Restart Claude Code. Now Claude can look up any library's latest docs in real-time.
+
+### Minute 15-20: Add Cost Tracking
+
+Copy [hooks/cost-tracker.sh](hooks/cost-tracker.sh) to `~/.claude/hooks/` and add to your `settings.json` Stop hook. Now you have a JSONL log of every session's cost.
+
+### Minute 20-30: Read WHY.md
+
+Read [WHY.md](docs/WHY.md) to understand why each component exists. This is where the real value is — not in copying files, but in understanding the thinking behind them.
+
+---
+
+## Common Mistakes (and How to Avoid Them)
+
+### 1. Context Window Bloat
+**Mistake:** Loading everything into every session — massive CLAUDE.md, every agent, every rule.
+**Fix:** Keep CLAUDE.md under 100 lines. Use path-scoped rules. Extract details to topic files that load on-demand.
+
+### 2. No Verification
+**Mistake:** Accepting "done" at face value. Claude says it fixed the bug → you move on.
+**Fix:** Always verify. Run the tests. Hit the endpoint. Re-read the file. A 200 response with empty data is not success.
+
+### 3. Skipping Plan Mode
+**Mistake:** Asking Claude to "just do it" for complex changes. It implements fast — but wrong.
+**Fix:** Use plan mode for anything touching more than 1-2 files. Five minutes of review saves hours of rework.
+
+### 4. Too Many Permissions
+**Mistake:** Allowing everything in `settings.json` so Claude never asks for permission.
+**Fix:** Start restrictive, add permissions as needed. Use `"defaultMode": "dontAsk"` only after you trust your hooks to catch mistakes.
+
+### 5. Ignoring the Stop Hook
+**Mistake:** Not having a security check on every response.
+**Fix:** Add the Stop hook from [settings-template.json](examples/settings-template.json). It catches SQL injection, exposed secrets, and verification gaps automatically.
+
+### 6. Not Using Agents for Review
+**Mistake:** Asking Claude to review its own code in the same context window.
+**Fix:** Use a separate review agent with `isolation: worktree`. Fresh context catches blind spots that self-review in the same window misses.
+
+### 7. Fighting the AI Instead of Guiding It
+**Mistake:** Correcting the same behavior over and over without writing it down.
+**Fix:** If you've corrected Claude twice on the same thing, add it to CLAUDE.md. Rules are cheaper than repeated corrections.
 
 ---
 
@@ -428,98 +522,6 @@ Advanced:    Full custom setup (agents, skills, hooks, memory)
      ↓
 Power user:  This blueprint, adapted to your workflow
 ```
-
----
-
-## Your First 30 Minutes
-
-Here's what to do right now to get the most out of Claude Code:
-
-### Minute 0-5: Install and Create CLAUDE.md
-
-```bash
-# In your project root
-claude  # start Claude Code
-```
-
-Copy the [CLAUDE.md](CLAUDE.md) from this blueprint into your project root. This alone gives you:
-- Verify-After-Complete rule (prevents "done" without proof)
-- Diagnose-First rule (prevents wasted investigation)
-- Plan-First rule (prevents implementing the wrong approach)
-
-### Minute 5-10: Add Your First Hook
-
-Copy [hooks/protect-config.sh](hooks/protect-config.sh) to `~/.claude/hooks/` and add to your `settings.json`:
-
-```json
-{
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash \"~/.claude/hooks/protect-config.sh\""
-          }
-        ]
-      }
-    ]
-  }
-}
-```
-
-This prevents Claude from "fixing" lint errors by disabling lint rules.
-
-### Minute 10-15: Add Context7 MCP
-
-Run this in your terminal:
-
-```bash
-claude mcp add --scope user context7 -- npx -y @upstash/context7-mcp@latest
-```
-
-Restart Claude Code. Now Claude can look up any library's latest docs in real-time.
-
-### Minute 15-20: Add Cost Tracking
-
-Copy [hooks/cost-tracker.sh](hooks/cost-tracker.sh) to `~/.claude/hooks/` and add to your `settings.json` Stop hook. Now you have a JSONL log of every session's cost.
-
-### Minute 20-30: Read WHY.md
-
-Read [WHY.md](docs/WHY.md) to understand why each component exists. This is where the real value is — not in copying files, but in understanding the thinking behind them.
-
----
-
-## Common Mistakes (and How to Avoid Them)
-
-### 1. Context Window Bloat
-**Mistake:** Loading everything into every session — massive CLAUDE.md, every agent, every rule.
-**Fix:** Keep CLAUDE.md under 100 lines. Use path-scoped rules. Extract details to topic files that load on-demand.
-
-### 2. No Verification
-**Mistake:** Accepting "done" at face value. Claude says it fixed the bug → you move on.
-**Fix:** Always verify. Run the tests. Hit the endpoint. Re-read the file. A 200 response with empty data is not success.
-
-### 3. Skipping Plan Mode
-**Mistake:** Asking Claude to "just do it" for complex changes. It implements fast — but wrong.
-**Fix:** Use plan mode for anything touching more than 1-2 files. Five minutes of review saves hours of rework.
-
-### 4. Too Many Permissions
-**Mistake:** Allowing everything in `settings.json` so Claude never asks for permission.
-**Fix:** Start restrictive, add permissions as needed. Use `"defaultMode": "dontAsk"` only after you trust your hooks to catch mistakes.
-
-### 5. Ignoring the Stop Hook
-**Mistake:** Not having a security check on every response.
-**Fix:** Add the Stop hook from [settings-template.json](examples/settings-template.json). It catches SQL injection, exposed secrets, and verification gaps automatically.
-
-### 6. Not Using Agents for Review
-**Mistake:** Asking Claude to review its own code in the same context window.
-**Fix:** Use a separate review agent with `isolation: worktree`. Fresh context catches blind spots that self-review in the same window misses.
-
-### 7. Fighting the AI Instead of Guiding It
-**Mistake:** Correcting the same behavior over and over without writing it down.
-**Fix:** If you've corrected Claude twice on the same thing, add it to CLAUDE.md. Rules are cheaper than repeated corrections.
 
 ---
 
