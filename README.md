@@ -12,7 +12,7 @@
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-compatible-blueviolet)](https://docs.anthropic.com/en/docs/claude-code)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
-**11 agents** · **17 skills** · **10 hooks** · **5 rules** — copy only what you need, or install a preset (minimal / standard / core / full)
+**12 agents** · **17 skills** · **12 hooks** · **5 rules** — copy only what you need, or install a preset (minimal / standard / core / full)
 
 [English](README.md) | [日本語](i18n/README.ja.md) | [한국어](i18n/README.ko.md) | [简体中文](i18n/README.zh.md)
 
@@ -99,7 +99,7 @@ Add agents, skills, rules, and memory as your workflow matures. The `core` prese
 
 ## What Makes This Different
 
-Other repos dump dozens of agents on you. We give you **11** -- and explain why each one exists.
+Other repos dump dozens of agents on you. We give you **12** -- and explain why each one exists.
 
 | This Blueprint | Generic Config Repos |
 |---------------|---------------------|
@@ -116,7 +116,7 @@ Other repos dump dozens of agents on you. We give you **11** -- and explain why 
 ## What's Inside
 
 <details>
-<summary><strong>11 Agents</strong> -- Specialized subagents with model tiering (opus/sonnet/haiku)</summary>
+<summary><strong>12 Agents</strong> -- Specialized subagents with model tiering (opus/sonnet/haiku)</summary>
 
 &nbsp;
 
@@ -159,7 +159,7 @@ See [skills/README.md](skills/README.md) for customization and placeholder varia
 </details>
 
 <details>
-<summary><strong>10 Hooks</strong> -- Deterministic lifecycle automation (always fire, unlike CLAUDE.md rules which the model can deprioritize)</summary>
+<summary><strong>12 Hooks</strong> -- Deterministic lifecycle automation (always fire, unlike CLAUDE.md rules which the model can deprioritize)</summary>
 
 &nbsp;
 
@@ -174,7 +174,7 @@ See [skills/README.md](skills/README.md) for customization and placeholder varia
 | Stop | security check + cost-tracker.sh + session-checkpoint.sh | Last defense + metrics |
 | SessionEnd | session-checkpoint.sh | Guaranteed final save |
 
-Plus 2 utility scripts: `verify-mcp-sync.sh` (MCP config checker) and `status-line.sh` (branch/project status), both deployed by the full preset. The 11th file in the folder is `test-hooks.sh` — the local test harness, run via `bash hooks/test-hooks.sh` to verify all hooks. It's the only one not deployed to `~/.claude/hooks/`, and isn't counted in the "10 hooks" total.
+Plus 2 utility scripts: `verify-mcp-sync.sh` (MCP config checker) and `status-line.sh` (branch/project status), both deployed by the full preset. The 13th file in the folder is `test-hooks.sh` — the local test harness, run via `bash hooks/test-hooks.sh` to verify all hooks. It's the only one not deployed to `~/.claude/hooks/`, and isn't counted in the "12 hooks" total.
 
 Run `bash hooks/test-hooks.sh` to verify all hooks pass (35 automated tests).
 
@@ -217,7 +217,7 @@ See [rules/README.md](rules/README.md) for creating custom rules.
 
 3. **Context is currency** -- Every token loaded into context is a token not available for your code. Keep MEMORY.md under 100 lines. Extract to topic files. Use path-scoped rules so irrelevant rules don't load.
 
-4. **Hooks are free, context is cheap** -- The 10 hook scripts cost zero tokens (they run outside Claude's context). CLAUDE.md adds ~2,300 tokens per session -- roughly 1-5% of a typical session. The blueprint saves more tokens than it costs by preventing redo cycles. See [BENCHMARKS.md](docs/BENCHMARKS.md#token-cost-per-component).
+4. **Hooks are free, context is cheap** -- The 12 hook scripts cost zero tokens (they run outside Claude's context). CLAUDE.md adds ~2,300 tokens per session -- roughly 1-5% of a typical session. The blueprint saves more tokens than it costs by preventing redo cycles. See [BENCHMARKS.md](docs/BENCHMARKS.md#token-cost-per-component).
 
 5. **Battle-tested over theoretical** -- Every rule in this repo exists because something went wrong without it. The "WHY" matters more than the "WHAT".
 

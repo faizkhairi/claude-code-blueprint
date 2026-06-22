@@ -1,13 +1,15 @@
 # Hooks
 
-8 lifecycle hooks + 2 utility scripts, covering 10 lifecycle events. Hooks are deterministic (they fire every time) vs CLAUDE.md instructions (followed most of the time, but not guaranteed).
+10 lifecycle hooks + 2 utility scripts, covering 11 lifecycle events. Hooks are deterministic (they fire every time) vs CLAUDE.md instructions (followed most of the time, but not guaranteed).
 
 ## Hook Lifecycle
 
 | Event | When It Fires | Our Hook | Purpose |
 |-------|--------------|----------|---------|
 | SessionStart | New session begins | session-start.sh | Inject workspace context |
+| InstructionsLoaded | CLAUDE.md / rules load into context | instructions-loaded.sh | Log which rules fired and why (observability) |
 | PreToolUse (Bash) | Before any bash command | block-git-push.sh | Protect remote repos |
+| PreToolUse (Bash) | Before any bash command | pre-commit-secret-scan.sh | Block commits containing secrets (gitleaks) |
 | PreToolUse (Write/Edit) | Before any file edit | protect-config.sh | Guard linter/build configs |
 | PostToolUse (Write/Edit) | After file edits | notify-file-changed.sh | Verify reminder |
 | PostToolUse (Bash) | After bash commands | post-commit-review.sh | Post-commit review |
@@ -45,6 +47,17 @@ PYTHON=$(command -v python3 2>/dev/null || command -v python 2>/dev/null)
 If neither `python3` nor `python` is found, the hook prints a warning to stderr and exits cleanly (no blocking). Prompt-type hooks (PostToolUseFailure, PostCompact) have no dependencies.
 
 **Why Python?** Bash cannot safely parse or construct JSON. All hook input/output uses JSON, so Python handles the serialization boundary. This is a deliberate choice: one dependency for correctness, rather than fragile string manipulation.
+
+## Optional: gitleaks (for the secret-scan hook)
+
+`pre-commit-secret-scan.sh` requires [gitleaks](https://github.com/gitleaks/gitleaks) on your PATH to scan staged content. Without it, the hook is a no-op -- it warns once and allows the commit (fail-open), so it never blocks you for a missing tool.
+
+```bash
+winget install gitleaks   # Windows
+brew install gitleaks     # macOS
+```
+
+This is the one hook that intentionally **blocks** (exit 2) -- on a detected secret -- the same documented exception to "exit 0 always" that `block-git-push.sh` uses. A committed credential is the one mistake worth stopping.
 
 ## Testing Hooks
 

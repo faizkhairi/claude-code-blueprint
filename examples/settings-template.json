@@ -157,6 +157,10 @@
           {
             "type": "command",
             "command": "bash \"$HOME/.claude/hooks/block-git-push.sh\""
+          },
+          {
+            "type": "command",
+            "command": "bash \"$HOME/.claude/hooks/pre-commit-secret-scan.sh\""
           }
         ]
       },
@@ -166,6 +170,18 @@
           {
             "type": "command",
             "command": "bash \"$HOME/.claude/hooks/protect-config.sh\""
+          }
+        ]
+      }
+    ],
+
+    "InstructionsLoaded": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$HOME/.claude/hooks/instructions-loaded.sh\"",
+            "async": true
           }
         ]
       }

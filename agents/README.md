@@ -1,6 +1,6 @@
 # Agents
 
-11 specialized subagents with model tiering, permission modes, and worktree isolation.
+12 specialized subagents with model tiering, permission modes, and worktree isolation.
 
 ## The Standard Agent Pattern
 
@@ -18,6 +18,7 @@ Every agent follows this structure:
 |-----------|-------|-----------|
 | Architecture/planning | opus | Needs strongest reasoning for multi-system design |
 | Implementation/review | sonnet | Balanced quality for iterative code work |
+| Structural review | sonnet | Analyzes architecture without the cost of opus for pattern-matching |
 | Documentation | haiku | Straightforward prose, cost-efficient |
 
 ## Permission Modes
@@ -25,7 +26,7 @@ Every agent follows this structure:
 | Mode | Agents | Why |
 |------|--------|-----|
 | `default` (explicit) | backend, frontend, qa-tester, project-architect, docs-writer | Need write access to implement or generate. Frontmatter declares `permissionMode: default` explicitly for clarity. |
-| `plan` | verify-plan, code-reviewer, security-reviewer, db-analyst, devops-engineer, api-documenter | Read-only analysis — should never modify files. Cannot use Write/Edit tools. |
+| `plan` | verify-plan, code-reviewer, security-reviewer, db-analyst, devops-engineer, api-documenter, architecture-reviewer | Read-only analysis — should never modify files. Cannot use Write/Edit tools. |
 
 Note: if an agent omits the `permissionMode` field, Claude Code falls back to write-access default. We declare `permissionMode: default` explicitly on write-access agents to make the intent visible in the frontmatter.
 
@@ -33,7 +34,7 @@ Note: if an agent omits the `permissionMode` field, Claude Code falls back to wr
 
 `isolation: worktree` creates a temporary git worktree so the agent sees a clean copy of the repo. If the project is not a git repository, worktree isolation is skipped and the agent runs in the main context.
 
-**Agents using worktree**: verify-plan, code-reviewer, security-reviewer. Reason — these are review agents that benefit from a fresh checkout: their analysis isn't biased by the main session's in-progress edits.
+**Agents using worktree**: verify-plan, code-reviewer, security-reviewer, architecture-reviewer. Reason — these are review agents that benefit from a fresh checkout: their analysis isn't biased by the main session's in-progress edits.
 
 **Analysis-only agents NOT using worktree**: db-analyst, devops-engineer, api-documenter. Reason — these read live config/schema state (e.g., the current Prisma schema, the current Dockerfile, the current OpenAPI spec). A worktree could give them stale state if the main session has uncommitted changes that matter for analysis.
 
@@ -57,6 +58,7 @@ Each agent has a `maxTurns` limit in its frontmatter that caps the number of too
 | security-reviewer | sonnet | 15 |
 | docs-writer | haiku | 15 |
 | api-documenter | haiku | 10 |
+| architecture-reviewer | sonnet | 20 |
 | verify-plan | sonnet | 3 |
 
 **If an agent stops mid-task:**
@@ -83,7 +85,7 @@ Agents are powerful but imperfect. Common failure modes:
 - **Hallucination**: An agent may reference files, functions, or APIs that do not exist. Always verify with `git diff` (for write agents) or manual inspection (for analysis agents).
 - **Stale context**: Agents cannot see the main session's full history. They may repeat work or miss earlier decisions.
 - **Overconfidence**: An agent that says "all checks pass" may not have actually run all checks. Verify critical claims.
-- **Read-only safety**: Agents with `permissionMode: plan` (verify-plan, code-reviewer, security-reviewer, db-analyst, devops-engineer, api-documenter) cannot modify files -- they can only analyze and report. This is a safety feature, not a limitation.
+- **Read-only safety**: Agents with `permissionMode: plan` (verify-plan, code-reviewer, security-reviewer, db-analyst, devops-engineer, api-documenter, architecture-reviewer) cannot modify files -- they can only analyze and report. This is a safety feature, not a limitation.
 
 **Rule of thumb:** Trust agents for research and drafting. Verify before committing their output.
 
