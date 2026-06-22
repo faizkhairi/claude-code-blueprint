@@ -23,6 +23,7 @@ paths:
 | [api-endpoints.md](api-endpoints.md) | `**/server/api/**/*.{js,ts}` | API route conventions (naming, error handling, response structure) |
 | [database-schema.md](database-schema.md) | `**/prisma/**`, `**/drizzle/**`, `**/migrations/**` | Schema design patterns (soft delete, timestamps, naming) |
 | [testing.md](testing.md) | `**/*.test.*`, `**/*.spec.*`, `**/tests/**` | Test writing conventions (structure, assertions, coverage) |
+| [testing-general.md](testing-general.md) | `**/*.test.*`, `**/*.spec.*`, `**/tests/**` | Framework-agnostic testing conventions (discover-don't-assume, AAA, deterministic) -- companion to testing.md |
 | [session-lifecycle.md](session-lifecycle.md) | Always (no path filter) | Session start/end behaviors (memory loading, state persistence) |
 | [memory-session.md](memory-session.md) | `**/memory/**` | Memory repository session management rules |
 

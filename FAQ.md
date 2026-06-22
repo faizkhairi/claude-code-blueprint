@@ -41,7 +41,7 @@ These are the questions we hear most from the community. If yours isn't here, [o
 
 ---
 
-### "12 agents, 17 skills, 12 hooks, 5 rules -- I'm overwhelmed. Where do I actually start?"
+### "12 agents, 20 skills, 12 hooks, 6 rules -- I'm overwhelmed. Where do I actually start?"
 
 **With one file.** The blueprint is a menu, not a mandatory checklist.
 
