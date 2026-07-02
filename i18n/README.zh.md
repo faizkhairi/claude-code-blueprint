@@ -12,7 +12,7 @@
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-compatible-blueviolet)](https://docs.anthropic.com/en/docs/claude-code)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](../CONTRIBUTING.md)
 
-**12 agents** · **17 skills** · **12 hooks** · **6 rules** -- 在真实项目中验证
+**11 agents** · **17 skills** · **12 hooks** · **6 rules** -- 在真实项目中验证
 
 [English](../README.md) | [日本語](README.ja.md) | [한국어](README.ko.md) | [简体中文](README.zh.md)
 
@@ -101,7 +101,7 @@ curl -o CLAUDE.md https://raw.githubusercontent.com/faizkhairi/claude-code-bluep
 
 ## What Makes This Different
 
-其他仓库给你 **数十个 agents**。我们给你 **12 个** -- 并解释每个为什么存在。
+其他仓库给你 **数十个 agents**。我们给你 **11 个** -- 并解释每个为什么存在。
 
 | 本蓝图 | 通用配置仓库 |
 |------------|------------|
@@ -118,7 +118,7 @@ curl -o CLAUDE.md https://raw.githubusercontent.com/faizkhairi/claude-code-bluep
 ## What's Inside
 
 <details>
-<summary><strong>12 个 Agents</strong> -- 专用的子 agents，支持模型分级（opus/sonnet/haiku）</summary>
+<summary><strong>11 个 Agents</strong> -- 专用的子 agents，支持模型分级（opus/sonnet/haiku）</summary>
 
 &nbsp;
 
@@ -134,7 +134,6 @@ curl -o CLAUDE.md https://raw.githubusercontent.com/faizkhairi/claude-code-bluep
 | qa-tester | sonnet | 单元测试、集成测试、E2E 测试 |
 | verify-plan | sonnet | 7 点机械化计划验证（只读） |
 | docs-writer | haiku | README、API 文档、更新日志、架构文档 |
-| api-documenter | haiku | OpenAPI 规范、集成指南（只读） |
 
 参见 [agents/README.md](../agents/README.md) 了解权限模式、成本估计和 maxTurns。
 

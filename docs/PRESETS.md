@@ -134,7 +134,7 @@ Use the full [`settings-template.json`](../examples/settings-template.json) as y
 - Two read-only review agents: security review and test generation
 - Six natural-language skills covering review, testing, deploy, DB, and changelog workflows
 - Two path-scoped rules that cost zero context tokens until you actually edit a matching file
-- A sensible middle ground: more capability than Standard, without installing the full 17-skill / 12-agent set you may never use
+- A sensible middle ground: more capability than Standard, without installing the full 17-skill / 11-agent set you may never use
 
 ### What you don't get (and may not need)
 
@@ -161,7 +161,7 @@ Use the full [`settings-template.json`](../examples/settings-template.json) as y
 
 ### What you get (beyond Standard)
 
-- 12 specialized agents (architecture, backend, frontend, DB, DevOps, security, QA, docs)
+- 11 specialized agents (architecture, backend, frontend, DB, DevOps, security, QA, docs)
 - 17 natural-language skills (review-full, deploy-check, test-check, sprint-plan, etc.)
 - Path-scoped rules (database conventions load only when editing schema files)
 - Cross-session memory persistence via git-backed memory system

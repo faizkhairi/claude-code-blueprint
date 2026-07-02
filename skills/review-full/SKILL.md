@@ -13,19 +13,20 @@ This is a COMPREHENSIVE multi-agent code review. For quick anti-pattern scanning
 - If `$ARGUMENTS` is a file path: review that file only
 - If `$ARGUMENTS` is a branch or range: review diff against that ref
 - If `$ARGUMENTS` is "security": run security-only review (skip to step 3)
-- Detect project type from cwd/CLAUDE.md: Framework (e.g., Nuxt/NestJS/Prisma, Next.js/React, Node/TypeScript), or Other
+- Detect project type from cwd/CLAUDE.md and the project manifest (any language/framework), or fall back to inspecting the file structure
 
 ## Step 1: Spawn review agents in parallel
 
-Launch up to 3 agents based on what the changes touch:
+Launch up to 4 agents based on what the changes touch:
 
 | Changes Touch | Agent to Spawn | Focus |
 |--------------|----------------|-------|
 | Any code | `code-reviewer` | Quality, patterns, naming, DRY, error handling, consistency |
 | API endpoints, auth, user input | `security-reviewer` | OWASP Top 10, injection, auth gaps, secrets, CORS |
-| Database queries, Prisma schema, migrations | `db-analyst` | N+1, undefined vs null, missing models, query performance |
+| Database queries, ORM models, migrations | `db-analyst` | N+1, undefined vs null, missing models, query performance |
+| New modules, moved files, cross-layer imports, large refactors | `architecture-reviewer` | Dependency direction, circular deps, god files, dead code, modularity |
 
-If changes are small (<50 lines), run code-reviewer only. If security argument, run security-reviewer only.
+If changes are small (<50 lines), run code-reviewer only. If security argument, run security-reviewer only. Add `architecture-reviewer` when the change reshapes structure (new module boundaries, files moved across layers, a refactor spanning several directories) rather than editing within existing files.
 
 ## Step 2: Code quality review (via code-reviewer agent)
 
@@ -51,11 +52,22 @@ The agent checks OWASP Top 10 plus project-specific patterns (read from `CLAUDE.
 ## Step 4: Database review (via db-analyst agent, if applicable)
 
 The agent checks:
-- **Prisma undefined vs null**: `undefined` = skip field, `null` = set NULL -- mixing them causes bugs
-- **Missing models**: Every table needs a Prisma model or `prisma db push` drops it
+- **ORM null-handling**: many ORMs distinguish "skip field" from "set NULL" (e.g. Prisma's `undefined` vs `null`) -- mixing them causes bugs
+- **Schema/code drift**: unmodeled tables can be dropped by destructive sync commands (e.g. `prisma db push`) -- verify every table is represented
 - **N+1 queries**: findMany/findFirst inside loops -- should use `include` or batch queries
 - **Relation loading**: Missing `include` for needed relations, or over-fetching with deep includes
 - **Migration safety**: Schema changes that could drop data, rename columns, or break existing queries
+
+## Step 4b: Structural review (via architecture-reviewer agent, if applicable)
+
+Run only when the change reshapes structure (new modules, files moved across layers, a multi-directory refactor). The agent checks:
+- **Dependency direction**: do inner layers avoid importing outer ones? (domain/core should not depend on UI/framework)
+- **Circular dependencies**: modules that import each other, directly or through a cycle
+- **God files/modules**: single files accumulating unrelated responsibilities
+- **Dead code**: exports/modules no longer imported anywhere
+- **Modularity**: are boundaries between features/layers clear, or is logic leaking across them?
+
+This is language-agnostic — it calibrates to the project's own conventions (read from `CLAUDE.md` and the manifest), so it applies equally to any stack.
 
 ## Step 5: Synthesize findings
 

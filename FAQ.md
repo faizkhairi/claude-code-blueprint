@@ -19,7 +19,7 @@ These are the questions we hear most from the community. If yours isn't here, [o
 
 ### "I'm a junior/intermediate developer. Is this for me?"
 
-**Yes.** The blueprint has a graduated adoption path -- you don't need to understand all 12 agents on day one.
+**Yes.** The blueprint has a graduated adoption path -- you don't need to understand all 11 agents on day one.
 
 - **Level 1 (60 seconds):** Copy [CLAUDE.md](CLAUDE.md) into your project root. This single file gives Claude Code four behavioral rules that prevent the most common AI coding mistakes. No configuration, no terminal commands, no dependencies.
 - **Level 2 (5 minutes):** Add 2-3 hooks for automated safety (config protection, edit verification). See [PRESETS.md](docs/PRESETS.md#minimal) for the minimal preset.
@@ -41,12 +41,12 @@ These are the questions we hear most from the community. If yours isn't here, [o
 
 ---
 
-### "12 agents, 17 skills, 12 hooks, 6 rules -- I'm overwhelmed. Where do I actually start?"
+### "11 agents, 17 skills, 12 hooks, 6 rules -- I'm overwhelmed. Where do I actually start?"
 
 **With one file.** The blueprint is a menu, not a mandatory checklist.
 
 - Start with [CLAUDE.md](CLAUDE.md) only -- it's the single highest-impact component. Copy it into your project root. Done.
-- Don't add anything else until you feel the need. You might never need all 12 agents.
+- Don't add anything else until you feel the need. You might never need all 11 agents.
 - When ready, add hooks next (zero token cost, automated safety). See [PRESETS.md](docs/PRESETS.md#minimal) for the minimal 3-file setup.
 - Then add agents one at a time. Start with `verify-plan` (catches plan mistakes) or `code-reviewer` (catches code mistakes).
 - The [recommended adoption path](README.md#recommended-adoption-path) lays out the progression in 5 steps.

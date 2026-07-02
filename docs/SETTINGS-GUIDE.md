@@ -320,12 +320,12 @@ The Stop hook uses `"model": "sonnet"` for its security verification prompt. Thi
 |-------|----------------------|------------------------|---------|
 | Opus | $15 | $75 | project-architect agent |
 | Sonnet | $3 | $15 | 9 implementation/review agents + Stop hook |
-| Haiku | $0.80 | $4 | docs-writer, api-documenter agents |
+| Haiku | $0.80 | $4 | docs-writer agent |
 
 ### What Drives Cost Up
 
 1. **Stop hook (Sonnet on every response):** Each response triggers a Sonnet security review. In a 50-response session, that's 50 additional Sonnet invocations.
-2. **Parallel agent spawns:** The review-full skill spawns up to 3 agents simultaneously. Each agent has its own context window and token budget.
+2. **Parallel agent spawns:** The review-full skill spawns up to 4 agents simultaneously. Each agent has its own context window and token budget.
 3. **Always-thinking + high effort:** Extended thinking generates additional tokens that are billed. `effortLevel: "high"` increases this further.
 4. **Agent teams:** Sessions with active agent teams use roughly 7x more tokens than standard sessions (per Anthropic's official docs).
 5. **Playwright MCP vs CLI:** The Playwright MCP server streams full DOM accessibility trees into context (~114K tokens per task). Running `npx playwright test` via Bash uses ~27K tokens for the same work -- a 76% reduction. Use MCP for interactive browser exploration; use CLI for test execution.
