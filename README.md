@@ -160,7 +160,9 @@ See [skills/README.md](skills/README.md) for customization and placeholder varia
 | Event | Hook | Purpose |
 |-------|------|---------|
 | SessionStart | session-start.sh | Inject workspace context |
+| InstructionsLoaded | instructions-loaded.sh | Log which rules loaded and why |
 | PreToolUse (Bash) | block-git-push.sh | Protect remote repos |
+| PreToolUse (Bash) | pre-commit-secret-scan.sh | Block commits containing secrets |
 | PreToolUse (Write/Edit) | protect-config.sh | Guard linter/build configs |
 | PostToolUse (Write/Edit) | notify-file-changed.sh | Verify reminder |
 | PostToolUse (Bash) | post-commit-review.sh | Post-commit review |

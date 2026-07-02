@@ -16,7 +16,7 @@ These live under the `"env"` key in `settings.json` and control Claude Code's ru
 
 **What it does:** Enables multi-agent spawning -- the ability for Claude to launch specialized subagents that run in parallel with independent context windows.
 
-**Why it matters:** Without this, the entire [agents/](../agents/) directory in this blueprint is non-functional. The Agent tool won't appear, `subagent_type` has no effect, and skills that orchestrate multiple agents (like the review-full skill spawning code-reviewer + security-reviewer + db-analyst in parallel) silently degrade to single-agent mode.
+**Why it matters:** Without this, the entire [agents/](../agents/) directory in this blueprint is non-functional. The Agent tool won't appear, `subagent_type` has no effect, and skills that orchestrate multiple agents (like the review-full skill spawning code-reviewer + security-reviewer + db-analyst + architecture-reviewer in parallel) silently degrade to single-agent mode.
 
 **Default:** Not set (disabled). You must explicitly enable it.
 
@@ -349,6 +349,6 @@ The blueprint includes [cost-tracker.sh](../hooks/cost-tracker.sh) as a Stop hoo
 
 - **Disable always-thinking** for simple tasks: set `"alwaysThinkingEnabled": false` or use `/fast` mode
 - **Lower effort level** to `"medium"` for routine work
-- **Use Haiku for documentation agents** (already configured in this blueprint)
+- **Use Haiku for the documentation agent** (already configured in this blueprint)
 - **Remove the Stop hook** if you trust your code review process (not recommended, but it's the biggest cost lever)
 - **Limit parallel agents** by modifying skills to spawn fewer reviewers

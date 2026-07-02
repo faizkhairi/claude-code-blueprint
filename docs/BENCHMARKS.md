@@ -105,7 +105,7 @@ You pay per token, so exact costs matter. Based on [current pricing](https://doc
 For API users, the blueprint adds roughly 1-3 cents per session in context loading costs. A single prevented redo cycle saves 10-60 cents. The ROI is immediate.
 
 **API optimization tips:**
-1. Model tiering is your biggest lever -- Haiku for docs/API-documenter ($0.80/$4 MTok) vs Opus for everything ($15/$75 MTok) saves 80%
+1. Model tiering is your biggest lever -- Haiku for docs ($0.80/$4 MTok) vs Opus for everything ($15/$75 MTok) saves 80%
 2. Path-scoped rules prevent loading unnecessary context
 3. The Playwright CLI-over-MCP pattern saves 76% tokens on browser automation
 4. Use `cost-tracker.sh` to monitor per-session costs in `~/.claude/metrics/costs.jsonl`

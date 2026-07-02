@@ -14,7 +14,7 @@ Every component in this blueprint exists because something went wrong without it
 
 **What we learned:** Security review requires reasoning depth. Haiku excels at straightforward tasks (documentation, formatting), but security pattern detection needs the nuanced understanding that Sonnet provides. The cost difference is negligible per-invocation — a few cents more per session to catch vulnerabilities before they ship.
 
-**What we built:** The Stop hook now uses `"model": "sonnet"` explicitly. Haiku is reserved for documentation agents where the cost-quality tradeoff makes sense.
+**What we built:** The Stop hook now uses `"model": "sonnet"` explicitly. Haiku is reserved for the documentation agent where the cost-quality tradeoff makes sense.
 
 ---
 
@@ -79,7 +79,7 @@ Every component in this blueprint exists because something went wrong without it
 **What we built:** A three-tier model strategy:
 - **Opus**: Architecture, planning, complex multi-system design (1 agent)
 - **Sonnet**: Implementation, review, analysis, testing (9 agents)
-- **Haiku**: Documentation, API docs (2 agents)
+- **Haiku**: Documentation (1 agent)
 
 This reduced costs significantly while maintaining quality where it matters.
 
