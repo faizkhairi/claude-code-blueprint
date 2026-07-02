@@ -33,7 +33,8 @@ CORE_AGENTS=(security-reviewer.md qa-tester.md)
 CORE_SKILLS=(review-full review-diff test-check deploy-check db-check changelog)
 CORE_RULES=(testing.md database-schema.md)
 
-FULL_HOOKS=(session-start.sh precompact-state.sh status-line.sh verify-mcp-sync.sh)
+FULL_HOOKS=(session-start.sh precompact-state.sh status-line.sh verify-mcp-sync.sh
+            instructions-loaded.sh pre-commit-secret-scan.sh)
 FULL_AGENTS=(api-documenter.md architecture-reviewer.md backend-specialist.md db-analyst.md
              devops-engineer.md docs-writer.md frontend-specialist.md project-architect.md
              qa-tester.md security-reviewer.md)
