@@ -37,22 +37,25 @@
 curl -o CLAUDE.md https://raw.githubusercontent.com/faizkhairi/claude-code-blueprint/main/CLAUDE.md
 ```
 
-这给 Claude Code 三条规则，防止最常见的 AI 编码错误：
+这给 Claude Code 四条规则，防止最常见的 AI 编码错误：
 
-**Verify-After-Complete** · **Diagnose-First** · **Plan-First**
+**Verify-After-Complete** · **Diagnose-First** · **Plan-First** · **Verify-Before-Exit-Plan**
 
 准备好深入了解？查看[完整采用路径](#recommended-adoption-path)或[30 分钟初学者指南](../GETTING-STARTED.md)。Claude Code 新手？查看[适用对象](#who-is-this-for)或 [FAQ](../FAQ.md)。
 
-**需要比 CLAUDE.md 更多？** 自动安装 hooks、agents 和设置：
+<details>
+<summary><strong>需要比 CLAUDE.md 更多？</strong>（hooks、agents、设置）</summary>
+
+CLAUDE.md 生效后，再添加其余部分。最简单的方法 -- 从克隆或 Fork 的副本中运行安装程序：
 
 ```bash
-# 从克隆或 Fork 的副本中运行
 ./setup.sh --preset=standard
 ```
 
 或者让 Claude 来设置 -- 粘贴到 Claude Code 会话中：*"设置 Claude Code Blueprint。将 CLAUDE.md 复制到我的项目根目录，在 ~/.claude/ 中设置 hooks 和设置。每一步都展示给我看。"*
 
-所有设置选项请参见 [SETUP.md](../SETUP.md)。
+所有安装选项（fork / clone / cherry-pick / presets）以及验证清单，请参见 **[SETUP.md](../SETUP.md)**。
+</details>
 
 ---
 
@@ -134,6 +137,7 @@ curl -o CLAUDE.md https://raw.githubusercontent.com/faizkhairi/claude-code-bluep
 | qa-tester | sonnet | 单元测试、集成测试、E2E 测试 |
 | verify-plan | sonnet | 7 点机械化计划验证（只读） |
 | docs-writer | haiku | README、API 文档、更新日志、架构文档 |
+| architecture-reviewer | sonnet | 依赖方向、god 文件、死代码、模块化（只读） |
 
 参见 [agents/README.md](../agents/README.md) 了解权限模式、成本估计和 maxTurns。
 
@@ -167,15 +171,17 @@ curl -o CLAUDE.md https://raw.githubusercontent.com/faizkhairi/claude-code-bluep
 | 事件 | Hook | 目的 |
 |-----|------|------|
 | SessionStart | session-start.sh | 注入工作区上下文 |
+| InstructionsLoaded | instructions-loaded.sh | 记录加载了哪些规则及原因 |
 | PreToolUse (Bash) | block-git-push.sh | 保护远程仓库 |
+| PreToolUse (Bash) | pre-commit-secret-scan.sh | 阻止包含密钥的提交 |
 | PreToolUse (Write/Edit) | protect-config.sh | 守护 linter/build 配置 |
 | PostToolUse (Write/Edit) | notify-file-changed.sh | 验证提醒 |
 | PostToolUse (Bash) | post-commit-review.sh | 提交后审查 |
 | PreCompact | precompact-state.sh | 将状态序列化到磁盘 |
-| Stop | security check + cost-tracker.sh | 最后防线 + 指标 |
+| Stop | security check + cost-tracker.sh + session-checkpoint.sh | 最后防线 + 指标 |
 | SessionEnd | session-checkpoint.sh | 保证最终保存 |
 
-另外 2 个实用脚本：`verify-mcp-sync.sh`（MCP 配置检查器）和 `status-line.sh`（分支/项目状态）。
+另外 2 个实用脚本：`verify-mcp-sync.sh`（MCP 配置检查器）和 `status-line.sh`（分支/项目状态），两者均由 full 预设部署。文件夹中的第 13 个文件是 `test-hooks.sh` -- 本地测试工具，通过 `bash hooks/test-hooks.sh` 运行以验证所有 hooks。它是唯一不会部署到 `~/.claude/hooks/` 的文件，也不计入“12 hooks”的总数。
 
 运行 `bash hooks/test-hooks.sh` 验证所有 hooks 通过（43 个自动化测试）。
 
@@ -193,6 +199,7 @@ curl -o CLAUDE.md https://raw.githubusercontent.com/faizkhairi/claude-code-bluep
 | api-endpoints | `**/server/api/**/*.{js,ts}` | API 路由约定 |
 | database-schema | `**/prisma/**`, `**/drizzle/**`, `**/migrations/**` | 架构设计模式 |
 | testing | `**/*.test.*`, `**/*.spec.*` | 测试编写约定 |
+| testing-general | `**/*.test.*`, `**/*.spec.*` | 框架无关的测试约定（testing 的补充） |
 | session-lifecycle | 始终 | 会话启动/结束行为 |
 | memory-session | `**/memory/**` | 内存仓库会话管理 |
 
@@ -226,18 +233,6 @@ curl -o CLAUDE.md https://raw.githubusercontent.com/faizkhairi/claude-code-bluep
 
 ## Getting Started
 
-### 选项 A：Fork（推荐）
-Fork 本仓库并将其定制为你自己的活文档参考。之后可以拉取上游更新，随着蓝图的演变而更新。
-
-### 选项 B：Clone + Copy
-Clone 仓库，然后有选择地将组件复制到你的 `~/.claude/` 目录。
-
-### 选项 C：Cherry-pick
-在 GitHub 上浏览仓库，只复制你需要的特定文件。无需安装。
-
-### 选项 D：自动设置
-从克隆或 Fork 的副本运行 `./setup.sh`。选择预设（minimal/standard/core/full），脚本将处理目录创建、文件复制、设置合并和占位符替换。参见 [SETUP.md](../SETUP.md)。
-
 ### Recommended adoption path
 
 1. **从 [CLAUDE.md](../CLAUDE.md) 开始** -- 行为规则模板。最大影响，零设置。
@@ -260,6 +255,8 @@ Clone 仓库，然后有选择地将组件复制到你的 `~/.claude/` 目录。
 | 社区常见问题解答 | 从零到高效 30 分钟 | 常见问题与解决方案 |
 | **[Setup Guide](../SETUP.md)** | **[Case Studies](../docs/CASE-STUDIES.md)** | **[Roadmap](../docs/ROADMAP.md)** |
 | 自动安装程序 + 验证清单 | 采用者故事和前后对比指标 | 项目方向和后续计划 |
+| **[Self-Monitoring](../docs/SELF-MONITORING.md)** | | |
+| 可选模式：gitleaks pre-commit + memory-curator agent | | |
 
 ---
 
