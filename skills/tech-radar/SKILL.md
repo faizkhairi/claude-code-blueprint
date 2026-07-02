@@ -11,6 +11,8 @@ Checks for latest versions, breaking changes, deprecations, and security advisor
 
 ## Core Stack to Monitor
 
+> **Example only -- replace with your own stack.** The table below reflects one project's dependencies (a JS/TS stack). The skill detects your actual dependencies from the project manifest at runtime (`package.json`, `requirements.txt`, `go.mod`, `composer.json`, etc. -- see the description); this table is just a fallback of well-known packages to watch.
+
 | Category | Packages |
 |----------|----------|
 | **Frontend** | nuxt, vue, next, react, tailwindcss, formkit, pinia |
@@ -29,7 +31,7 @@ Checks for latest versions, breaking changes, deprecations, and security advisor
 
 2. **Check latest versions** using WebSearch:
    - Search: `"{package} latest version {current_year}"`
-   - Compare against currently installed version (check `package.json` in active project)
+   - Compare against currently installed version (check the project manifest: `package.json`, `requirements.txt`, `go.mod`, `composer.json`, etc.)
    - Flag major version bumps (potential breaking changes)
 
 3. **Check for breaking changes**:
@@ -71,7 +73,7 @@ Checks for latest versions, breaking changes, deprecations, and security advisor
 
 ## Smart Filtering
 
-- Only report packages actually used in the active project (check package.json)
+- Only report packages actually used in the active project (check the project manifest)
 - Skip patch/minor version bumps unless they contain security fixes
 - Prioritize: Security > Breaking Changes > Major Upgrades > Minor Upgrades
 - If checking all projects: deduplicate (report each package once with all affected projects)

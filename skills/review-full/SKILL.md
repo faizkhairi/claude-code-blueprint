@@ -35,7 +35,7 @@ The agent checks:
 - DRY -- duplicated logic that should be extracted
 - Error handling -- all async paths covered? Consistent error shapes?
 - Component/function size -- single responsibility?
-- TypeScript types -- proper typing, no `any` leaks?
+- Static-typing discipline where the language has it -- no unchecked escapes (TypeScript `any`, Java raw `Object`, Go `interface{}`, etc.)
 
 ## Step 3: Security review (via security-reviewer agent)
 

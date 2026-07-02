@@ -26,17 +26,17 @@ From `$ARGUMENTS` or current working directory:
 
 ### 2. Pre-flight check
 
-Check if the dev server is running on the expected port (read from `CLAUDE.md` or `package.json`):
+Check if the dev server is running on the expected port (read from `CLAUDE.md` or the project manifest):
 
 Use: `bash -c "curl -s -o /dev/null -w '%{http_code}' http://localhost:{port}/ 2>/dev/null"` or equivalent.
 
 If the server is NOT running:
-- Report: "Dev server not running on port {port}. Start it with `yarn dev` / `npm run dev`, then re-run /e2e-check."
+- Report: "Dev server not running on port {port}. Start it with your project's dev command (e.g. `yarn dev`/`npm run dev`, `python manage.py runserver`, `bundle exec rails s`, `go run`, etc.), then re-run /e2e-check."
 - **Do NOT auto-start the dev server.** Stop here.
 
 ### 3. Run tests
 
-Run the E2E test command from `CLAUDE.md` or `package.json` (e.g., `yarn test:e2e` or `npm run test:e2e`).
+Run the E2E test command from `CLAUDE.md` or the project manifest (e.g., `yarn test:e2e` or `npm run test:e2e` for JS, or `pytest tests/e2e` for Python).
 
 If a test filter was provided (e.g., `auth`), resolve it to the spec file path:
 - `auth` → `tests/e2e/auth.spec.ts`
@@ -119,7 +119,7 @@ Summarize:
 ## Rules
 
 - **Always `localhost`, never `127.0.0.1`** -- cookie domain issues
-- **Dev port**: read from `CLAUDE.md` or `package.json` for the active project
-- **Package manager**: check `CLAUDE.md` or detect from lockfile (`yarn.lock` → yarn, `package-lock.json` → npm)
+- **Dev port**: read from `CLAUDE.md` or the project manifest for the active project
+- **Package manager**: check `CLAUDE.md` or detect from lockfile (`yarn.lock` → yarn, `package-lock.json` → npm) (non-Node stacks: detect the build/install tool from the manifest type — Gemfile.lock, poetry.lock, Cargo.lock, go.sum, etc.)
 - **Never auto-start dev servers** -- report and stop if not running
 - **E2E baselines**: compare against baseline documented in `CLAUDE.md`

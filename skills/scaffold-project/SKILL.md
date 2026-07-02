@@ -6,6 +6,8 @@ argument-hint: "[project-name] [type: nuxt|next|vue-springboot|expo|node|library
 ---
 
 > **Before using:** Replace `{PROJECTS_ROOT}` and `{BOILERPLATE_NAME}` with your actual paths in your copy of this skill. (`./memory/` is the built-in memory folder — no replacement needed.)
+>
+> **Example only -- these scaffolds target JS/TS stacks** (Nuxt, Next, Node, npm library). This is a project generator, so its type menu is intentionally stack-specific. Replace the `type:` list and the per-type steps below with your own stack's scaffolds -- `rails new`, `django-admin startproject`, `cargo new`, `dotnet new`, `go mod init`, `mvn archetype:generate`, etc.
 
 Initialize a new project at {PROJECTS_ROOT}/$ARGUMENTS:
 

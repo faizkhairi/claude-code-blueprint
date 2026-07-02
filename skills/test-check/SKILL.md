@@ -7,8 +7,8 @@ user-invocable: true
 Run the full test suite and provide analysis:
 
 1. Detect active project from current working directory or recent context:
-   - Check `CLAUDE.md` or `package.json` in the project root for the test command and package manager
-   - Common patterns: `yarn test:unit`, `npm run test`, `npx vitest run`
+   - Check `CLAUDE.md` or the project manifest (package.json, pyproject.toml, Gemfile, pom.xml, etc.) for the test command
+   - Common patterns: `yarn test:unit`/`npm test`/`npx vitest run` (JS), `pytest` (Python), `bundle exec rspec` (Ruby), `go test ./...` (Go), `mvn test` (Java), `cargo test` (Rust), `dotnet test` (.NET)
    - Default (no context): ask which project
 2. Run the appropriate test command and capture output
 3. Report summary: total tests, passed, failed, skipped, duration
@@ -23,9 +23,9 @@ Run the full test suite and provide analysis:
 9. **E2E tests** (run if user says "e2e", "all", or "full"):
    - Check `CLAUDE.md` for the dev server port and E2E test command
    - Check if dev server is running on that port before proceeding
-   - Run E2E test command from `CLAUDE.md` (e.g., `yarn test:e2e` or `npm run test:e2e`)
+   - Run E2E test command from `CLAUDE.md` (e.g., `yarn test:e2e` or `npm run test:e2e`, or the project's E2E command)
    - E2E baselines: documented in `CLAUDE.md`
-   - Parse Playwright output: passed/failed/skipped counts
+   - Parse the E2E runner's output (Playwright, Cypress, Selenium, Capybara, etc.): passed/failed/skipped counts
    - On failure: note which spec file and test name failed
    - If dev server is NOT running, report and skip (do NOT auto-start)
 
