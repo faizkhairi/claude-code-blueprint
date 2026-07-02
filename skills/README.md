@@ -20,7 +20,7 @@
 1. **Natural language triggers** — Skills detect intent from conversation, not slash commands
 2. **Step-by-step workflows** — Each skill has numbered steps that Claude follows mechanically
 3. **GO/NO-GO verdicts** — Review and deploy skills end with clear pass/fail decisions
-4. **Multi-agent orchestration** — The review-full skill spawns code-reviewer + security-reviewer + db-analyst in parallel
+4. **Multi-agent orchestration** — The review-full skill spawns code-reviewer + security-reviewer + db-analyst + architecture-reviewer in parallel
 
 ## Required: Replace Placeholder Variables
 

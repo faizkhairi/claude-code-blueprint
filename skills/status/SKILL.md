@@ -15,7 +15,7 @@ Project status dashboard:
    - Use `lsof -i :PORT` or `netstat` to check port availability
 
 3. **Database**: Check database connectivity if applicable
-   - Test connection using project's database URL from .env
+   - Test connection using the project's database URL from its env/config (`.env`, `application.yml`, `config/database.yml`, etc.)
 
 4. **Recent Activity**: Last 3 commits per repo
 

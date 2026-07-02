@@ -96,7 +96,7 @@ Pick the model tier based on the task's **cognitive complexity**, not its import
 
 **Rule of thumb:** Start with Sonnet for new agents. Promote to Opus only if the agent consistently makes poor architectural decisions. Demote to Haiku only if the agent's output is templated enough that a smaller model handles it fine.
 
-**Cost impact:** A session using all Opus agents costs roughly 5x more than the same session with Sonnet agents. The tiering in this blueprint keeps Opus to 1 agent (project-architect) while using Haiku for 2 documentation agents -- keeping the blended cost close to Sonnet-only pricing.
+**Cost impact:** A session using all Opus agents costs roughly 5x more than the same session with Sonnet agents. The tiering in this blueprint keeps Opus to 1 agent (project-architect) while using Haiku for 1 documentation agent -- keeping the blended cost close to Sonnet-only pricing.
 
 ## Memory Architecture
 

@@ -93,7 +93,7 @@ Costs vary with task complexity and turns used. These are rough estimates for ty
 | Model Tier | Agents | Approximate Cost Range |
 |-----------|--------|----------------------|
 | Opus | project-architect | ~$0.50 - $2.00 per invocation |
-| Sonnet | backend, frontend, qa-tester, db-analyst, devops, code-reviewer, security-reviewer | ~$0.10 - $0.60 per invocation |
+| Sonnet | backend, frontend, qa-tester, db-analyst, devops, code-reviewer, security-reviewer, architecture-reviewer, verify-plan | ~$0.10 - $0.60 per invocation |
 | Haiku | docs-writer | ~$0.01 - $0.08 per invocation |
 
 Verify current pricing at [Anthropic's pricing page](https://docs.anthropic.com/en/docs/about-claude/pricing). The [cost-tracker.sh](../hooks/cost-tracker.sh) hook logs session costs to `~/.claude/metrics/costs.jsonl` for actual spending data.

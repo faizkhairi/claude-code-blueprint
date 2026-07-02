@@ -1,6 +1,6 @@
 # Rules
 
-5 path-scoped behavioral constraints that load only when Claude is working with matching files.
+6 path-scoped behavioral constraints that load only when Claude is working with matching files.
 
 ## How Path-Scoped Rules Work
 
