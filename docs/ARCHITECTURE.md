@@ -41,38 +41,36 @@ Session End
 
 ## Agent Ecosystem
 
+Two things live in this picture, and it matters which is which:
+
+- **WIRED** — a skill in this repo actually spawns these agents. You get this behavior out of the box.
+- **ILLUSTRATIVE** — a pattern you can build for *your* stack. The blueprint ships the agents, but does not force a one-size pipeline, because a Laravel build, a Go service, and a Django app want different flows. Wire the stages that fit your work (see the decision framework in [agents/README.md](../agents/README.md#when-to-use-an-agent-vs-a-skill-vs-the-main-thread)).
+
 ```
-                    ┌─────────────────┐
-                    │ project-architect│ (opus — complex planning)
-                    └────────┬────────┘
-                             │ designs
-                    ┌────────▼────────┐
-              ┌─────┤  sprint-plan    ├─────┐
-              │     │  (skill)        │     │
-              │     └─────────────────┘     │
-     ┌────────▼────────┐          ┌────────▼────────┐
-     │backend-specialist│          │frontend-specialist│
-     │ (sonnet + write) │          │ (sonnet + write)  │
-     └────────┬────────┘          │ + design thinking │
-              │                    └────────┬────────┘
-              │         implements          │
-              └──────────┬──────────────────┘
-                         │
-              ┌──────────▼──────────┐
-              │     qa-tester       │ (sonnet + write)
-              └──────────┬──────────┘
-                         │ tests pass
-              ┌──────────▼──────────┐
-              │  review-full (skill)│ spawns 1-3 agents:
-              │  ├─ code-reviewer   │ (sonnet, worktree)
-              │  ├─ security-reviewer│ (sonnet, worktree)
-              │  └─ db-analyst      │ (sonnet, plan mode)
-              └──────────┬──────────┘
-                         │ GO verdict
-              ┌──────────▼──────────┐
-              │  deploy-check       │ (skill)
-              └─────────────────────┘
+WIRED (ships working) — the review-full skill spawns up to 4 agents in parallel:
+
+              ┌──────────────────────┐
+              │  review-full (skill) │  picks 1-4 agents by what changed:
+              │  ├─ code-reviewer    │  (sonnet, worktree)
+              │  ├─ security-reviewer │  (sonnet, worktree)
+              │  ├─ db-analyst       │  (sonnet, plan mode)
+              │  └─ architecture-reviewer │ (sonnet, worktree — structural changes)
+              └──────────────────────┘
+
+
+ILLUSTRATIVE (a shape you can wire yourself) — a build-to-ship flow:
+
+   project-architect ──designs──▶ sprint-plan (skill, planning only today)
+                                        │
+                    ┌───────────────────┴───────────────────┐
+              backend-specialist                    frontend-specialist
+                    └───────────────────┬───────────────────┘
+                                   implements
+                                        ▼
+                                   qa-tester ──tests pass──▶ review-full ──GO──▶ deploy-check
 ```
+
+> The ILLUSTRATIVE flow is NOT wired: `sprint-plan`, `test-check`, and `deploy-check` are skills that run on the main thread and do not spawn `backend-specialist` / `frontend-specialist` / `qa-tester` / `devops-engineer` automatically. That is deliberate — you decide when to delegate to a specialist for your stack, rather than inheriting a pipeline that assumes one. To wire it, follow the same pattern `review-full` uses (a "spawn agents" step that names the agent by `subagent_type`).
 
 ## Model Tiering Strategy
 
@@ -80,7 +78,7 @@ Session End
 |-------|------|---------|--------|
 | **Opus** | $$$ | Complex architecture, multi-system planning | project-architect |
 | **Sonnet** | $$ | Implementation, review, analysis | 9 agents (backend, frontend, code-reviewer, etc.) |
-| **Haiku** | $ | Documentation, API docs | docs-writer, api-documenter |
+| **Haiku** | $ | Documentation, API docs | docs-writer |
 
 ### When to Use Each Model
 

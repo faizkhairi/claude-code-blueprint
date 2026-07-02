@@ -35,7 +35,7 @@ CORE_RULES=(testing.md database-schema.md)
 
 FULL_HOOKS=(session-start.sh precompact-state.sh status-line.sh verify-mcp-sync.sh
             instructions-loaded.sh pre-commit-secret-scan.sh)
-FULL_AGENTS=(api-documenter.md architecture-reviewer.md backend-specialist.md db-analyst.md
+FULL_AGENTS=(architecture-reviewer.md backend-specialist.md db-analyst.md
              devops-engineer.md docs-writer.md frontend-specialist.md project-architect.md
              qa-tester.md security-reviewer.md)
 SKILL_DIRS=(changelog db-check deploy-check e2e-check elicit-requirements

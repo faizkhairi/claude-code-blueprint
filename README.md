@@ -12,7 +12,7 @@
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-compatible-blueviolet)](https://docs.anthropic.com/en/docs/claude-code)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
-**12 agents** · **17 skills** · **12 hooks** · **6 rules** — copy only what you need, or install a preset (minimal / standard / core / full)
+**11 agents** · **17 skills** · **12 hooks** · **6 rules** — copy only what you need, or install a preset (minimal / standard / core / full)
 
 [English](README.md) | [日本語](i18n/README.ja.md) | [한국어](i18n/README.ko.md) | [简体中文](i18n/README.zh.md)
 
@@ -126,7 +126,6 @@ Other repos dump dozens of agents on you. We give you **12** -- and explain why 
 | qa-tester | sonnet | Unit tests, integration tests, E2E tests |
 | verify-plan | sonnet | 7-point mechanical plan verification (read-only) |
 | docs-writer | haiku | README, API docs, changelogs, architecture docs |
-| api-documenter | haiku | OpenAPI specs, integration guides (read-only) |
 | architecture-reviewer | sonnet | Dependency direction, god files, dead code, modularity (read-only) |
 
 See [agents/README.md](agents/README.md) for permission modes, cost estimates, and maxTurns.

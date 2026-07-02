@@ -193,7 +193,7 @@ Then run `claude` to start. Note: if you have a subscription **and** an `ANTHROP
 
 ### Enable Agent Teams (Required for Agents)
 
-If you plan to use any of the [12 agents](agents/) in this blueprint, you must enable the agent teams feature. Add this to your `~/.claude/settings.json`:
+If you plan to use any of the [11 agents](agents/) in this blueprint, you must enable the agent teams feature. Add this to your `~/.claude/settings.json`:
 
 ```json
 {
@@ -341,6 +341,8 @@ Before diving in, here's what each piece does:
 | **Rules** | Path-scoped instruction files that load only for specific file types | Like ESLint configs that only apply to certain folders |
 | **MCP Servers** | External tools that give Claude new capabilities | Like VS Code extensions — add features without modifying core |
 | **Memory** | Persistent context files that survive across sessions | Like a dev journal that Claude reads at the start of each session |
+
+Knowing *what* each piece is only gets you halfway — the harder question is *when* to reach for an agent versus a skill versus just letting Claude work on the main thread. For that, see **[When to Use an Agent vs a Skill vs the Main Thread](agents/README.md#when-to-use-an-agent-vs-a-skill-vs-the-main-thread)**. The short version: most work stays on the main thread, skills are cheap repeatable recipes, agents earn their cost only when a task needs its own context window, and hooks are for what must happen every time.
 
 ### How They Work Together
 

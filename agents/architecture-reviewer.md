@@ -17,7 +17,7 @@ Before reviewing:
 3. Consult your agent memory for previously identified structural patterns and known debt in this codebase
 
 When project context is missing:
-- If no CLAUDE.md exists: infer conventions from code (package.json, file structure, existing patterns). Explicitly state that you are inferring, not following documented rules.
+- If no CLAUDE.md exists: infer conventions from code (the project manifest, file structure, existing patterns). Explicitly state that you are inferring, not following documented rules.
 - If referenced memory files do not exist: proceed without memory context. Do NOT fabricate past decisions or hallucinate file contents.
 - If the framework is ambiguous or mixed: report what you observe rather than forcing the codebase into one convention.
 

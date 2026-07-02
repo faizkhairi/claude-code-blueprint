@@ -1,13 +1,34 @@
 # Agents
 
-12 specialized subagents with model tiering, permission modes, and worktree isolation.
+11 specialized subagents with model tiering, permission modes, and worktree isolation.
+
+> **Framework-agnostic by design.** These agents adapt to any stack. Each one reads your `CLAUDE.md` and detects the project from its manifest (`package.json`, `composer.json`, `pom.xml`, `Gemfile`, `*.csproj`, `go.mod`, `Cargo.toml`, `pyproject.toml`, ...) — so the same roster serves a Laravel, Spring Boot, Rails, Django, Go, .NET, or Node project. Where an example names a specific tool, it is an example, not a requirement.
+
+## When to Use an Agent vs a Skill vs the Main Thread
+
+This is the most important page in the repo, and the easiest to skip. Copying 11 agent files is not the goal — *knowing which to reach for, and wiring only those, is.* An agent you never invoke is dead weight: it adds nothing and quietly implies your setup does more than it does.
+
+Use this table to decide where a piece of work belongs:
+
+| Reach for a... | When the work is... | Because |
+|---|---|---|
+| **Main thread** (no delegation) | Quick, one-off, needs your full session context, or is the "thinking" itself | Spawning a subagent costs context-setup and loses your session history. Most work stays here. |
+| **Skill** | A repeatable *procedure* you trigger by phrase ("review this", "cut a changelog") — same steps each time | Skills are cheap, deterministic-ish recipes. They can *orchestrate* agents but don't need their own context window. |
+| **Agent (subagent)** | A bounded task that benefits from an *independent context window*, a *different model tier*, or *read-only isolation* — bulky search, a focused review, parallel fan-out | Agents get a clean context and can run in parallel. Worth it when the task is big enough that isolation pays for the setup cost. |
+| **Hook** | Something that must happen *every single time*, no exceptions (block a push, scan for secrets, checkpoint state) | Hooks are deterministic shell scripts — they fire 100% of the time and cannot be skipped by the model. See [../hooks/](../hooks/). |
+
+**The rule that keeps a roster healthy: wire it, don't just define it.** An agent only fires if something *invokes* it — a skill that spawns it, a rule that calls for it, or you asking by name. In this repo, exactly one skill wires agents automatically: `review-full` spawns `code-reviewer`, `security-reviewer`, `db-analyst`, and `architecture-reviewer` by what changed. Every other agent is invoked deliberately, by you, when the moment calls for it. That is intentional — a build pipeline that fits a Node app does not fit a Rust one, so we ship the agents and the *pattern*, not a hard-wired flow you would have to unpick.
+
+**How to right-size for yourself:** start from zero wired agents. Add the ones your actual work reaches for (watch which you invoke by hand over a week), and wire those into the skill where they naturally belong — copy the "spawn agents" step from [`review-full`](../skills/review-full/SKILL.md) and name the agent by `subagent_type`. Delete the agents you never touch. A lean, wired roster beats a large, inert one every time.
+
+Anthropic's own guidance leans skill-heavy for exactly this reason — skills are cheaper to keep and easier to trigger than agents. Treat 11 as a menu, not a checklist.
 
 ## The Standard Agent Pattern
 
 Every agent follows this structure:
 1. **Frontmatter**: name, description, model, tools, maxTurns, permissionMode, memory
 2. **Role statement**: 1-2 sentences establishing expertise
-3. **Context loading**: "Before starting work: read CLAUDE.md, check package.json, search patterns"
+3. **Context loading**: "Before starting work: read CLAUDE.md, check the project manifest, search patterns"
 4. **Responsibilities**: Specific, numbered, actionable items
 5. **Best practices**: Domain-specific guidelines
 6. **Memory guidance**: "Consult before / update after"
@@ -26,7 +47,7 @@ Every agent follows this structure:
 | Mode | Agents | Why |
 |------|--------|-----|
 | `default` (explicit) | backend, frontend, qa-tester, project-architect, docs-writer | Need write access to implement or generate. Frontmatter declares `permissionMode: default` explicitly for clarity. |
-| `plan` | verify-plan, code-reviewer, security-reviewer, db-analyst, devops-engineer, api-documenter, architecture-reviewer | Read-only analysis — should never modify files. Cannot use Write/Edit tools. |
+| `plan` | verify-plan, code-reviewer, security-reviewer, db-analyst, devops-engineer, architecture-reviewer | Read-only analysis — should never modify files. Cannot use Write/Edit tools. |
 
 Note: if an agent omits the `permissionMode` field, Claude Code falls back to write-access default. We declare `permissionMode: default` explicitly on write-access agents to make the intent visible in the frontmatter.
 
@@ -36,7 +57,7 @@ Note: if an agent omits the `permissionMode` field, Claude Code falls back to wr
 
 **Agents using worktree**: verify-plan, code-reviewer, security-reviewer, architecture-reviewer. Reason — these are review agents that benefit from a fresh checkout: their analysis isn't biased by the main session's in-progress edits.
 
-**Analysis-only agents NOT using worktree**: db-analyst, devops-engineer, api-documenter. Reason — these read live config/schema state (e.g., the current Prisma schema, the current Dockerfile, the current OpenAPI spec). A worktree could give them stale state if the main session has uncommitted changes that matter for analysis.
+**Analysis-only agents NOT using worktree**: db-analyst, devops-engineer. Reason — these read live config/schema state (e.g., the current schema/ORM state, the current Dockerfile). A worktree could give them stale state if the main session has uncommitted changes that matter for analysis.
 
 ## Named Subagents
 
@@ -57,7 +78,6 @@ Each agent has a `maxTurns` limit in its frontmatter that caps the number of too
 | code-reviewer | sonnet | 15 |
 | security-reviewer | sonnet | 15 |
 | docs-writer | haiku | 15 |
-| api-documenter | haiku | 10 |
 | architecture-reviewer | sonnet | 20 |
 | verify-plan | sonnet | 3 |
 
@@ -74,7 +94,7 @@ Costs vary with task complexity and turns used. These are rough estimates for ty
 |-----------|--------|----------------------|
 | Opus | project-architect | ~$0.50 - $2.00 per invocation |
 | Sonnet | backend, frontend, qa-tester, db-analyst, devops, code-reviewer, security-reviewer | ~$0.10 - $0.60 per invocation |
-| Haiku | docs-writer, api-documenter | ~$0.01 - $0.08 per invocation |
+| Haiku | docs-writer | ~$0.01 - $0.08 per invocation |
 
 Verify current pricing at [Anthropic's pricing page](https://docs.anthropic.com/en/docs/about-claude/pricing). The [cost-tracker.sh](../hooks/cost-tracker.sh) hook logs session costs to `~/.claude/metrics/costs.jsonl` for actual spending data.
 
@@ -85,7 +105,7 @@ Agents are powerful but imperfect. Common failure modes:
 - **Hallucination**: An agent may reference files, functions, or APIs that do not exist. Always verify with `git diff` (for write agents) or manual inspection (for analysis agents).
 - **Stale context**: Agents cannot see the main session's full history. They may repeat work or miss earlier decisions.
 - **Overconfidence**: An agent that says "all checks pass" may not have actually run all checks. Verify critical claims.
-- **Read-only safety**: Agents with `permissionMode: plan` (verify-plan, code-reviewer, security-reviewer, db-analyst, devops-engineer, api-documenter, architecture-reviewer) cannot modify files -- they can only analyze and report. This is a safety feature, not a limitation.
+- **Read-only safety**: Agents with `permissionMode: plan` (verify-plan, code-reviewer, security-reviewer, db-analyst, devops-engineer, architecture-reviewer) cannot modify files -- they can only analyze and report. This is a safety feature, not a limitation.
 
 **Rule of thumb:** Trust agents for research and drafting. Verify before committing their output.
 
