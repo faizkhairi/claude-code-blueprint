@@ -180,7 +180,7 @@ Cursor hooks are configured in a project-level or global `hooks.json` (not `sett
   "hooks": {
     "beforeShellExecution": { "command": ["bash", "hooks/block-git-push.sh"] },
     "afterFileEdit": { "command": ["bash", "hooks/notify-file-changed.sh"] },
-    "stop": { "command": ["bash", "hooks/security-check.sh"] }
+    "stop": { "command": ["bash", "hooks/session-checkpoint.sh"] }
   }
 }
 ```

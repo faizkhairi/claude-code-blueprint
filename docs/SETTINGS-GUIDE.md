@@ -244,7 +244,7 @@ The `allow` list in the template is organized by category. Here's what each allo
 | **Build + Deploy** | `docker`, `vercel`, `./gradlew` | Building containers, deploying, running Gradle tasks. |
 | **CLI Utilities** | `curl`, `ls`, `jq`, `chmod`, `unzip`, `echo`, `sort`, `cut`, `tr`, `tee`, `code` | Common shell utilities for investigation and scripting. |
 | **Web Access** | `raw.githubusercontent.com`, `api.github.com`, `registry.npmjs.org`, `WebSearch` | Fetching files from GitHub, checking npm registry, web searches. |
-| **MCP Tools** | Playwright browser tools, Context7 docs | Browser automation and documentation lookup. See [GETTING-STARTED.md](../GETTING-STARTED.md#mcp-servers--giving-claude-superpowers) for setup. |
+| **MCP Tools** | Playwright browser tools, Context7 docs | Browser automation and documentation lookup. See [GETTING-STARTED.md](../GETTING-STARTED.md#mcp-servers----giving-claude-superpowers) for setup. |
 | **Skills** | `update-config` | Allows Claude to modify settings via the update-config skill. |
 
 ### additionalDirectories

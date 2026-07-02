@@ -161,7 +161,7 @@ Use the full [`settings-template.json`](../examples/settings-template.json) as y
 
 ### What you get (beyond Standard)
 
-- 11 specialized agents (architecture, backend, frontend, DB, DevOps, security, QA, docs)
+- 12 specialized agents (architecture, backend, frontend, DB, DevOps, security, QA, docs)
 - 17 natural-language skills (review-full, deploy-check, test-check, sprint-plan, etc.)
 - Path-scoped rules (database conventions load only when editing schema files)
 - Cross-session memory persistence via git-backed memory system
