@@ -147,7 +147,7 @@ curl -o CLAUDE.md https://raw.githubusercontent.com/faizkhairi/claude-code-bluep
 
 | 类别 | Skills | 触发方式 |
 |------|--------|---------|
-| Code Quality | review, review-diff | "is this secure?", "scan diff", "check for vulnerabilities" |
+| Code Quality | review-full, review-diff | "is this secure?", "scan diff", "check for vulnerabilities" |
 | Testing | test-check, e2e-check | "run the tests", "browser test", "are tests passing?" |
 | Deployment | deploy-check | "deploy", "push to prod", "ready to ship" |
 | Planning | sprint-plan, elicit-requirements | "let's build", "new feature", multi-step tasks |

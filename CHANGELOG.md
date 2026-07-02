@@ -18,16 +18,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and the 
 
 ### Changed
 
+- Consolidated the README calls-to-action into one clear path and fixed remaining "three rules" stragglers so the on-ramp is unambiguous. [PR #34]
+- Reworked the on-ramp into a single linear flow (README CTA plus a hands-on-first GETTING-STARTED) so new readers have one obvious starting point. [PR #33]
 - Re-encoded the hero walkthrough GIF about 23% smaller (5.6 MB to 4.3 MB) with no visible quality loss; same dimensions and runtime. [PR #15]
 - Right-sized the compliance wording: the unmeasured "~80%" figure is replaced with honest qualitative phrasing, while the accurate "hooks fire deterministically" property is kept. [PR #13]
 - The two example-only rule files (`api-endpoints`, `testing`) now carry a clear "replace with your own conventions" banner so adopters know they reflect one project's patterns. [PR #13]
 
 ### Fixed
 
+- The `full` install preset now installs all 12 agents and 6 rules; it previously stopped at 11 agents and 5 rules, silently omitting the newest of each. [PR #35]
+- Corrected a second identity name, heading casing, and completed gaps in the three translations. [PR #32]
+- Fixed consistency drift across component counts, pricing figures, tables, and the translated READMEs so every surface agrees. [PR #31]
 - Memory `session.md` and `reminders.md` are no longer tracked by git despite being described as "git-ignored for privacy"; they now ship as `.example` templates that `setup.sh` seeds locally on install. [PR #12]
 - Renamed two skills that shadowed built-in slash commands: `review` to `review-full`, and `init-project` to `scaffold-project`. [PR #12]
 - Repaired broken relative links across the docs and the three translated READMEs. [PR #12, PR #13]
 - Corrected a dead `WHY.md` reference in the installer and the issue template (now `docs/WHY.md`). [PR #12]
+
+### Removed
+
+- Dropped the `release`, `oss-contribute`, and `npm-publish` skills, which were out of scope for a Claude Code configuration reference (they target package publishing and OSS contribution workflows, not harness setup). [PR #30]
 
 ## [1.0.0] - 2026-03-25
 
