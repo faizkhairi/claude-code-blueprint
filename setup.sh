@@ -255,7 +255,7 @@ select_preset() {
   echo "    1) Minimal   -- CLAUDE.md + 2 hooks (config protection, edit verification)"
   echo "    2) Standard  -- + 4 more hooks, 2 agents, settings.json"
   echo "    3) Core      -- + 2 review agents, 6 universal skills, 2 path-scoped rules"
-  echo "    4) Full      -- + all 12 agents, 17 skills, 6 rules (everything)"
+  echo "    4) Full      -- + all 11 agents, 17 skills, 6 rules (everything)"
   echo ""
   echo "  Not sure? Start with Standard or Core. You can run this script again to add more later."
   echo ""
