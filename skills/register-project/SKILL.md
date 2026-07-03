@@ -21,7 +21,7 @@ Read `./memory/templates/coding-template.md` for the standard format.
 
 ## Step 3: Check Capacity
 
-Scan `./memory/projects/active/` — if 10+ projects exist, identify the oldest by Last Accessed date and suggest archiving it.
+Scan `./memory/projects/active/`. If 10+ projects exist, identify the oldest by Last Accessed date and suggest archiving it.
 
 ## Step 4: Create Project File
 
@@ -32,7 +32,7 @@ Write to `./memory/projects/active/{project-name}.md` using the template, filled
 Show the created file path and key fields to the user.
 
 ## Rules
-- Never overwrite an existing project file — read it first and update if it exists
+- Never overwrite an existing project file; read it first and update if it exists
 - Use the template format exactly
 - Set Last Accessed to today's date
 - Leave Session Context section with placeholder (populated during actual work)

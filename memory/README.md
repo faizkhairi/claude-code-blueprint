@@ -1,8 +1,8 @@
-# Memory System — Built-in Opt-in Persistent Memory
+# Memory System: Built-in Opt-in Persistent Memory
 
-Gives your AI assistant persistent context across sessions, IDE reinstalls, and (with optional cross-machine sync) machine changes. Enabled via `./setup.sh` — no separate repo required.
+Gives your AI assistant persistent context across sessions, IDE reinstalls, and (with optional cross-machine sync) machine changes. Enabled via `./setup.sh`, no separate repo required.
 
-> **Privacy by default:** The `.gitignore` shipped in this folder keeps your most personal content (session, reminders, diary, projects/active) **out of git** — your blueprint fork can stay public without leaking your work history. Session and reminders ship only as `.example` templates; your real files are created locally (and git-ignored) when you enable memory. Lower-sensitivity structural files (preferences, identity, decisions) stay tracked by default — review them before pushing, or uncomment them in `memory/.gitignore` for stricter privacy. This README and the templates stay tracked.
+> **Privacy by default:** The `.gitignore` shipped in this folder keeps your most personal content (session, reminders, diary, projects/active) **out of git**, so your blueprint fork can stay public without leaking your work history. Session and reminders ship only as `.example` templates; your real files are created locally (and git-ignored) when you enable memory. Lower-sensitivity structural files (preferences, identity, decisions) stay tracked by default, so review them before pushing, or uncomment them in `memory/.gitignore` for stricter privacy. This README and the templates stay tracked.
 
 ## Quick Reference
 
@@ -18,17 +18,17 @@ Gives your AI assistant persistent context across sessions, IDE reinstalls, and 
 | `templates/adr-template.md` | Reusable ADR scaffold | Never (read-only template) |
 | `templates/coding-template.md` | Per-project context scaffold | Never (read-only template) |
 
-Files in `core/` and `diary/` and `projects/active/` are **git-ignored** — they hold your personal data. Templates and this README are tracked so they survive `git clean` and travel with the blueprint.
+Files in `core/` and `diary/` and `projects/active/` are **git-ignored**, since they hold your personal data. Templates and this README are tracked so they survive `git clean` and travel with the blueprint.
 
 ## Why This Exists
 
-Claude Code's built-in auto-memory (`~/.claude/projects/*/memory/`) is powerful but session-scoped — it can be lost on IDE reinstalls or machine changes. The blueprint's memory system:
+Claude Code's built-in auto-memory (`~/.claude/projects/*/memory/`) is powerful but session-scoped, so it can be lost on IDE reinstalls or machine changes. The blueprint's memory system:
 
-- **Survives reinstalls** — lives in this folder, not in `~/.claude/projects/`
-- **Separates concerns** — auto-memory stores technical facts, this stores relational context
-- **Enables session continuity** — pick up exactly where you left off, even weeks later
-- **Tracks decisions** — append-only decision log prevents "why did we do it this way?" moments
-- **Private by default** — personal content is git-ignored; you control what (if anything) gets committed
+- **Survives reinstalls**: lives in this folder, not in `~/.claude/projects/`
+- **Separates concerns**: auto-memory stores technical facts, this stores relational context
+- **Enables session continuity**: pick up exactly where you left off, even weeks later
+- **Tracks decisions**: append-only decision log prevents "why did we do it this way?" moments
+- **Private by default**: personal content is git-ignored; you control what (if anything) gets committed
 
 ## Setup
 
@@ -42,7 +42,7 @@ From your fork of the blueprint, run:
 
 When it asks **"Enable persistent memory? [Y/n]"**, answer **Y** (the default). That single answer wires everything: this folder becomes Claude's memory location, the `memory-session` rule activates so Claude knows the conventions for reading/writing here, and the session-lifecycle skills (`load-session`, `save-session`, `session-end`, `save-diary`) become available.
 
-If you've already run `setup.sh` without enabling memory, re-run it — it's idempotent and will prompt again.
+If you've already run `setup.sh` without enabling memory, re-run it, it's idempotent and will prompt again.
 
 ### Optional: cross-machine sync
 
@@ -50,7 +50,7 @@ By default, memory lives in this folder on one machine, git-ignored for privacy.
 
 1. Create a **separate private** git repo for your memory data.
 2. Replace this `memory/` folder with a clone of that private repo, OR symlink it.
-3. Commit only the parts you want synced (e.g., `core/decisions.md`, `core/preferences.md`) — keep diary/projects local if they contain sensitive context.
+3. Commit only the parts you want synced (e.g., `core/decisions.md`, `core/preferences.md`), keeping diary/projects local if they contain sensitive context.
 
 This is advanced and most users don't need it. Single-machine setup is the default and works for the majority of adopters.
 
@@ -58,7 +58,7 @@ This is advanced and most users don't need it. Single-machine setup is the defau
 
 If you prefer to set things up by hand (or you forked just `memory/` without the blueprint's setup.sh), wire it like this:
 
-1. **Path-scoped rule** — add `~/.claude/rules/memory-session.md` (the blueprint ships one at `rules/memory-session.md` you can copy):
+1. **Path-scoped rule**: add `~/.claude/rules/memory-session.md` (the blueprint ships one at `rules/memory-session.md` you can copy):
 
    ```markdown
    ---
@@ -69,16 +69,16 @@ If you prefer to set things up by hand (or you forked just `memory/` without the
    # Memory Session Rules
 
    When working with memory files:
-   1. Never delete diary entries — they form the session history
+   1. Never delete diary entries, they form the session history
    2. Never store sensitive data (API keys, passwords, PII, tokens)
    3. Update core/session.md at the end of significant work sessions
    4. Changes to core/preferences.md should be additive, not destructive
    5. Project entries should use the template from templates/
    6. Diary entries go in diary/current/YYYY-MM-DD.md
-   7. Don't store code — this is for context and memory only
+   7. Don't store code, this is for context and memory only
    ```
 
-2. **Session lifecycle skills** — copy `skills/load-session/`, `skills/save-session/`, `skills/session-end/`, `skills/save-diary/` from the blueprint into `~/.claude/skills/`. They reference `./memory/` directly — no path substitution needed.
+2. **Session lifecycle skills**: copy `skills/load-session/`, `skills/save-session/`, `skills/session-end/`, `skills/save-diary/` from the blueprint into `~/.claude/skills/`. They reference `./memory/` directly, so no path substitution is needed.
 
 ## What's git-ignored here
 
@@ -90,19 +90,19 @@ Machine-level patterns (`.DS_Store`, `.vscode/`, etc.) belong in your project ro
 
 ```
 core/
-  ├── session.md        — Working memory (what happened, what's next)
-  ├── preferences.md    — Your work style and communication preferences
-  ├── identity.md       — AI personality config (how Claude should behave)
-  ├── reminders.md      — Persistent reminders that survive session changes
-  └── decisions.md      — Append-only architectural decision log
+  ├── session.md        : Working memory (what happened, what's next)
+  ├── preferences.md    : Your work style and communication preferences
+  ├── identity.md       : AI personality config (how Claude should behave)
+  ├── reminders.md      : Persistent reminders that survive session changes
+  └── decisions.md      : Append-only architectural decision log
 diary/
-  ├── current/          — This month's session diary entries (YYYY-MM-DD.md)
-  └── archived/         — Previous months (YYYY-MM/ folders)
+  ├── current/          : This month's session diary entries (YYYY-MM-DD.md)
+  └── archived/         : Previous months (YYYY-MM/ folders)
 projects/
-  └── active/           — Per-project context files (max ~10)
+  └── active/           : Per-project context files (max ~10)
 templates/
-  ├── adr-template.md     — Reusable ADR template for architectural decisions
-  └── coding-template.md  — Template for new project entries
+  ├── adr-template.md     : Reusable ADR template for architectural decisions
+  └── coding-template.md  : Template for new project entries
 ```
 
 ## What NOT to Store
@@ -110,18 +110,18 @@ templates/
 Even in a private repo, avoid storing:
 - API keys, tokens, or passwords (use environment variables or a secrets manager)
 - Database connection strings with credentials
-- Personally identifiable information (PII) of others -- names, emails, IDs
+- Personally identifiable information (PII) of others, such as names, emails, IDs
 - Proprietary code snippets from employer/client projects
 - Access credentials for production systems
 
-Memory files should contain **context** (what you were working on, decisions made, conventions learned) -- not **secrets** (anything that grants access to a system).
+Memory files should contain **context** (what you were working on, decisions made, conventions learned), not **secrets** (anything that grants access to a system).
 
 ## How It Works
 
 | Event | What Happens |
 |-------|-------------|
 | **Session start** | Claude reads `core/session.md` + `core/preferences.md` to restore context |
-| **During session** | No constant updates needed — focus on the work |
+| **During session** | No constant updates needed, focus on the work |
 | **Session end** | Claude updates session.md, reminders.md, and optionally writes a diary entry |
 | **Significant session** | A diary entry captures what happened, decisions made, and lessons learned |
 | **Monthly** | Diary entries in `current/` get archived to `archived/YYYY-MM/` |

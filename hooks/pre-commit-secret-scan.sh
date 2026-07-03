@@ -1,7 +1,7 @@
 #!/bin/bash
-# Hook: PreToolUse (Bash) — Secret Scan Before Commit
+# Hook: PreToolUse (Bash). Secret Scan Before Commit
 # Scans staged git content with gitleaks before any `git commit`.
-# Blocks the commit (exit 2) if gitleaks detects a secret -- this is a security
+# Blocks the commit (exit 2) if gitleaks detects a secret. This is a security
 # gate, the same documented exception to "exit 0 always" that block-git-push.sh uses.
 # Allows the commit (exit 0) when: gitleaks is clean, gitleaks isn't installed
 # (fail-open), the command isn't a commit, or the input is malformed.
@@ -37,7 +37,7 @@ if echo "$COMMAND" | grep -qE 'git commit.*--no-verify'; then
   exit 0
 fi
 
-# gitleaks must be on PATH -- fail open (warn, allow) if absent
+# gitleaks must be on PATH; fail open (warn, allow) if absent
 if ! command -v gitleaks >/dev/null 2>&1; then
   echo "Note: gitleaks not installed; pre-commit secret scan skipped." >&2
   echo "      Install to enable: 'winget install gitleaks' or 'brew install gitleaks'." >&2

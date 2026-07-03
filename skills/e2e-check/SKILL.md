@@ -90,7 +90,7 @@ Use `mcp__playwright__browser_navigate` to open `http://localhost:{port}` (port 
 2. Fill credentials using `mcp__playwright__browser_fill_form` (use dev test credentials from `.env` or `.env.test`)
 3. Submit login form via `mcp__playwright__browser_click`
 4. Wait for dashboard to load via `mcp__playwright__browser_wait_for`
-5. Take snapshot via `mcp__playwright__browser_snapshot` -- verify dashboard renders data (not empty state)
+5. Take snapshot via `mcp__playwright__browser_snapshot` to verify dashboard renders data (not empty state)
 6. Navigate to a key page (e.g., main feature list, report list)
 7. Verify data is present (not loading spinner, not error)
 8. Take screenshot via `mcp__playwright__browser_take_screenshot` as evidence
@@ -118,8 +118,8 @@ Summarize:
 
 ## Rules
 
-- **Always `localhost`, never `127.0.0.1`** -- cookie domain issues
+- **Always `localhost`, never `127.0.0.1`**, due to cookie domain issues
 - **Dev port**: read from `CLAUDE.md` or the project manifest for the active project
-- **Package manager**: check `CLAUDE.md` or detect from lockfile (`yarn.lock` → yarn, `package-lock.json` → npm) (non-Node stacks: detect the build/install tool from the manifest type — Gemfile.lock, poetry.lock, Cargo.lock, go.sum, etc.)
-- **Never auto-start dev servers** -- report and stop if not running
+- **Package manager**: check `CLAUDE.md` or detect from lockfile (`yarn.lock` → yarn, `package-lock.json` → npm) (non-Node stacks: detect the build/install tool from the manifest type, e.g. Gemfile.lock, poetry.lock, Cargo.lock, go.sum, etc.)
+- **Never auto-start dev servers**: report and stop if not running
 - **E2E baselines**: compare against baseline documented in `CLAUDE.md`

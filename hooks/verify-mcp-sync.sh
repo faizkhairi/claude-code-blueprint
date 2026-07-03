@@ -50,7 +50,7 @@ if [ "$CLI_SERVERS" = "$EXT_SERVERS" ] && [ "$EXT_SERVERS" = "$CURSOR_SERVERS" ]
 else
   echo "Status: OUT OF SYNC"
   echo ""
-  # Show detailed diff — which servers are where
+  # Show detailed diff: which servers are where
   ALL_SERVERS=$(echo "$CLI_SERVERS,$EXT_SERVERS,$CURSOR_SERVERS" | tr ',' '\n' | sort -u | grep -v '^$' | grep -v '(')
   echo "  Server             CLI  Ext  Cursor"
   echo "  ------             ---  ---  ------"

@@ -7,14 +7,14 @@ argument-hint: "[environment: dev|stg|prod] or ['audit' for deps-only]"
 
 Pre-deployment validation for $ARGUMENTS environment:
 
-1. **Tests**: Run full test suite — all must pass
+1. **Tests**: Run full test suite, all must pass
 2. **Git status**: Check for uncommitted changes across all repos
 3. **Schema sync**: Verify the project's ORM/DB schema definition matches expectations (e.g. Prisma schema, Django models, Rails schema.rb, migrations directory)
 4. **Secrets check**: Scan for hardcoded credentials, API keys, passwords
 5. **Dev artifacts**: Check for language-appropriate debug/print statements (console.log, print(), System.out.println, fmt.Println, etc.), debugger statements, TODO/FIXME in production paths
 6. **Env vars**: Verify required environment variables are documented
 7. **Auth coverage**: Validate all API endpoints have auth middleware
-8. **Dependency audit**: Run the ecosystem's dependency audit (`npm audit`/`yarn audit`, `pip-audit`, `bundle audit`, `cargo audit`, `govulncheck`, etc. — detect from the manifest/lockfile). Classify: CRITICAL/HIGH (action required) vs MODERATE/LOW (note). Separate production vs dev-only vulnerabilities. Check for auto-fixable with `--dry-run`.
+8. **Dependency audit**: Run the ecosystem's dependency audit (`npm audit`/`yarn audit`, `pip-audit`, `bundle audit`, `cargo audit`, `govulncheck`, etc., detected from the manifest/lockfile). Classify: CRITICAL/HIGH (action required) vs MODERATE/LOW (note). Separate production vs dev-only vulnerabilities. Check for auto-fixable with `--dry-run`.
 9. **Build**: Verify project builds without errors
 10. **Migration safety**: Check if any ORM models/migrations are missing (risk of tables dropped by destructive sync)
 

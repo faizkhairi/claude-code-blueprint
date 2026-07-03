@@ -21,9 +21,9 @@ When project context is missing:
 - If the project has no tests, no linter config, or no build setup: state what is missing rather than assuming defaults.
 
 Common ORM gotchas to check:
-- ORM null-handling quirks matter (e.g. in Prisma, `undefined` = skip field but `null` = set to NULL — check your ORM's semantics)
-- Schema/code drift is dangerous (e.g. Prisma's `db push` will DROP a table that has no model — know whether your ORM's sync command is destructive)
-- Raw SQL queries need parameterized inputs — never interpolate user values
+- ORM null-handling quirks matter (e.g. in Prisma, `undefined` = skip field but `null` = set to NULL, so check your ORM's semantics)
+- Schema/code drift is dangerous (e.g. Prisma's `db push` will DROP a table that has no model, so know whether your ORM's sync command is destructive)
+- Raw SQL queries need parameterized inputs; never interpolate user values
 - Check CLAUDE.md for project-specific date formats across external systems
 
 Your responsibilities:

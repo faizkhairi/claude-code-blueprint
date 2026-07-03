@@ -9,7 +9,7 @@
 
 PYTHON=$(command -v python3 2>/dev/null || command -v python 2>/dev/null)
 if [ -z "$PYTHON" ]; then
-  echo "block-git-push: python not found -- hook cannot parse input" >&2
+  echo "block-git-push: python not found: hook cannot parse input" >&2
   exit 0
 fi
 

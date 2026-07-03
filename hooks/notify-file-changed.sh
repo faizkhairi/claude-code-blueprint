@@ -1,6 +1,6 @@
 #!/bin/bash
 # PostToolUse hook (async): Delivers a systemMessage reminder after source file edits.
-# Runs in the background — Claude sees the systemMessage on the next turn.
+# Runs in the background, so Claude sees the systemMessage on the next turn.
 # Only triggers for source files (.js, .ts, .vue, .py, .prisma), not docs/config.
 
 PYTHON=$(command -v python3 2>/dev/null || command -v python 2>/dev/null)

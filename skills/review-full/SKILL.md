@@ -32,10 +32,10 @@ If changes are small (<50 lines), run code-reviewer only. If security argument, 
 
 The agent checks:
 - Readability and naming conventions (matches project patterns?)
-- DRY -- duplicated logic that should be extracted
-- Error handling -- all async paths covered? Consistent error shapes?
-- Component/function size -- single responsibility?
-- Static-typing discipline where the language has it -- no unchecked escapes (TypeScript `any`, Java raw `Object`, Go `interface{}`, etc.)
+- DRY: duplicated logic that should be extracted
+- Error handling: all async paths covered? Consistent error shapes?
+- Component/function size: single responsibility?
+- Static-typing discipline where the language has it: no unchecked escapes (TypeScript `any`, Java raw `Object`, Go `interface{}`, etc.)
 
 ## Step 3: Security review (via security-reviewer agent)
 
@@ -52,9 +52,9 @@ The agent checks OWASP Top 10 plus project-specific patterns (read from `CLAUDE.
 ## Step 4: Database review (via db-analyst agent, if applicable)
 
 The agent checks:
-- **ORM null-handling**: many ORMs distinguish "skip field" from "set NULL" (e.g. Prisma's `undefined` vs `null`) -- mixing them causes bugs
-- **Schema/code drift**: unmodeled tables can be dropped by destructive sync commands (e.g. `prisma db push`) -- verify every table is represented
-- **N+1 queries**: findMany/findFirst inside loops -- should use `include` or batch queries
+- **ORM null-handling**: many ORMs distinguish "skip field" from "set NULL" (e.g. Prisma's `undefined` vs `null`); mixing them causes bugs
+- **Schema/code drift**: unmodeled tables can be dropped by destructive sync commands (e.g. `prisma db push`); verify every table is represented
+- **N+1 queries**: findMany/findFirst inside loops; should use `include` or batch queries
 - **Relation loading**: Missing `include` for needed relations, or over-fetching with deep includes
 - **Migration safety**: Schema changes that could drop data, rename columns, or break existing queries
 
@@ -67,7 +67,7 @@ Run only when the change reshapes structure (new modules, files moved across lay
 - **Dead code**: exports/modules no longer imported anywhere
 - **Modularity**: are boundaries between features/layers clear, or is logic leaking across them?
 
-This is language-agnostic — it calibrates to the project's own conventions (read from `CLAUDE.md` and the manifest), so it applies equally to any stack.
+This is language-agnostic: it calibrates to the project's own conventions (read from `CLAUDE.md` and the manifest), so it applies equally to any stack.
 
 ## Step 5: Synthesize findings
 

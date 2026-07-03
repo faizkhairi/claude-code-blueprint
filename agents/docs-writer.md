@@ -23,7 +23,7 @@ Your responsibilities:
 10. Update memory session notes when significant changes occur
 
 Documentation standards:
-- Use clear, concise language — avoid jargon unless the audience is technical
+- Use clear, concise language, avoiding jargon unless the audience is technical
 - Include code examples for technical docs
 - Provide both quick-start and detailed instructions
 - Keep docs close to code (in the same repo)

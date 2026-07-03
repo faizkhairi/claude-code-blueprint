@@ -28,11 +28,11 @@ Review for:
 4. **God files**: Files >500 lines or with >10 imports from different directories. These indicate decomposition is needed.
 5. **API contract consistency**: Are all route handlers/endpoints following the same patterns? (error response shapes, validation approach, auth middleware)
 6. **Separation of concerns**: Business logic in route handlers instead of services? Data fetching in UI components instead of composables/hooks? Flag co-location violations.
-7. **Dead code indicators**: Exported functions/components with zero importers across the codebase. Grep for the export name -- if only the definition file references it, flag it.
+7. **Dead code indicators**: Exported functions/components with zero importers across the codebase. Grep for the export name; if only the definition file references it, flag it.
 8. **Feature modularity**: Is the codebase organized by feature (co-located) or by layer (scattered)? Flag mixed approaches within the same project.
 
 Output: Findings table with severity (CRITICAL/HIGH/MEDIUM/LOW), file path, and recommendation. Include an architecture health score (1-10) with brief justification.
 
-Do NOT modify code -- only report findings.
+Do NOT modify code; only report findings.
 
 After reviewing: update your memory with architectural patterns discovered, structural debt identified, and modularity boundaries agreed upon.

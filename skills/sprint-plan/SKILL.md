@@ -1,6 +1,6 @@
 ---
 name: sprint-plan
-description: "MUST use when user describes a multi-step feature to build, says 'let's build', 'new project', 'let's implement', or when a task clearly requires more than 3 steps and no plan exists yet. Do NOT trigger for simple additions like adding a comment, renaming a variable, or single-file changes. Produces: task breakdown with S/M/L/XL size estimates, dependency ordering, risk analysis, and a Definition of Done checklist — output is a structured markdown plan ready for implementation."
+description: "MUST use when user describes a multi-step feature to build, says 'let's build', 'new project', 'let's implement', or when a task clearly requires more than 3 steps and no plan exists yet. Do NOT trigger for simple additions like adding a comment, renaming a variable, or single-file changes. Produces: task breakdown with S/M/L/XL size estimates, dependency ordering, risk analysis, and a Definition of Done checklist; output is a structured markdown plan ready for implementation."
 user-invocable: true
 argument-hint: "[feature description or issue URL]"
 ---

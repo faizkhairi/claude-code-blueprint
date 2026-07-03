@@ -11,7 +11,7 @@ paths:
 
 # Testing Rules & Conventions
 
-> **Example only -- replace with your own conventions.** This file uses Vitest + Vue, and the deeper
+> **Example only, replace with your own conventions.** This file uses Vitest + Vue, and the deeper
 > sections (the `tests/contracts/` directory layout, the integration-contract coverage list, and the
 > specific mock targets and test identifiers) reflect one project's stack. The universal parts
 > (arrange/act/assert, mock external dependencies, no hardcoded dates) transfer anywhere; the
@@ -21,10 +21,10 @@ These rules apply when writing or modifying tests for your project.
 
 ## Test Framework
 
-- **Framework**: [Your test runner -- e.g., Vitest, Jest, Pytest, Go test, RSpec]
+- **Framework**: [Your test runner, e.g., Vitest, Jest, Pytest, Go test, RSpec]
 - **Run command**: Check CLAUDE.md for test command
 - **Watch mode**: Append `--watch` to the test command (auto-runs on file changes)
-- **Current baseline**: Check CLAUDE.md for current test baseline — all must pass (bundle-size suite auto-skips if .output/ absent; run build first to include it)
+- **Current baseline**: Check CLAUDE.md for current test baseline, all must pass (bundle-size suite auto-skips if .output/ absent; run build first to include it)
 
 ## Test Organization
 

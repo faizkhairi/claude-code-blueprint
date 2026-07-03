@@ -5,7 +5,7 @@
 
 PYTHON=$(command -v python3 2>/dev/null || command -v python 2>/dev/null)
 if [ -z "$PYTHON" ]; then
-  echo "post-commit-review: python not found -- hook cannot parse input" >&2
+  echo "post-commit-review: python not found: hook cannot parse input" >&2
   exit 0
 fi
 
@@ -33,10 +33,10 @@ fi
 
 # Get the latest commit info (runs AFTER commit succeeded)
 COMMIT_MSG=$(git log -1 --oneline 2>/dev/null)
-# Use diff-tree with --root — works for all commits including root (initial) commits
+# Use diff-tree with --root, which works for all commits including root (initial) commits
 CHANGED_FILES=$(git diff-tree --no-commit-id --name-only -r --root HEAD 2>/dev/null)
 
-# If no commit info, the commit may have failed — skip silently
+# If no commit info, the commit may have failed, so skip silently
 if [ -z "$COMMIT_MSG" ]; then
   exit 0
 fi
@@ -49,7 +49,7 @@ else
 fi
 HIGH_RISK=""
 if echo "$CHANGED_FILES" | grep -qiE '(guard|middleware|auth|prisma\.schema|\.env)'; then
-  HIGH_RISK=" HIGH-RISK FILES DETECTED (auth/guard/middleware/schema/env) -- review is strongly recommended."
+  HIGH_RISK=" HIGH-RISK FILES DETECTED (auth/guard/middleware/schema/env): review is strongly recommended."
 fi
 
 # Build file list (truncate if >10 files)

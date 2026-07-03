@@ -8,7 +8,7 @@
 
 PYTHON=$(command -v python3 2>/dev/null || command -v python 2>/dev/null)
 if [ -z "$PYTHON" ]; then
-  echo "session-start: python not found -- session context not injected" >&2
+  echo "session-start: python not found: session context not injected" >&2
   exit 0
 fi
 

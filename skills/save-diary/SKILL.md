@@ -6,22 +6,22 @@ user-invocable: true
 
 **Prerequisite check (run first)**: if `./memory/diary/current/` does not exist OR `~/.claude/.memory-disabled` marker file is present, this skill is a no-op. Output: "Memory persistence is disabled. Run `./setup.sh` and choose to enable memory if you want diary entries to be saved."
 
-# Dev Diary — Session Documentation Skill
+# Dev Diary: Session Documentation Skill
 
 *Today's story takes shape.*
 
 ## Activation
 
-When this skill activates, output: "Dev Diary — documenting today's session."
+When this skill activates, output: "Dev Diary: documenting today's session."
 
 ## Context Guard
 
 | Context | Status |
 |---------|--------|
-| User says "save diary" / "write diary" / "diary entry" | ACTIVE — full diary write |
-| End of significant session | ACTIVE — auto-document |
-| User says "review diary" | ACTIVE — read recent entries |
-| Mid-conversation (no save request) | DORMANT — no diary action |
+| User says "save diary" / "write diary" / "diary entry" | ACTIVE, full diary write |
+| End of significant session | ACTIVE, auto-document |
+| User says "review diary" | ACTIVE, read recent entries |
+| Mid-conversation (no save request) | DORMANT, no diary action |
 
 ## Protocol
 
@@ -66,12 +66,12 @@ When this skill activates, output: "Dev Diary — documenting today's session."
 
 ## Mandatory Rules
 
-1. **Always APPEND** — never overwrite existing diary entries
-2. **One file per day** — multiple entries separated by `---`
-3. **Use real timestamps** — get current date via system command
-4. **Archive first** — run monthly archive check before every write
-5. **Evidence-based** — document actual session content, not generic summaries
-6. **Use our format** — concise technical summaries (What Happened, Key Changes, Key Insight, Pending)
+1. **Always APPEND**: never overwrite existing diary entries
+2. **One file per day**: multiple entries separated by `---`
+3. **Use real timestamps**: get current date via system command
+4. **Archive first**: run monthly archive check before every write
+5. **Evidence-based**: document actual session content, not generic summaries
+6. **Use our format**: concise technical summaries (What Happened, Key Changes, Key Insight, Pending)
 
 ## Edge Cases
 

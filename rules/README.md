@@ -4,7 +4,7 @@
 
 ## How Path-Scoped Rules Work
 
-Rules in `.claude/rules/` use `paths:` frontmatter with glob patterns. Claude Code loads a rule **only** when the current task involves files matching those patterns. This keeps irrelevant rules out of context -- database conventions don't load during frontend work.
+Rules in `.claude/rules/` use `paths:` frontmatter with glob patterns. Claude Code loads a rule **only** when the current task involves files matching those patterns. This keeps irrelevant rules out of context: database conventions don't load during frontend work.
 
 ```yaml
 ---
@@ -14,7 +14,7 @@ paths:
 ---
 ```
 
-> Note: always-on rules (e.g. `session-lifecycle.md`, `memory-session.md`) intentionally omit the `paths` field — they apply globally, not to a path glob.
+> Note: always-on rules (e.g. `session-lifecycle.md`, `memory-session.md`) intentionally omit the `paths` field, since they apply globally, not to a path glob.
 
 ## Rules in This Blueprint
 
@@ -23,16 +23,16 @@ paths:
 | [api-endpoints.md](api-endpoints.md) | `**/server/api/**/*.{js,ts}` | API route conventions (naming, error handling, response structure) |
 | [database-schema.md](database-schema.md) | `**/prisma/**`, `**/drizzle/**`, `**/migrations/**` | Schema design patterns (soft delete, timestamps, naming) |
 | [testing.md](testing.md) | `**/*.test.*`, `**/*.spec.*`, `**/tests/**` | Test writing conventions (structure, assertions, coverage) |
-| [testing-general.md](testing-general.md) | `**/*.test.*`, `**/*.spec.*`, `**/tests/**` | Framework-agnostic testing conventions (discover-don't-assume, AAA, deterministic) -- companion to testing.md |
+| [testing-general.md](testing-general.md) | `**/*.test.*`, `**/*.spec.*`, `**/tests/**` | Framework-agnostic testing conventions (discover-don't-assume, AAA, deterministic); companion to testing.md |
 | [session-lifecycle.md](session-lifecycle.md) | Always (no path filter) | Session start/end behaviors (memory loading, state persistence) |
 | [memory-session.md](memory-session.md) | `**/memory/**` | Memory repository session management rules |
 
 ## Design Principles
 
-1. **Scope tightly** -- a rule that matches `**/*.ts` loads on every TypeScript file. Be as specific as possible.
-2. **One domain per rule** -- don't mix API conventions with database patterns. Separate files keep context lean.
-3. **Rules complement CLAUDE.md** -- put universal rules in CLAUDE.md, domain-specific rules here. A rule should only exist if it's irrelevant to 50%+ of your work.
+1. **Scope tightly**: a rule that matches `**/*.ts` loads on every TypeScript file. Be as specific as possible.
+2. **One domain per rule**: don't mix API conventions with database patterns. Separate files keep context lean.
+3. **Rules complement CLAUDE.md**: put universal rules in CLAUDE.md, domain-specific rules here. A rule should only exist if it's irrelevant to 50%+ of your work.
 
 ## Customization
 
-These rules are templates. Replace the conventions inside with your project's actual patterns -- naming conventions, error handling approaches, test frameworks, etc.
+These rules are templates. Replace the conventions inside with your project's actual patterns: naming conventions, error handling approaches, test frameworks, etc.

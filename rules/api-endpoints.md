@@ -6,10 +6,10 @@ paths:
 
 # API Endpoint Development Rules
 
-> **Example only -- replace with your own conventions.** The patterns below (a central endpoint
+> **Example only, replace with your own conventions.** The patterns below (a central endpoint
 > registry, INBOUND/OUTBOUND integration direction, `externalSystem`/`systemCode` auth, updating DB
 > state on every error path) reflect one specific integration-gateway project. They are NOT universal.
-> Do not copy them verbatim -- treat this file as a template and rewrite the rules to match how your
+> Do not copy them verbatim, treat this file as a template and rewrite the rules to match how your
 > own API layer actually works. Keep the idea (encode your API conventions as a path-scoped rule),
 > discard the specifics.
 
