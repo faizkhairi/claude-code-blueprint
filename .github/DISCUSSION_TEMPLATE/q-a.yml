@@ -5,7 +5,7 @@ body:
       value: |
         Got a question about the blueprint? Use this template so people can answer efficiently.
 
-        Before posting: check the [FAQ](https://github.com/faizkhairi/claude-code-blueprint/blob/main/FAQ.md) and [TROUBLESHOOTING.md](https://github.com/faizkhairi/claude-code-blueprint/blob/main/TROUBLESHOOTING.md) — your question may already be answered.
+        Before posting: check the [FAQ](https://github.com/faizkhairi/claude-code-blueprint/blob/main/FAQ.md) and [TROUBLESHOOTING.md](https://github.com/faizkhairi/claude-code-blueprint/blob/main/TROUBLESHOOTING.md). Your question may already be answered.
 
   - type: input
     id: question

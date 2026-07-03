@@ -18,8 +18,8 @@ refreshed without re-recording it from scratch.
 ## Requirements
 
 - **Node** with the `playwright` package and its Chromium browser
-  (`npm i playwright && npx playwright install chromium`) — renders each slide to a PNG.
-- **ffmpeg** — assembles the PNG frames into the GIF (two-pass palette, scaled to 800×450).
+  (`npm i playwright && npx playwright install chromium`), then renders each slide to a PNG.
+- **ffmpeg**: assembles the PNG frames into the GIF (two-pass palette, scaled to 800×450).
 
 The script holds each slide ~4 seconds at 10 fps and writes straight to `../walkthrough.gif`.
 It derives its own location at runtime, so it works from any clone without editing paths.
