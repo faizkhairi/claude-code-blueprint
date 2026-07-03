@@ -1,18 +1,18 @@
 ---
 name: elicit-requirements
-description: "Structured pre-feature requirements gathering. Run before writing any new feature or API endpoint to clarify scope, acceptance criteria, and technical constraints. Produces: a Requirements Summary (Problem | Scope | Stories | Acceptance Criteria | Out of Scope | Open Questions) — presented to the user for confirmation BEFORE saving to a file, so requirements can be edited before they become reference for implementation."
+description: "Structured pre-feature requirements gathering. Run before writing any new feature or API endpoint to clarify scope, acceptance criteria, and technical constraints. Produces: a Requirements Summary (Problem | Scope | Stories | Acceptance Criteria | Out of Scope | Open Questions), presented to the user for confirmation BEFORE saving to a file, so requirements can be edited before they become reference for implementation."
 user-invocable: true
 argument-hint: "[feature or integration name]"
 ---
 
-# Elicit Requirements — Structured Pre-Feature Clarification
+# Elicit Requirements: Structured Pre-Feature Clarification
 
 Run this before writing any new feature to avoid scope creep, missed edge cases, and
 mid-implementation discoveries that force rewrites.
 
 ## Elicitation Workflow
 
-Work through these sections with the user. Ask grouped questions — do not ask one at a time.
+Work through these sections with the user. Ask grouped questions; do not ask one at a time.
 
 ---
 

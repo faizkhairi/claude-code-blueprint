@@ -3,7 +3,7 @@
 
 <!-- Format for new entries:
 
-## YYYY-MM-DD — [Short title]
+## YYYY-MM-DD: [Short title]
 
 **Context:** [What was the situation?]
 
@@ -12,14 +12,14 @@
 **Rationale:** [Why this approach over alternatives?]
 
 **Alternatives considered:**
-- [Option A — rejected because...]
-- [Option B — rejected because...]
+- [Option A, rejected because...]
+- [Option B, rejected because...]
 
 -->
 
 <!-- Example entry:
 
-## 2025-01-15 — Use Vitest over Jest
+## 2025-01-15: Use Vitest over Jest
 
 **Context:** Setting up testing for the new project. Both Vitest and Jest are viable.
 
@@ -28,8 +28,8 @@
 **Rationale:** Native ESM support, faster execution via Vite's transform pipeline, compatible with the existing Vite build setup. Jest would require additional ESM configuration.
 
 **Alternatives considered:**
-- Jest — rejected because ESM config overhead and slower cold starts
-- Bun test — rejected because team isn't on Bun yet
+- Jest, rejected because ESM config overhead and slower cold starts
+- Bun test, rejected because team isn't on Bun yet
 
 -->
 

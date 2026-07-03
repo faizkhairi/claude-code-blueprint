@@ -1,5 +1,5 @@
 #!/bin/bash
-# Hook: Stop (async) — Cost Tracker
+# Hook: Stop (async). Cost Tracker
 # Appends a JSONL entry per stop event for session cost visibility.
 #
 # Requires: python3 or python on PATH
@@ -7,7 +7,7 @@
 
 PYTHON=$(command -v python3 2>/dev/null || command -v python 2>/dev/null)
 if [ -z "$PYTHON" ]; then
-  echo "cost-tracker: python not found -- cost not logged" >&2
+  echo "cost-tracker: python not found: cost not logged" >&2
   exit 0
 fi
 
@@ -36,7 +36,7 @@ metrics_dir = os.environ.get('HOOK_METRICS_DIR', '')
 timestamp = os.environ.get('HOOK_TIMESTAMP', '')
 current_month = timestamp[:7] if len(timestamp) >= 7 else ''
 
-# Monthly rotation — archive when month changes
+# Monthly rotation: archive when month changes
 if os.path.isfile(metrics_file):
     try:
         with open(metrics_file, 'r') as f:
@@ -50,7 +50,7 @@ if os.path.isfile(metrics_file):
     except Exception:
         pass  # rotation is best-effort
 
-# Size guard — cap at 10MB to prevent unbounded growth
+# Size guard: cap at 10MB to prevent unbounded growth
 MAX_SIZE = 10 * 1024 * 1024  # 10 MB
 if os.path.isfile(metrics_file) and os.path.getsize(metrics_file) > MAX_SIZE:
     try:

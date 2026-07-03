@@ -1,5 +1,5 @@
 #!/bin/bash
-# Hook: PreToolUse (Write|Edit) — Config Protection
+# Hook: PreToolUse (Write|Edit). Config Protection
 # Prevents weakening linter/formatter/build configs by prompting for confirmation.
 
 PYTHON=$(command -v python3 2>/dev/null || command -v python 2>/dev/null)

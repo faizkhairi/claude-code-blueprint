@@ -5,13 +5,13 @@ user-invocable: true
 argument-hint: "[optional: specific package or framework name]"
 ---
 
-# Tech Radar — Stack Update Scanner
+# Tech Radar: Stack Update Scanner
 
 Checks for latest versions, breaking changes, deprecations, and security advisories across the user's core stack.
 
 ## Core Stack to Monitor
 
-> **Example only -- replace with your own stack.** The table below reflects one project's dependencies (a JS/TS stack). The skill detects your actual dependencies from the project manifest at runtime (`package.json`, `requirements.txt`, `go.mod`, `composer.json`, etc. -- see the description); this table is just a fallback of well-known packages to watch.
+> **Example only, replace with your own stack.** The table below reflects one project's dependencies (a JS/TS stack). The skill detects your actual dependencies from the project manifest at runtime (`package.json`, `requirements.txt`, `go.mod`, `composer.json`, etc., see the description); this table is just a fallback of well-known packages to watch.
 
 | Category | Packages |
 |----------|----------|

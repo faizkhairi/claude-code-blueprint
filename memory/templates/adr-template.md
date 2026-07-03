@@ -1,4 +1,4 @@
-# ADR-[NUMBER] — [Title]
+# ADR-[NUMBER]: [Title]
 
 *Use this template for significant architectural decisions. Copy it, fill in the sections, and save to `core/decisions.md` or a dedicated `docs/decisions/` directory.*
 
@@ -16,7 +16,7 @@ What is the situation? What forces are at play (technical, business, team, timel
 
 ## Decision
 
-What was decided? Be specific — name the technology, pattern, or approach chosen.
+What was decided? Be specific, name the technology, pattern, or approach chosen.
 
 ## Consequences
 

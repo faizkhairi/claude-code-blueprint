@@ -25,16 +25,16 @@
 
 > `CwdChanged`, `FileChanged`, `PermissionDenied`, and `TaskCreated` are available but not used in this blueprint. They're useful for monorepo setups (auto-switching context on `cd`), reactive config reloading, auto-mode denial logging, and background agent governance.
 
-**Utility scripts** (not lifecycle hooks -- run manually):
-- `verify-mcp-sync.sh` — Compares MCP server configs across CLI, VS Code extension, and Cursor. Run with `bash ~/.claude/hooks/verify-mcp-sync.sh`
-- `status-line.sh` — Generates a status line showing project name, branch, and dirty state
+**Utility scripts** (not lifecycle hooks, run manually):
+- `verify-mcp-sync.sh`: Compares MCP server configs across CLI, VS Code extension, and Cursor. Run with `bash ~/.claude/hooks/verify-mcp-sync.sh`
+- `status-line.sh`: Generates a status line showing project name, branch, and dirty state
 
 ## Design Principles
 
-1. **Prompt hooks for guidance, command hooks for action** — PreCompact/PostCompact inject prompts. Stop/SessionEnd run scripts.
-2. **Async for non-blocking** — Post-commit review and file notifications run async to avoid slowing Claude down.
-3. **Sync for critical** — SessionEnd checkpoint is synchronous to guarantee it completes before exit.
-4. **Exit 0 always** — Hook scripts should never block Claude. Even on errors, exit 0 and log the issue.
+1. **Prompt hooks for guidance, command hooks for action**: PreCompact/PostCompact inject prompts. Stop/SessionEnd run scripts.
+2. **Async for non-blocking**: Post-commit review and file notifications run async to avoid slowing Claude down.
+3. **Sync for critical**: SessionEnd checkpoint is synchronous to guarantee it completes before exit.
+4. **Exit 0 always**: Hook scripts should never block Claude. Even on errors, exit 0 and log the issue.
 
 ## Requirements
 
@@ -50,14 +50,14 @@ If neither `python3` nor `python` is found, the hook prints a warning to stderr 
 
 ## Optional: gitleaks (for the secret-scan hook)
 
-`pre-commit-secret-scan.sh` requires [gitleaks](https://github.com/gitleaks/gitleaks) on your PATH to scan staged content. Without it, the hook is a no-op -- it warns once and allows the commit (fail-open), so it never blocks you for a missing tool.
+`pre-commit-secret-scan.sh` requires [gitleaks](https://github.com/gitleaks/gitleaks) on your PATH to scan staged content. Without it, the hook is a no-op: it warns once and allows the commit (fail-open), so it never blocks you for a missing tool.
 
 ```bash
 winget install gitleaks   # Windows
 brew install gitleaks     # macOS
 ```
 
-This is the one hook that intentionally **blocks** (exit 2) -- on a detected secret -- the same documented exception to "exit 0 always" that `block-git-push.sh` uses. A committed credential is the one mistake worth stopping.
+This is the one hook that intentionally **blocks** (exit 2) on a detected secret, the same documented exception to "exit 0 always" that `block-git-push.sh` uses. A committed credential is the one mistake worth stopping.
 
 ## Testing Hooks
 
@@ -76,6 +76,6 @@ echo '{}' | bash hooks/block-git-push.sh
 echo 'not json' | bash hooks/block-git-push.sh
 ```
 
-**Expected behavior on bad input:** Every hook exits 0 (allow/no-op). No hook should crash, block, or produce error output on malformed input. This is by design -- hooks failing open is safer than hooks failing closed.
+**Expected behavior on bad input:** Every hook exits 0 (allow/no-op). No hook should crash, block, or produce error output on malformed input. This is by design: hooks failing open is safer than hooks failing closed.
 
 **Automated smoke test:** Run `bash hooks/test-hooks.sh` to verify all hooks pass syntax checks and handle empty/malformed/missing-field input gracefully. Run this after making any changes to hook scripts.

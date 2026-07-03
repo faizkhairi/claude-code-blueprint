@@ -28,4 +28,4 @@ Restore context from the memory system:
    - **Blockers**: Any open questions or issues from last session
    - **Preferences**: Key communication and work style preferences
 
-Keep the summary brief and actionable — focus on what's needed to continue working effectively.
+Keep the summary brief and actionable, focusing on what's needed to continue working effectively.

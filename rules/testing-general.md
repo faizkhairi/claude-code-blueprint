@@ -22,13 +22,13 @@ These apply to ANY project's tests (fires on all test files). A project-specific
   - Rust: `cargo test`
   - PHP: PHPUnit / Pest (`phpunit.xml`)
 - Run the project's actual command (e.g. `npm test`, `pnpm test`, `yarn test`,
-  `pytest`, `go test ./...`). Do not hardcode a project-specific command -- read it
+  `pytest`, `go test ./...`). Do not hardcode a project-specific command, read it
   from the project config.
 
 ## Core conventions (universal)
 - **Arrange / Act / Assert** structure; one logical assertion focus per test.
 - **Descriptive names**: `it('should X when Y')` / `test_x_when_y`.
-- **Mock external boundaries** (network, DB, filesystem, time, randomness) -- never call
+- **Mock external boundaries** (network, DB, filesystem, time, randomness): never call
   real external APIs or production data in tests. Inject/stub the boundary.
 - **Deterministic**: no hardcoded today-dates that rot; freeze time or use fixtures.
   No reliance on test execution order; no shared mutable state between tests.

@@ -1,25 +1,25 @@
 ---
 name: session-end
-description: "MUST use when user says 'bye', 'goodbye', 'good night', 'gnight', 'done for today', 'that's all', 'that's it', 'see you', 'see ya', 'let's stop', 'stopping here', 'wrapping up', 'signing off', 'closing down', 'done', 'finished for now', 'talk later', 'cya'. The user does NOT use slash commands — detect these natural session-ending phrases and run the full wrap-up automatically."
+description: "MUST use when user says 'bye', 'goodbye', 'good night', 'gnight', 'done for today', 'that's all', 'that's it', 'see you', 'see ya', 'let's stop', 'stopping here', 'wrapping up', 'signing off', 'closing down', 'done', 'finished for now', 'talk later', 'cya'. The user does NOT use slash commands; detect these natural session-ending phrases and run the full wrap-up automatically."
 user-invocable: true
 ---
 
-**Prerequisite check (run first)**: if `./memory/` does not exist OR `~/.claude/.memory-disabled` marker file is present, skip the save-session/save-diary steps but still acknowledge the user's farewell. Output: "Memory persistence is disabled — see you next time." Otherwise proceed with the full wrap-up below.
+**Prerequisite check (run first)**: if `./memory/` does not exist OR `~/.claude/.memory-disabled` marker file is present, skip the save-session/save-diary steps but still acknowledge the user's farewell. Output: "Memory persistence is disabled, see you next time." Otherwise proceed with the full wrap-up below.
 
-# Session End — Graceful Wrap-Up
+# Session End: Graceful Wrap-Up
 
 *Runs both save-session and save-diary together as one clean session close.*
 
 ## Activation
 
-When this skill activates, output: "Wrapping up — saving session and diary."
+When this skill activates, output: "Wrapping up, saving session and diary."
 
 ## Step 1: Save Session Context
 
 Update `./memory/core/session.md`:
 
 - **Last session summary**: What was accomplished today (specific, not generic)
-- **Current working state**: Where things stand — what's in-progress, what's done
+- **Current working state**: Where things stand, what's in-progress, what's done
 - **Next steps**: What should be picked up next session
 - **Blockers or open questions**: Anything left unresolved
 
@@ -27,7 +27,7 @@ Update `./memory/core/session.md`:
 
 Update `./memory/core/reminders.md`:
 
-- Ask the user — any pending tasks, deadlines, or reminders to carry forward?
+- Ask the user: any pending tasks, deadlines, or reminders to carry forward?
 - Move completed reminders to the Completed section with date
 - Keep active ones, add new ones
 
@@ -38,7 +38,7 @@ If working on a registered project, update `./memory/projects/active/{project}.m
 ## Step 4: Check for Memory Updates
 
 - **preferences.md**: Were any new preferences, tools, or working patterns observed? Update `./memory/core/preferences.md` if so.
-- **MEMORY.md**: Were any new technical learnings, gotchas, or architectural decisions made? Update `{MEMORY_MD_PATH}` if so. **Size guard**: after editing, count lines — warn if over 170 (200-line truncation limit).
+- **MEMORY.md**: Were any new technical learnings, gotchas, or architectural decisions made? Update `{MEMORY_MD_PATH}` if so. **Size guard**: after editing, count lines; warn if over 170 (200-line truncation limit).
 - **decisions.md**: Was a non-obvious architectural or technical decision made? Append to `./memory/core/decisions.md` using format: `## YYYY-MM-DD — Title` / `**Context**` / `**Decision**` / `**Rationale**`
 
 ## Step 5: Save Diary Entry (if session was significant)
@@ -83,4 +83,4 @@ See you next time.
 
 - ALWAYS save session.md (even for short sessions)
 - ONLY save diary if session was genuinely significant
-- Keep the goodbye warm but brief — user prefers concise responses
+- Keep the goodbye warm but brief; user prefers concise responses

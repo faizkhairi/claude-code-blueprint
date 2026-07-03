@@ -20,14 +20,14 @@ These rules apply when working with database schemas, ORM models, and migrations
 
 ### Undefined vs Null (ORM-specific)
 - In Prisma: `undefined` = skip field, `null` = set to NULL
-- In Drizzle/TypeORM: similar — check your ORM's handling of missing vs explicit null
+- In Drizzle/TypeORM: similar, check your ORM's handling of missing vs explicit null
 - Use `?? null` for nullable fields, never `|| ''`
 - Example: `amount: body.amount ?? null` (correct)
-- Example: `amount: body.amount || ''` (WRONG — can't distinguish empty vs not provided)
+- Example: `amount: body.amount || ''` (WRONG: can't distinguish empty vs not provided)
 
 ### Database Engine Gotchas
 Check your engine and note limitations in CLAUDE.md:
-- **MariaDB**: No `createManyAndReturn` in Prisma — use `createMany()` then `findMany()`
+- **MariaDB**: No `createManyAndReturn` in Prisma, so use `createMany()` then `findMany()`
 - **SQLite**: No concurrent writes, limited ALTER TABLE support
 - **PostgreSQL**: Most feature-rich, fewer gotchas
 - **MySQL**: Check `GROUP BY` strictness (`ONLY_FULL_GROUP_BY`)
@@ -41,7 +41,7 @@ Check your engine and note limitations in CLAUDE.md:
 - Index timestamp fields for range queries
 
 ### Naming Conventions
-- Be consistent within your project — check CLAUDE.md for naming standards
+- Be consistent within your project, check CLAUDE.md for naming standards
 - Common patterns: `snake_case` for table/column names, `PascalCase` for model names
 - Document your naming convention so all team members and AI assistants follow it
 
@@ -55,7 +55,7 @@ Check your engine and note limitations in CLAUDE.md:
 - **IDs**: UUID for distributed systems, auto-increment for single-database
 - **Timestamps**: `created_at` (default now), `updated_at` (auto-updated)
 - **Soft deletes**: `deleted_at` (nullable datetime) + `is_active` (boolean, default true)
-- **JSON fields**: Use sparingly — prefer structured fields for queryable data
+- **JSON fields**: Use sparingly, prefer structured fields for queryable data
 
 ## Migration Safety
 

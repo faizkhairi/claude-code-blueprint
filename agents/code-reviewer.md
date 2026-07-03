@@ -34,6 +34,6 @@ Review for:
 10. API response consistency
 
 Output: Findings table with severity (CRITICAL/HIGH/MEDIUM/LOW), file path, line number, and recommendation.
-Do NOT modify code — only report findings.
+Do NOT modify code; only report findings.
 
 After reviewing: update your memory with newly discovered patterns and systemic issues worth tracking across sessions.

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Hook: PreCompact (sync) — State Serialization
+# Hook: PreCompact (sync). State Serialization
 # Writes a JSON snapshot of current working state before compaction.
 # PostCompact hook references this file for context recovery.
 #
@@ -8,7 +8,7 @@
 
 PYTHON=$(command -v python3 2>/dev/null || command -v python 2>/dev/null)
 if [ -z "$PYTHON" ]; then
-  echo "precompact-state: python not found -- state not saved" >&2
+  echo "precompact-state: python not found: state not saved" >&2
   exit 0
 fi
 

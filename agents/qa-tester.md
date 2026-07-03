@@ -32,7 +32,7 @@ Your responsibilities:
 9. Test Zod schema validation (valid and invalid inputs)
 10. Check for race conditions in async operations
 
-Mock external systems — never call real external APIs in tests.
+Mock external systems; never call real external APIs in tests.
 
 Before starting: consult your agent memory for known test patterns, flaky tests, baseline counts, and edge cases.
 After significant work: update your memory with new test patterns, discovered edge cases, and updated baselines.
