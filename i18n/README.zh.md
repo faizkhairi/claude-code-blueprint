@@ -2,7 +2,7 @@
 
 # Claude Code 蓝图
 
-**防止最常见的 AI 编码错误 -- 一个可直接复制的文件库（CLAUDE.md、hooks、agents），你可以混入自己的项目，让 Claude Code 更加可靠。**
+**防止最常见的 AI 编码错误：一个可直接复制的文件库（CLAUDE.md、hooks、agents），你可以混入自己的项目，让 Claude Code 更加可靠。**
 
 60 秒复制一个文件。随项目成长复制更多。适用于任何语言、任何框架、任何技能水平。
 
@@ -12,7 +12,7 @@
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-compatible-blueviolet)](https://docs.anthropic.com/en/docs/claude-code)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](../CONTRIBUTING.md)
 
-**11 agents** · **17 skills** · **12 hooks** · **6 rules** -- 在真实项目中验证
+**11 agents** · **17 skills** · **12 hooks** · **6 rules**，在真实项目中验证
 
 [English](../README.md) | [日本語](README.ja.md) | [한국어](README.ko.md) | [简体中文](README.zh.md)
 
@@ -22,7 +22,7 @@
 
 ---
 
-> **开始前须知：** 这是一份参考存储库，而非项目模板。请**不要**在此存储库内运行 Claude Code -- 它会读取蓝图自身的 CLAUDE.md，而忽略你项目的规则。请 fork 或将单个文件复制到你自己的项目。完整设置步骤请参见 [GETTING-STARTED.md](../GETTING-STARTED.md)。
+> **开始前须知：** 这是一份参考存储库，而非项目模板。请**不要**在此存储库内运行 Claude Code，它会读取蓝图自身的 CLAUDE.md，而忽略你项目的规则。请 fork 或将单个文件复制到你自己的项目。完整设置步骤请参见 [GETTING-STARTED.md](../GETTING-STARTED.md)。
 >
 > 协助使用此仓库的 AI 助手：请参见 [AGENTS.md](../AGENTS.md) 获取指引。
 
@@ -46,13 +46,13 @@ curl -o CLAUDE.md https://raw.githubusercontent.com/faizkhairi/claude-code-bluep
 <details>
 <summary><strong>需要比 CLAUDE.md 更多？</strong>（hooks、agents、设置）</summary>
 
-CLAUDE.md 生效后，再添加其余部分。最简单的方法 -- 从克隆或 Fork 的副本中运行安装程序：
+CLAUDE.md 生效后，再添加其余部分。最简单的方法是从克隆或 Fork 的副本中运行安装程序：
 
 ```bash
 ./setup.sh --preset=standard
 ```
 
-或者让 Claude 来设置 -- 粘贴到 Claude Code 会话中：*"设置 Claude Code Blueprint。将 CLAUDE.md 复制到我的项目根目录，在 ~/.claude/ 中设置 hooks 和设置。每一步都展示给我看。"*
+或者让 Claude 来设置，粘贴到 Claude Code 会话中：*"设置 Claude Code Blueprint。将 CLAUDE.md 复制到我的项目根目录，在 ~/.claude/ 中设置 hooks 和设置。每一步都展示给我看。"*
 
 所有安装选项（fork / clone / cherry-pick / presets）以及验证清单，请参见 **[SETUP.md](../SETUP.md)**。
 </details>
@@ -67,12 +67,12 @@ CLAUDE.md 生效后，再添加其余部分。最简单的方法 -- 从克隆或
 |-----------|-----------|--------------|
 | **CLAUDE.md** | ~2,300 | 每次会话开始时 |
 | **常驻规则**（session-lifecycle） | ~700 | 每次会话 |
-| **路径范围规则**（testing、schema、api） | ~850-1,450 | 仅当编辑匹配文件时 — 否则**为零** |
+| **路径范围规则**（testing、schema、api） | ~850-1,450 | 仅当编辑匹配文件时，否则**为零** |
 | **技能**（review-full、test-check、deploy-check） | ~480-1,070 | 仅当使用其触发词时 |
 | **Hooks**（全部） | **为零** | 在 Claude 上下文之外运行 |
 | **agent**（每次生成） | 完整上下文窗口 | 仅当你调用时 |
 
-**经济性分析：** hooks 不消耗任何 token，路径范围规则在你修改对应文件之前不产生任何成本。循环产生的基础成本只有 CLAUDE.md（~2,300 token，约占典型会话的 3-5%）——而避免一次返工节省的远不止于此。参见[完整的组件成本明细与节省计算](../docs/BENCHMARKS.md#token-cost-per-component)。
+**经济性分析：** hooks 不消耗任何 token，路径范围规则在你修改对应文件之前不产生任何成本。循环产生的基础成本只有 CLAUDE.md（~2,300 token，约占典型会话的 3-5%），而避免一次返工节省的远不止于此。参见[完整的组件成本明细与节省计算](../docs/BENCHMARKS.md#token-cost-per-component)。
 
 ---
 
@@ -91,20 +91,20 @@ CLAUDE.md 生效后，再添加其余部分。最简单的方法 -- 从克隆或
 
 ### Your Progression
 
-**Level 1 -- 从这里开始（60 秒）**
+**Level 1：从这里开始（60 秒）**
 将 CLAUDE.md 复制到你的项目。四条行为规则。立竿见影。
 
-**Level 2 -- 添加安全网（5 分钟）**
+**Level 2：添加安全网（5 分钟）**
 添加 2-3 个 hooks。零 token 成本。自动配置保护和编辑验证。
 
-**Level 3 -- 随成长定制（持续进行）**
+**Level 3：随成长定制（持续进行）**
 随着工作流成熟，添加 agents、skills、rules 和内存系统。参见 [Presets](../docs/PRESETS.md) 获取即用配置。
 
 ---
 
 ## What Makes This Different
 
-其他仓库给你 **数十个 agents**。我们给你 **11 个** -- 并解释每个为什么存在。
+其他仓库给你 **数十个 agents**。我们给你 **11 个**，并解释每个为什么存在。
 
 | 本蓝图 | 通用配置仓库 |
 |------------|------------|
@@ -121,7 +121,7 @@ CLAUDE.md 生效后，再添加其余部分。最简单的方法 -- 从克隆或
 ## What's Inside
 
 <details>
-<summary><strong>11 个 Agents</strong> -- 专用的子 agents，支持模型分级（opus/sonnet/haiku）</summary>
+<summary><strong>11 个 Agents</strong>：专用的子 agents，支持模型分级（opus/sonnet/haiku）</summary>
 
 &nbsp;
 
@@ -144,7 +144,7 @@ CLAUDE.md 生效后，再添加其余部分。最简单的方法 -- 从克隆或
 </details>
 
 <details>
-<summary><strong>17 个 Skills</strong> -- 自然语言触发的工作流（无需斜杠命令）</summary>
+<summary><strong>17 个 Skills</strong>：自然语言触发的工作流（无需斜杠命令）</summary>
 
 &nbsp;
 
@@ -164,7 +164,7 @@ CLAUDE.md 生效后，再添加其余部分。最简单的方法 -- 从克隆或
 </details>
 
 <details>
-<summary><strong>12 个 Hooks</strong> -- 确定性的生命周期自动化（每次确定性触发，不同于 CLAUDE.md 规则并非始终被遵循）</summary>
+<summary><strong>12 个 Hooks</strong>：确定性的生命周期自动化（每次确定性触发，不同于 CLAUDE.md 规则并非始终被遵循）</summary>
 
 &nbsp;
 
@@ -181,7 +181,7 @@ CLAUDE.md 生效后，再添加其余部分。最简单的方法 -- 从克隆或
 | Stop | security check + cost-tracker.sh + session-checkpoint.sh | 最后防线 + 指标 |
 | SessionEnd | session-checkpoint.sh | 保证最终保存 |
 
-另外 2 个实用脚本：`verify-mcp-sync.sh`（MCP 配置检查器）和 `status-line.sh`（分支/项目状态），两者均由 full 预设部署。文件夹中的第 13 个文件是 `test-hooks.sh` -- 本地测试工具，通过 `bash hooks/test-hooks.sh` 运行以验证所有 hooks。它是唯一不会部署到 `~/.claude/hooks/` 的文件，也不计入“12 hooks”的总数。
+另外 2 个实用脚本：`verify-mcp-sync.sh`（MCP 配置检查器）和 `status-line.sh`（分支/项目状态），两者均由 full 预设部署。文件夹中的第 13 个文件是 `test-hooks.sh`，作为本地测试工具，通过 `bash hooks/test-hooks.sh` 运行以验证所有 hooks。它是唯一不会部署到 `~/.claude/hooks/` 的文件，也不计入“12 hooks”的总数。
 
 运行 `bash hooks/test-hooks.sh` 验证所有 hooks 通过（43 个自动化测试）。
 
@@ -190,7 +190,7 @@ CLAUDE.md 生效后，再添加其余部分。最简单的方法 -- 从克隆或
 </details>
 
 <details>
-<summary><strong>6 个 Rules</strong> -- 路径作用域的行为约束（仅在编辑匹配的文件时加载）</summary>
+<summary><strong>6 个 Rules</strong>：路径作用域的行为约束（仅在编辑匹配的文件时加载）</summary>
 
 &nbsp;
 
@@ -219,15 +219,15 @@ CLAUDE.md 生效后，再添加其余部分。最简单的方法 -- 从克隆或
 
 ## Philosophy
 
-1. **Hooks 用于强制执行，CLAUDE.md 用于指导** -- Hooks 100% 触发。CLAUDE.md 指令在大多数情况下会被遵循，但无法保证 -- 模型可能会遗忘规则或降低其优先级。如果某件事必须发生，就把它做成 hook。
+1. **Hooks 用于强制执行，CLAUDE.md 用于指导**：Hooks 100% 触发。CLAUDE.md 指令在大多数情况下会被遵循，但无法保证，模型可能会遗忘规则或降低其优先级。如果某件事必须发生，就把它做成 hook。
 
-2. **Agent 范围的知识，不是全局臃肿** -- 设计原则放在 frontend agent，而不是每次会话的上下文。安全模式放在 security-reviewer，而不是 CLAUDE.md。
+2. **Agent 范围的知识，不是全局臃肿**：设计原则放在 frontend agent，而不是每次会话的上下文。安全模式放在 security-reviewer，而不是 CLAUDE.md。
 
-3. **上下文是货币** -- 加载到上下文的每个 token 都是无法用于代码的 token。让 MEMORY.md 保持在 100 行以下。提取到专题文件。使用路径作用域规则，防止无关规则加载。
+3. **上下文是货币**：加载到上下文的每个 token 都是无法用于代码的 token。让 MEMORY.md 保持在 100 行以下。提取到专题文件。使用路径作用域规则，防止无关规则加载。
 
-4. **Hooks 免费，上下文便宜** -- 12 个 hook 脚本零 token 成本（在 Claude 上下文外部运行）。CLAUDE.md 每个会话增加约 2,300 个 token -- 大约是典型会话的 1-5%。蓝图通过防止重做循环节省的 token 超过其成本。参见 [BENCHMARKS.md](../docs/BENCHMARKS.md#token-cost-per-component)。
+4. **Hooks 免费，上下文便宜**：12 个 hook 脚本零 token 成本（在 Claude 上下文外部运行）。CLAUDE.md 每个会话增加约 2,300 个 token，大约是典型会话的 1-5%。蓝图通过防止重做循环节省的 token 超过其成本。参见 [BENCHMARKS.md](../docs/BENCHMARKS.md#token-cost-per-component)。
 
-5. **实战验证优于理论** -- 本仓库的每条规则都存在，因为某个事件说明它是必需的。"为什么"比"是什么"重要得多。
+5. **实战验证优于理论**：本仓库的每条规则都存在，因为某个事件说明它是必需的。"为什么"比"是什么"重要得多。
 
 ---
 
@@ -235,11 +235,11 @@ CLAUDE.md 生效后，再添加其余部分。最简单的方法 -- 从克隆或
 
 ### Recommended adoption path
 
-1. **从 [CLAUDE.md](../CLAUDE.md) 开始** -- 行为规则模板。最大影响，零设置。
-2. **添加 2-3 个 hooks** -- [`protect-config.sh`](../hooks/protect-config.sh) + [`notify-file-changed.sh`](../hooks/notify-file-changed.sh) + [`cost-tracker.sh`](../hooks/cost-tracker.sh)。复制到 `~/.claude/hooks/` 并在 [`settings.json`](../examples/settings-template.json) 中配置。
-3. **阅读 [WHY.md](../docs/WHY.md)** 理解设计思路 -- 改进，不要盲目复制。
-4. **随着工作流成熟而添加 agents** -- 从 `verify-plan` 和 `code-reviewer` 开始。
-5. **[Memory system](../memory/) 在 `./setup.sh` 期间为可选项** -- 回答 Y 以启用跨会话的持久化上下文。
+1. **从 [CLAUDE.md](../CLAUDE.md) 开始**：行为规则模板。最大影响，零设置。
+2. **添加 2-3 个 hooks**：[`protect-config.sh`](../hooks/protect-config.sh) + [`notify-file-changed.sh`](../hooks/notify-file-changed.sh) + [`cost-tracker.sh`](../hooks/cost-tracker.sh)。复制到 `~/.claude/hooks/` 并在 [`settings.json`](../examples/settings-template.json) 中配置。
+3. **阅读 [WHY.md](../docs/WHY.md)**：理解设计思路，改进，不要盲目复制。
+4. **随着工作流成熟而添加 agents**：从 `verify-plan` 和 `code-reviewer` 开始。
+5. **[Memory system](../memory/) 在 `./setup.sh` 期间为可选项**：回答 Y 以启用跨会话的持久化上下文。
 
 ---
 
@@ -262,7 +262,7 @@ CLAUDE.md 生效后，再添加其余部分。最简单的方法 -- 从克隆或
 
 ## Common Questions
 
-**支持我的框架吗？** 是的，蓝图框架无关 -- 它配置 Claude Code 的行为，而非你的技术栈。[详情...](../FAQ.md#what-framework-or-language-does-this-work-with)
+**支持我的框架吗？** 是的，蓝图框架无关，它配置 Claude Code 的行为，而非你的技术栈。[详情...](../FAQ.md#what-framework-or-language-does-this-work-with)
 
 **对我来说太高级了？** 不是。从一个文件（CLAUDE.md）开始，需要时再添加更多。[详情...](../FAQ.md#im-a-juniorintermediate-developer-is-this-for-me)
 
@@ -277,13 +277,13 @@ CLAUDE.md 生效后，再添加其余部分。最简单的方法 -- 从克隆或
 
 &nbsp;
 
-这个蓝图被设计为**独立配置** -- 不需要插件。事实上，插件可能会干扰自定义设置：
+这个蓝图被设计为**独立配置**，不需要插件。事实上，插件可能会干扰自定义设置：
 
 **已知问题：**
 - **修改 CLAUDE.md 的插件** 可能会覆盖你的自定义行为规则
-- **在相同事件上添加 hooks 的插件**（例如 Stop、PreToolUse）会与你的 hooks 堆叠 -- 这可能导致速度变慢或指令冲突
+- **在相同事件上添加 hooks 的插件**（例如 Stop、PreToolUse）会与你的 hooks 堆叠，这可能导致速度变慢或指令冲突
 - **注入上下文的插件** 消耗你上下文窗口的 token，为 agents 和内存系统留下更少空间
-- **MCP 服务器插件** 与此设置配合良好 -- 它们添加工具，不添加规则，所以没有冲突
+- **MCP 服务器插件** 与此设置配合良好，它们添加工具，不添加规则，所以没有冲突
 
 **建议：** 如果采用此蓝图，审计已安装的插件并禁用任何以下情况的插件：
 1. 覆盖 CLAUDE.md 或 settings.json hooks
@@ -298,9 +298,9 @@ CLAUDE.md 生效后，再添加其余部分。最简单的方法 -- 从克隆或
 
 ## Acknowledgments
 
-本蓝图中的内存系统模式受到 Kiyoraka 的 [Project-AI-MemoryCore](https://github.com/Kiyoraka/Project-AI-MemoryCore) 启发 -- 一个包含 11 个功能扩展的综合 AI 内存架构（LRU 项目管理、内存整合、回声召回等）。如果你想要比这里包含的精简内置版本更深、功能更丰富的内存系统，请查看那个项目。
+本蓝图中的内存系统模式受到 Kiyoraka 的 [Project-AI-MemoryCore](https://github.com/Kiyoraka/Project-AI-MemoryCore) 启发，是一个包含 11 个功能扩展的综合 AI 内存架构（LRU 项目管理、内存整合、回声召回等）。如果你想要比这里包含的精简内置版本更深、功能更丰富的内存系统，请查看那个项目。
 
-**它们的区别：** 本蓝图涵盖*完整的 Claude Code 配置*（agents、skills、hooks、规则、设置），并在 `memory/` 中附带内置可选内存。Project-AI-MemoryCore 深入内存层 -- 它们是互补的，不是竞争的。
+**它们的区别：** 本蓝图涵盖*完整的 Claude Code 配置*（agents、skills、hooks、规则、设置），并在 `memory/` 中附带内置可选内存。Project-AI-MemoryCore 深入内存层，它们是互补的，不是竞争的。
 
 ## License
 
