@@ -22,8 +22,8 @@ Common issues and fixes. Search this page (Ctrl+F) for your error message or sym
 2. **Hook file doesn't exist at the expected location.** If you copied hooks from this blueprint, verify they're in `~/.claude/hooks/` (or wherever your settings.json points).
 
 3. **Wrong matcher.** The `"matcher"` field must match the tool name exactly. Common mistakes:
-   - `"bash"` (lowercase) won't match -- use `"Bash"`
-   - `"write"` won't match -- use `"Write|Edit"` for file operations
+   - `"bash"` (lowercase) won't match; use `"Bash"`
+   - `"write"` won't match; use `"Write|Edit"` for file operations
    - For MCP tools, use `"mcp__*"` as the matcher
 
 4. **JSON syntax error in settings.json.** A trailing comma, missing quote, or unclosed bracket silently breaks the entire hooks config. Validate your JSON:
@@ -126,11 +126,11 @@ Common issues and fixes. Search this page (Ctrl+F) for your error message or sym
 
 **Causes and fixes:**
 
-1. **CLAUDE.md is too long.** Claude Code loads CLAUDE.md into the context window. Very long files (200+ lines) dilute attention -- rules at the bottom get less weight. Keep CLAUDE.md under 100 lines and extract details into topic files or [path-scoped rules](rules/).
+1. **CLAUDE.md is too long.** Claude Code loads CLAUDE.md into the context window. Very long files (200+ lines) dilute attention, and rules at the bottom get less weight. Keep CLAUDE.md under 100 lines and extract details into topic files or [path-scoped rules](rules/).
 
 2. **Conflicting plugin instructions.** Plugins can inject their own instructions that compete with yours. Audit installed plugins and disable any that override CLAUDE.md or inject prompts on SessionStart. See [README.md](README.md).
 
-3. **Rule is guidance, not enforcement.** CLAUDE.md rules are followed most of the time -- but they're guidelines, not guarantees. If something MUST happen, make it a [hook](hooks/). Hooks fire deterministically, every time.
+3. **Rule is guidance, not enforcement.** CLAUDE.md rules are followed most of the time, but they're guidelines, not guarantees. If something MUST happen, make it a [hook](hooks/). Hooks fire deterministically, every time.
 
 ### "Path-scoped rules not loading"
 
@@ -157,8 +157,8 @@ This rule only loads when Claude is working with files under `server/` or `prism
 **Causes and fixes:**
 
 1. **Wrong file location.** Claude Code reads settings from multiple locations with a precedence order:
-   - `~/.claude/settings.json` -- global (user-level)
-   - `.claude/settings.json` -- project-level (in project root)
+   - `~/.claude/settings.json`: global (user-level)
+   - `.claude/settings.json`: project-level (in project root)
    Make sure you're editing the right one. Check which settings are active:
    ```bash
    claude config list
@@ -187,10 +187,10 @@ See [SETTINGS-GUIDE.md](docs/SETTINGS-GUIDE.md#defaultmode) for the full explana
 **Symptom:** Claude says "the classifier blocked this action" for something you expected to work.
 
 **Fixes:**
-1. **Add the command to your allow list** -- allow-listed commands bypass the classifier entirely
-2. **Add context to `autoMode.environment`** -- tell the classifier about your trusted infrastructure (e.g., your GitHub org, internal domains)
-3. **Check `claude auto-mode config`** -- see what rules the classifier is applying
-4. **Classifier fallback:** After 3 consecutive blocks, Claude will prompt you directly -- approve it once and the pattern is learned
+1. **Add the command to your allow list**: allow-listed commands bypass the classifier entirely
+2. **Add context to `autoMode.environment`**: tell the classifier about your trusted infrastructure (e.g., your GitHub org, internal domains)
+3. **Check `claude auto-mode config`**: see what rules the classifier is applying
+4. **Classifier fallback:** After 3 consecutive blocks, Claude will prompt you directly. Approve it once and the pattern is learned
 
 ---
 
@@ -232,7 +232,7 @@ See [GETTING-STARTED.md](GETTING-STARTED.md#windows-notes) for the full Windows 
 
 **Symptoms:** Hook scripts fail because Python isn't found on PATH.
 
-**Background:** All hooks auto-detect Python using `command -v python3 || command -v python`. You need either `python3` or `python` on your PATH -- not both. If neither is found, hooks print a warning to stderr and exit cleanly (no blocking).
+**Background:** All hooks auto-detect Python using `command -v python3 || command -v python`. You need either `python3` or `python` on your PATH, not both. If neither is found, hooks print a warning to stderr and exit cleanly (no blocking).
 
 **Fixes:**
 1. **Windows:** Install Python: `winget install Python.Python.3` or download from [python.org](https://python.org). The installer adds `python` to PATH.
@@ -278,18 +278,18 @@ This is separate from the `{...}` placeholder variables (`{CLAUDE_CONFIG_PATH}`,
 
 ### "Agent generates analysis but won't modify files"
 
-**Symptoms:** You asked an agent to fix something, but it only analyzes and reports -- it never actually edits files or runs commands.
+**Symptoms:** You asked an agent to fix something, but it only analyzes and reports. It never actually edits files or runs commands.
 
 **Cause:** The agent has `permissionMode: plan` in its frontmatter, which restricts it to read-only tools (Read, Grep, Glob).
 
 **These agents are read-only by design:**
-- `verify-plan` — plan verification
-- `code-reviewer` — code review
-- `security-reviewer` — security audit
-- `db-analyst` — database schema analysis
-- `devops-engineer` — infrastructure review
+- `verify-plan`: plan verification
+- `code-reviewer`: code review
+- `security-reviewer`: security audit
+- `db-analyst`: database schema analysis
+- `devops-engineer`: infrastructure review
 
-**Fix:** If you need code changes, use an agent with write access (e.g., `backend-specialist`, `frontend-specialist`, `qa-tester`). If you want to give a read-only agent write access, change `permissionMode: plan` to remove it in your copy of the agent file -- but be aware this removes a safety guardrail.
+**Fix:** If you need code changes, use an agent with write access (e.g., `backend-specialist`, `frontend-specialist`, `qa-tester`). If you want to give a read-only agent write access, change `permissionMode: plan` to remove it in your copy of the agent file, but be aware this removes a safety guardrail.
 
 ### "Agent stopped before finishing"
 
@@ -320,7 +320,7 @@ See [agents/README.md](agents/README.md#what-happens-when-maxturns-is-reached) f
    ```bash
    # Move hooks (if any were created in project)
    mv .claude/hooks/* ~/.claude/hooks/ 2>/dev/null
-   # Move settings (merge manually -- don't overwrite)
+   # Move settings (merge manually, don't overwrite)
    # Compare .claude/settings.json with ~/.claude/settings.json
    ```
 3. Remove the project-level files that should be personal: `rm -rf .claude/hooks/ .claude/settings.json`
@@ -336,7 +336,7 @@ See [agents/README.md](agents/README.md#what-happens-when-maxturns-is-reached) f
 
 1. **Bash is installed:** Hooks require bash. Install [Git for Windows](https://git-scm.com/download/win) which includes Git Bash. Verify: `bash --version`
 
-2. **Line endings are LF:** Hook scripts must use LF (Unix) line endings, not CRLF (Windows). Check with `file hooks/*.sh` -- look for "CRLF" in the output. Fix with:
+2. **Line endings are LF:** Hook scripts must use LF (Unix) line endings, not CRLF (Windows). Check with `file hooks/*.sh` and look for "CRLF" in the output. Fix with:
    ```bash
    git config --global core.autocrlf input
    ```
@@ -347,7 +347,7 @@ See [agents/README.md](agents/README.md#what-happens-when-maxturns-is-reached) f
 4. **Path format:** In `settings.json`, use `$HOME` or a forward-slash absolute path for hook commands:
    - Works: `bash "$HOME/.claude/hooks/protect-config.sh"`
    - Works: `bash "/c/Users/YourUser/.claude/hooks/protect-config.sh"`
-   - Fails: `bash "~/.claude/hooks/protect-config.sh"` (a quoted `~` is a literal character -- it does not expand)
+   - Fails: `bash "~/.claude/hooks/protect-config.sh"` (a quoted `~` is a literal character; it does not expand)
    - Fails: `bash "C:\Users\YourUser\.claude\hooks\protect-config.sh"`
 
 5. **Tilde expansion:** A `~` inside double quotes is NOT expanded by the shell, so `bash "~/.claude/..."` fails to find the file. Use `$HOME` (expands inside double quotes) or an absolute forward-slash path: `bash "$HOME/.claude/hooks/script.sh"`
@@ -356,15 +356,15 @@ See [agents/README.md](agents/README.md#what-happens-when-maxturns-is-reached) f
 
 ## Shell Compatibility
 
-### "I use Fish / Zsh / another shell -- will hooks work?"
+### "I use Fish / Zsh / another shell: will hooks work?"
 
-Hook scripts use `#!/bin/bash` and are invoked via `bash "path/to/hook.sh"` in settings.json. **Your default shell does not matter** -- Claude Code always runs hooks through bash explicitly. The hooks do not depend on your login shell, shell aliases, or shell-specific syntax.
+Hook scripts use `#!/bin/bash` and are invoked via `bash "path/to/hook.sh"` in settings.json. **Your default shell does not matter.** Claude Code always runs hooks through bash explicitly. The hooks do not depend on your login shell, shell aliases, or shell-specific syntax.
 
 However, if you write custom hooks that source your shell profile (`~/.bashrc`, `~/.zshrc`), those will not be loaded during hook execution. Keep hooks self-contained.
 
 ### "I cloned the repo and got the full git history"
 
-If you `git clone` (instead of fork or cherry-pick), you get the blueprint's entire git history. This is harmless -- it just adds ~1MB to your `.git/` directory. If you want a clean start:
+If you `git clone` (instead of fork or cherry-pick), you get the blueprint's entire git history. This is harmless; it just adds ~1MB to your `.git/` directory. If you want a clean start:
 
 ```bash
 # Remove blueprint history, keep only files

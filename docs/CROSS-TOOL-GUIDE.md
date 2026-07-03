@@ -1,4 +1,4 @@
-# Cross-Tool Guide -- Using These Concepts Beyond Claude Code
+# Cross-Tool Guide: Using These Concepts Beyond Claude Code
 
 While this blueprint is built for Claude Code, the **principles are universal**. This guide maps each concept to its equivalent in other AI coding tools, based on their official documentation as of April 2026.
 
@@ -24,23 +24,23 @@ While this blueprint is built for Claude Code, the **principles are universal**.
 
 - **Three rule layers**: Personal (`~/.copilot/instructions/`), repository (`.github/`), and organization (org's `.github` repo). Priority: personal > repo > org.
 - **Custom agents** use `.agent.md` files with YAML frontmatter (`name`, `description`, `tools`, `model`, `mcp-servers`). Three scopes: `.github/agents/` (repo), org's `.github/agents/` (org), `~/.copilot/agents/` (personal).
-- **`copilot-setup-steps.yml`** is a GitHub Actions workflow (`.github/workflows/`) that runs before the cloud coding agent starts -- for installing dependencies and configuring the environment.
+- **`copilot-setup-steps.yml`** is a GitHub Actions workflow (`.github/workflows/`) that runs before the cloud coding agent starts, for installing dependencies and configuring the environment.
 - **Three agent surfaces**: VS Code interactive, Copilot CLI (local), and cloud coding agent (remote, creates PRs).
 
 **Cursor notes (read this if you use Cursor seriously):**
 
-- **Rules** load from **two places**: repo `.cursor/rules/*.mdc` (often with `globs` / `alwaysApply`) and **global User Rules** in Cursor Settings. You do not have to duplicate everything in both -- use project rules for repo-specific conventions and User Rules for habits you want in every workspace.
+- **Rules** load from **two places**: repo `.cursor/rules/*.mdc` (often with `globs` / `alwaysApply`) and **global User Rules** in Cursor Settings. You do not have to duplicate everything in both: use project rules for repo-specific conventions and User Rules for habits you want in every workspace.
 - **Skills** (`~/.cursor/skills/<name>/SKILL.md`) are the closest analog to this blueprint's **skills** folder for **Cursor's native Agent** (natural-language triggers via the skill description). They are separate from `.mdc` rules.
 - **Permissions**: `cli-config.json` controls **tool allowlists** for the Agent CLI; `permissions.json` provides **unified editor + CLI permissions** with sandbox modes. Neither is the same as VS Code's `settings.json`. See [permissions docs](https://cursor.com/docs/reference/permissions).
-- **Hooks** are configured in `hooks.json` (not `settings.json`). Cursor has ~11 hook types -- see the [Lifecycle Hooks](#3-lifecycle-hooks) section for the full list and CLI limitations.
-- **`.cursorignore`** controls which files are excluded from Cursor's codebase indexing -- like `.gitignore` for AI context. Add your memory/session files here if they shouldn't be indexed.
-- **Cursor 3 (April 2026)** rebuilt the IDE around an **Agents Window** that replaces the Composer pane — you can run multiple agents in parallel across different tasks/repos. The April 24 update added a `/multitask` command that spawns async subagents to handle independent parts of a request simultaneously (vs queueing sequentially). If you're on Cursor 3, the blueprint's agent patterns map naturally: each subagent the Agents Window spawns is the equivalent of a Claude Code subagent invocation.
+- **Hooks** are configured in `hooks.json` (not `settings.json`). Cursor has ~11 hook types: see the [Lifecycle Hooks](#3-lifecycle-hooks) section for the full list and CLI limitations.
+- **`.cursorignore`** controls which files are excluded from Cursor's codebase indexing, like `.gitignore` for AI context. Add your memory/session files here if they shouldn't be indexed.
+- **Cursor 3 (April 2026)** rebuilt the IDE around an **Agents Window** that replaces the Composer pane, so you can run multiple agents in parallel across different tasks/repos. The April 24 update added a `/multitask` command that spawns async subagents to handle independent parts of a request simultaneously (vs queueing sequentially). If you're on Cursor 3, the blueprint's agent patterns map naturally: each subagent the Agents Window spawns is the equivalent of a Claude Code subagent invocation.
 
 ---
 
 ## Feature Comparison Matrix
 
-### Table A -- Configuration & Rules
+### Table A: Configuration & Rules
 
 | Tool | Rules File | Hierarchy | Path-Scoped | Skills / Workflows |
 |------|:----------:|:---------:|:-----------:|:------------------:|
@@ -56,7 +56,7 @@ While this blueprint is built for Claude Code, the **principles are universal**.
 | **Windsurf** | Yes | Yes | Yes (glob triggers) | Varies |
 | **Aider** | Yes | Yes | No | No |
 
-### Table B -- Architecture & Capabilities
+### Table B: Architecture & Capabilities
 
 | Tool | Subagents | Hooks | MCP | Memory | Model Tiering | Permissions | Worktree |
 |------|:---------:|:-----:|:---:|:------:|:-------------:|:-----------:|:--------:|
@@ -72,7 +72,7 @@ While this blueprint is built for Claude Code, the **principles are universal**.
 | **Windsurf** | No (parallel Cascade only) | Limited (enterprise) | Yes | Yes (auto-generated) | No | No | Yes (parallel agents) |
 | **Aider** | No | No | No | Partial (chat history replay) | Yes (3-tier: main/weak/editor) | Partial (binary `--yes`) | No |
 
-**Hooks -- a growing ecosystem with different surfaces:** Claude Code (SessionStart, PreToolUse matchers, Pre/PostCompact, Stop), Copilot (8 events including SubagentStart/Stop, Preview), Cursor (~11 types including `beforeSubmitPrompt`, `afterAgentResponse`), Cline (8 events including TaskStart, PreToolUse), Amazon Q (5 triggers in custom agents), and OpenCode (20+ plugin events covering tools, sessions, files, LSP, and TUI) all have hooks -- but they cover **different events** with different APIs. For **policy that must hold regardless of product**, prefer **git hooks** or **CI**; use each product's hooks where they fit.
+**Hooks: a growing ecosystem with different surfaces.** Claude Code (SessionStart, PreToolUse matchers, Pre/PostCompact, Stop), Copilot (8 events including SubagentStart/Stop, Preview), Cursor (~11 types including `beforeSubmitPrompt`, `afterAgentResponse`), Cline (8 events including TaskStart, PreToolUse), Amazon Q (5 triggers in custom agents), and OpenCode (20+ plugin events covering tools, sessions, files, LSP, and TUI) all have hooks, but they cover **different events** with different APIs. For **policy that must hold regardless of product**, prefer **git hooks** or **CI**; use each product's hooks where they fit.
 
 ---
 
@@ -114,7 +114,7 @@ Configured in `.github/hooks/*.json` (workspace) or `~/.copilot/hooks/` (user-le
 |-------|:----------:|-------|
 | `SessionStart` | No | Session initialization |
 | `UserPromptSubmit` | Yes (exit 2) | Before prompt reaches model |
-| `PreToolUse` | Yes (deny/ask/allow) | Most powerful -- can modify inputs |
+| `PreToolUse` | Yes (deny/ask/allow) | Most powerful, can modify inputs |
 | `PostToolUse` | No | Post-processing |
 | `PreCompact` | No | Before context compaction |
 | `SubagentStart` | Yes | When subagent spawns |
@@ -164,11 +164,11 @@ You can run **Claude Code inside Cursor** *and* use **Cursor's own Agent / Chat*
 To reuse the **idea** of this blueprint's skills (load-session, review-full, deploy-check, etc.) under Cursor's Agent:
 
 - Add folders under **`~/.cursor/skills/<skill-name>/SKILL.md`** with YAML frontmatter (`name`, `description`, ...) as Cursor documents.
-- **Optional:** On one machine, **directory junctions** (Windows) or **symlinks** (macOS/Linux) from `~/.cursor/skills/foo` -> `~/.claude/skills/foo` avoid maintaining two copies -- but **edits apply to both**; do not "fix for Cursor only" inside a shared file without affecting Claude Code.
+- **Optional:** On one machine, **directory junctions** (Windows) or **symlinks** (macOS/Linux) from `~/.cursor/skills/foo` -> `~/.claude/skills/foo` avoid maintaining two copies, but **edits apply to both**; do not "fix for Cursor only" inside a shared file without affecting Claude Code.
 
 ### Permissions (`cli-config.json`)
 
-Cursor's permission system has two layers: **`cli-config.json`** (tool allowlists for the Agent CLI) and **`permissions.json`** (unified editor + CLI permissions with sandbox modes). If the Agent refuses or always asks approval for basic work, your allowlist may be very narrow. Expanding `permissions.allow` (e.g. broader `Shell(*)` / read/write patterns) is a **conscious security and ergonomics tradeoff** -- pair with **git hooks** or team policy for anything that must never happen (e.g. pushes to protected branches). See [Cursor permissions docs](https://cursor.com/docs/reference/permissions) for sandbox modes and granular domain allowlisting.
+Cursor's permission system has two layers: **`cli-config.json`** (tool allowlists for the Agent CLI) and **`permissions.json`** (unified editor + CLI permissions with sandbox modes). If the Agent refuses or always asks approval for basic work, your allowlist may be very narrow. Expanding `permissions.allow` (e.g. broader `Shell(*)` / read/write patterns) is a **conscious security and ergonomics tradeoff**; pair with **git hooks** or team policy for anything that must never happen (e.g. pushes to protected branches). See [Cursor permissions docs](https://cursor.com/docs/reference/permissions) for sandbox modes and granular domain allowlisting.
 
 ### Hooks (`hooks.json`)
 
@@ -189,14 +189,14 @@ Cursor hooks are configured in a project-level or global `hooks.json` (not `sett
 
 Some blueprint hooks (session injection, post-edit nudges, stop-time review) are **Claude Code-specific**. On Cursor you typically **combine**:
 
-- **User Rules** -- e.g. "before finishing a change, self-check security and verification" (behavioral, not as strict as an external hook).
-- **Git hooks** -- e.g. `pre-push` for branch policy (works for human and any AI).
-- **Cursor hooks** (where available) -- wire only what your Cursor version supports; verify in official docs.
-- **CLI limitation** -- if you use Cursor's CLI, only shell-related hooks fire. Other hooks (`afterFileEdit`, `stop`, `beforeSubmitPrompt`, etc.) require the IDE.
+- **User Rules**: e.g. "before finishing a change, self-check security and verification" (behavioral, not as strict as an external hook).
+- **Git hooks**: e.g. `pre-push` for branch policy (works for human and any AI).
+- **Cursor hooks** (where available): wire only what your Cursor version supports; verify in official docs.
+- **CLI limitation**: if you use Cursor's CLI, only shell-related hooks fire. Other hooks (`afterFileEdit`, `stop`, `beforeSubmitPrompt`, etc.) require the IDE.
 
 ### Cross-session context without vendor "memory"
 
-The [memory/](../memory/) pattern (markdown files like `session.md`, decisions, reminders — built-in opt-in here, or a separate private git repo for advanced multi-machine setups) works for **any** tool: any agent that can read files can load it when you ask. Automation differs: only your **skills / rules** define when that happens -- there is no single universal auto-load unless you configure it per tool.
+The [memory/](../memory/) pattern (markdown files like `session.md`, decisions, reminders, built-in opt-in here, or a separate private git repo for advanced multi-machine setups) works for **any** tool: any agent that can read files can load it when you ask. Automation differs: only your **skills / rules** define when that happens; there is no single universal auto-load unless you configure it per tool.
 
 ---
 
@@ -251,7 +251,7 @@ Rules use frontmatter with `trigger` field (`glob`, `always_on`, `manual`). Root
 
 **Aider** -> `CONVENTIONS.md` loaded via `--read CONVENTIONS.md` or `/read` in-chat. Marked as read-only and cached with prompt caching. Config hierarchy: `~/.aider.conf.yml` (global) -> repo root -> CWD, with later files taking priority. No native auto-discovery of rules files.
 
-**What to copy:** Take the [CLAUDE.md](../CLAUDE.md) template. Paste the rules into your tool's equivalent file(s). The content is tool-agnostic -- only the file name, split, and format change.
+**What to copy:** Take the [CLAUDE.md](../CLAUDE.md) template. Paste the rules into your tool's equivalent file(s). The content is tool-agnostic; only the file name, split, and format change.
 
 ---
 
@@ -259,30 +259,30 @@ Rules use frontmatter with `trigger` field (`glob`, `always_on`, `manual`). Root
 
 Claude Code lets you create specialized subagents with their own instructions, model, and tool access.
 
-**Copilot** -- custom agents via `.agent.md` files with YAML frontmatter (name, description, tools, model, MCP servers). Three scopes: repo, org, personal. Agents can spawn subagents via the `agent` tool alias. Cloud coding agent runs remotely and creates PRs autonomously.
+**Copilot**: custom agents via `.agent.md` files with YAML frontmatter (name, description, tools, model, MCP servers). Three scopes: repo, org, personal. Agents can spawn subagents via the `agent` tool alias. Cloud coding agent runs remotely and creates PRs autonomously.
 
-**Cursor** -- two mechanisms:
+**Cursor**: two mechanisms:
 
-1. **Built-in subagents** (e.g. review-focused tasks) invoked from the product UI / agent APIs -- check current Cursor docs for names and limits.
-2. **`~/.cursor/skills/`** -- reusable workflows triggered by natural language; often easier for community members than maintaining many separate agent files.
+1. **Built-in subagents** (e.g. review-focused tasks) invoked from the product UI / agent APIs, check current Cursor docs for names and limits.
+2. **`~/.cursor/skills/`**: reusable workflows triggered by natural language; often easier for community members than maintaining many separate agent files.
 
-**Cline** -- `new_task` tool (`/newtask` command) packages distilled context into a fresh task with a clean context window. Sequential handoff, not true parallel subagents. The **Cline CLI + Kanban board** (2026) runs CLI tasks in isolated worktrees for parallel execution.
+**Cline**: `new_task` tool (`/newtask` command) packages distilled context into a fresh task with a clean context window. Sequential handoff, not true parallel subagents. The **Cline CLI + Kanban board** (2026) runs CLI tasks in isolated worktrees for parallel execution.
 
-**Roo Code** -- five built-in modes (Code, Architect, Ask, Debug, Orchestrator) plus unlimited custom modes with per-mode tool permissions. **Boomerang Tasks** enable the Orchestrator to delegate subtasks to specialized modes and receive results back. Modes can be packaged as portable YAML for sharing.
+**Roo Code**: five built-in modes (Code, Architect, Ask, Debug, Orchestrator) plus unlimited custom modes with per-mode tool permissions. **Boomerang Tasks** enable the Orchestrator to delegate subtasks to specialized modes and receive results back. Modes can be packaged as portable YAML for sharing.
 
-**OpenCode** -- built-in subagents (General, Explore) plus custom agents defined in `opencode.json` or `.opencode/agents/`. Each can have its own model, prompt, tool permissions, and temperature. Primary agents invoke subagents via the `Task` tool. Interactive wizard: `opencode agent create`.
+**OpenCode**: built-in subagents (General, Explore) plus custom agents defined in `opencode.json` or `.opencode/agents/`. Each can have its own model, prompt, tool permissions, and temperature. Primary agents invoke subagents via the `Task` tool. Interactive wizard: `opencode agent create`.
 
 **Codex CLI** supports subagents that spawn in parallel with independent context. Custom agents are configured via the OpenAI Agents SDK with model/instruction overrides.
 
 **Gemini CLI** has experimental local and remote subagents with isolated context, independent history, and recursion protection.
 
-**Amazon Q** -- custom agents defined as JSON in `.amazonq/cli-agents/` (project) or `~/.aws/amazonq/cli-agents/` (global). Each agent has its own prompt, model, tools, permissions, and hooks. `/agent generate` creates agent configs from natural language descriptions.
+**Amazon Q**: custom agents defined as JSON in `.amazonq/cli-agents/` (project) or `~/.aws/amazonq/cli-agents/` (global). Each agent has its own prompt, model, tools, permissions, and hooks. `/agent generate` creates agent configs from natural language descriptions.
 
-**Windsurf** runs up to 5 parallel Cascade agents using Git worktrees (each gets its own branch), but does not support custom subagent definitions -- they're full Cascade instances, not lightweight task-specific agents.
+**Windsurf** runs up to 5 parallel Cascade agents using Git worktrees (each gets its own branch), but does not support custom subagent definitions; they're full Cascade instances, not lightweight task-specific agents.
 
-**Aider** -- single-agent tool with no subagent support. Third-party MCP servers (e.g. `aider-mcp-server`) allow other tools to delegate to Aider, but Aider itself does not spawn subagents.
+**Aider**: single-agent tool with no subagent support. Third-party MCP servers (e.g. `aider-mcp-server`) allow other tools to delegate to Aider, but Aider itself does not spawn subagents.
 
-**What to copy:** The agent `.md` files from this blueprint can be adapted as **skill bodies** under `~/.cursor/skills/`, `.agent.md` profiles for Copilot, agent configs for Amazon Q / OpenCode, or as instruction sets for Codex/Gemini subagents. The pattern -- separate concerns for architecture, implementation, review, and testing -- is tool-agnostic.
+**What to copy:** The agent `.md` files from this blueprint can be adapted as **skill bodies** under `~/.cursor/skills/`, `.agent.md` profiles for Copilot, agent configs for Amazon Q / OpenCode, or as instruction sets for Codex/Gemini subagents. The pattern, separate concerns for architecture, implementation, review, and testing, is tool-agnostic.
 
 ---
 
@@ -290,7 +290,7 @@ Claude Code lets you create specialized subagents with their own instructions, m
 
 Hooks are deterministic automation that fires on specific events (before/after file edits, shell commands, session start/end, etc.).
 
-**Claude Code** has a broad hook system: SessionStart, PreToolUse, PostToolUse, PostToolUseFailure, PreCompact, PostCompact, Stop, SessionEnd -- with matchers for specific tools.
+**Claude Code** has a broad hook system: SessionStart, PreToolUse, PostToolUse, PostToolUseFailure, PreCompact, PostCompact, Stop, SessionEnd, with matchers for specific tools.
 
 **Copilot** has 8 hook events (Preview): SessionStart, UserPromptSubmit (blocking), PreToolUse (deny/ask/allow with input modification), PostToolUse, PreCompact, SubagentStart (blocking), SubagentStop, Stop. Configured in `.github/hooks/*.json` (workspace) or `~/.copilot/hooks/` (user-level).
 
@@ -306,7 +306,7 @@ Hooks are deterministic automation that fires on specific events (before/after f
 
 **Gemini CLI** has experimental hooks for session context injection and active-agent tracking. Behind a toggle.
 
-**Windsurf** has Cascade Hooks for logging and policy enforcement -- enterprise/teams only, not general-purpose.
+**Windsurf** has Cascade Hooks for logging and policy enforcement: enterprise/teams only, not general-purpose.
 
 **Roo Code** does not have a built-in lifecycle hook framework. Tool restrictions are handled via mode-based tool groups and file regex patterns.
 
@@ -326,11 +326,11 @@ Hooks are deterministic automation that fires on specific events (before/after f
 
 **Claude Code** has dual memory: auto-memory (`~/.claude/projects/*/memory/MEMORY.md`) + the opt-in markdown pattern in this blueprint's [memory/](../memory/).
 
-**Copilot** has two memory systems. **Copilot Memory** (public preview) is repo-scoped, shared across users, auto-validated against the current branch, and auto-deleted after 28 days if not reused. Available in cloud agent, code review, and CLI -- not yet in regular IDE chat. **VS Code local memory** (`~/.copilot/`) persists per-user across workspaces with the first 200 lines auto-loaded at session start.
+**Copilot** has two memory systems. **Copilot Memory** (public preview) is repo-scoped, shared across users, auto-validated against the current branch, and auto-deleted after 28 days if not reused. Available in cloud agent, code review, and CLI, not yet in regular IDE chat. **VS Code local memory** (`~/.copilot/`) persists per-user across workspaces with the first 200 lines auto-loaded at session start.
 
 **Cursor** briefly had a "Memories" feature but **removed it** starting v2.1.x. Users were told to export memories into Rules files. No built-in cross-session persistence. Community workarounds exist via MCP servers (Memory Banks, ContextForge) or a **private markdown/git "session log"** repo that agents read when instructed.
 
-**Cline** uses a **Memory Bank** pattern -- structured markdown files (`projectbrief.md`, `productContext.md`, `activeContext.md`, `systemPatterns.md`, `techContext.md`, `progress.md`) stored in a `memory-bank/` directory. This is a **methodology, not a built-in feature** -- configured via custom instructions in `.clinerules`. Community MCP servers formalize this as a tool-based approach. **Checkpoints** (shadow Git snapshots) preserve code state but not knowledge.
+**Cline** uses a **Memory Bank** pattern: structured markdown files (`projectbrief.md`, `productContext.md`, `activeContext.md`, `systemPatterns.md`, `techContext.md`, `progress.md`) stored in a `memory-bank/` directory. This is a **methodology, not a built-in feature**, configured via custom instructions in `.clinerules`. Community MCP servers formalize this as a tool-based approach. **Checkpoints** (shadow Git snapshots) preserve code state but not knowledge.
 
 **Roo Code** has no built-in memory. Community MCP servers (Roo Code Memory Bank) and the Memory Bank methodology work the same way as Cline's approach. **Checkpoints** restore both file state and conversation state.
 
@@ -338,9 +338,9 @@ Hooks are deterministic automation that fires on specific events (before/after f
 
 **Codex CLI** saves session transcripts to `~/.codex/history.jsonl`. `codex resume` reopens earlier threads with same state. This is transcript replay, not semantic memory.
 
-**Gemini CLI** has a `save_memory` tool that appends facts to `~/.gemini/GEMINI.md` under a `## Gemini Added Memories` section. Loaded automatically in subsequent sessions. Note: this writes directly into the same file used for instructions -- a known limitation.
+**Gemini CLI** has a `save_memory` tool that appends facts to `~/.gemini/GEMINI.md` under a `## Gemini Added Memories` section. Loaded automatically in subsequent sessions. Note: this writes directly into the same file used for instructions, a known limitation.
 
-**Amazon Q** supports `q chat --resume` (auto-loads previous conversation by working directory), `/save [path]` and `/load [path]` (explicit JSON save/load), and `/compact` (context summarization). No cross-session semantic memory -- persistence is conversation replay. Feature request for persistent memory is open.
+**Amazon Q** supports `q chat --resume` (auto-loads previous conversation by working directory), `/save [path]` and `/load [path]` (explicit JSON save/load), and `/compact` (context summarization). No cross-session semantic memory; persistence is conversation replay. Feature request for persistent memory is open.
 
 **Windsurf** auto-generates memories during conversations, stored in `~/.codeium/windsurf/memories/`. Workspace-scoped, persists across sessions. Users can also write durable facts to `.windsurf/rules/` files.
 
@@ -360,13 +360,13 @@ Claude Code lets you assign different models to different agents via frontmatter
 
 **Copilot** supports per-agent model selection via the `model` field in `.agent.md` frontmatter. Multi-model picker includes OpenAI, Anthropic, and Google models. BYOK (Bring Your Own Key) allows adding custom providers. **Auto mode** selects the best available model automatically.
 
-**Aider** has the most granular tiering: **main model** (primary reasoning), **weak model** (commit messages, summarization), and **editor model** (translates proposals into file edits in architect mode). You can pair an expensive model for architecture with a cheap model for editing -- e.g. o1-preview as architect with Deepseek as editor. Switch models mid-session with `/model`.
+**Aider** has the most granular tiering: **main model** (primary reasoning), **weak model** (commit messages, summarization), and **editor model** (translates proposals into file edits in architect mode). You can pair an expensive model for architecture with a cheap model for editing, e.g. o1-preview as architect with Deepseek as editor. Switch models mid-session with `/model`.
 
 **OpenCode** supports per-agent and per-command model overrides. 75+ models across OpenAI, Anthropic, Google, AWS Bedrock, Groq, Azure, OpenRouter, and local models. Built-in model variants for thinking levels (reasoning effort settings).
 
-**Roo Code** has **Sticky Models** -- each mode automatically remembers the last model used with it. Different modes can use different models without reconfiguration (e.g. cheap model for Ask mode, premium for Code mode). Supports 30+ providers.
+**Roo Code** has **Sticky Models**: each mode automatically remembers the last model used with it. Different modes can use different models without reconfiguration (e.g. cheap model for Ask mode, premium for Code mode). Supports 30+ providers.
 
-**Cline** supports **Plan/Act separate model selection** -- maintains independent model selections for planning vs implementation. Allows using a budget model for planning and a premium model for code changes.
+**Cline** supports **Plan/Act separate model selection**: maintains independent model selections for planning vs implementation. Allows using a budget model for planning and a premium model for code changes.
 
 **Codex CLI** supports per-config model overrides, making it a flexible option for tiering.
 
@@ -390,13 +390,13 @@ Loading different instructions for different parts of the codebase.
 | **Copilot** | `applyTo:` globs in `.github/instructions/*.instructions.md` |
 | **Cursor** | `globs:` in `.cursor/rules/*.mdc` |
 | **Cline** | `paths:` YAML frontmatter with glob patterns in `.clinerules/*.md` |
-| **Codex CLI** | Directory walk -- `AGENTS.md` in any subdirectory scopes to that tree |
-| **Gemini CLI** | Directory walk -- `GEMINI.md` in subdirectories scopes automatically |
+| **Codex CLI** | Directory walk: `AGENTS.md` in any subdirectory scopes to that tree |
+| **Gemini CLI** | Directory walk: `GEMINI.md` in subdirectories scopes automatically |
 | **Windsurf** | `trigger: glob` in `.windsurf/rules/*.md` frontmatter |
 | **OpenCode** | Community plugin (`opencode-rules`); `instructions` field supports globs |
 | **Roo Code** | Mode-based file regex (`.roomodes` groups config), not path-scoped rules |
 | **Amazon Q** | Not natively supported; agent `resources` support `file://` globs |
-| **Aider** | Not supported -- rules load globally into context |
+| **Aider** | Not supported; rules load globally into context |
 
 ---
 
@@ -414,6 +414,6 @@ Regardless of which tool you use, these principles from the blueprint apply ever
 
 ---
 
-*This guide reflects the state of these tools as of **2026-05-25**. AI coding tools evolve rapidly -- features marked "experimental" or "Preview" may stabilize or change. Always confirm hook names, skill folders, and Settings paths against the vendor docs for your installed version.*
+*This guide reflects the state of these tools as of **2026-05-25**. AI coding tools evolve rapidly, and features marked "experimental" or "Preview" may stabilize or change. Always confirm hook names, skill folders, and Settings paths against the vendor docs for your installed version.*
 
 *Verified tool-status claims in this revision: Windsurf ownership (TechCrunch, 2025-07-11), Amazon Q Developer end-of-support (AWS DevOps Blog, 2026-04-30), Copilot Memory default-on (GitHub Changelog, 2026-03-04). If you spot stale content, please open a PR or [Discussion](https://github.com/faizkhairi/claude-code-blueprint/discussions).*

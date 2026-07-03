@@ -1,10 +1,10 @@
 # Case Studies
 
-Real-world adopter stories. Before/after metrics, workflow changes, lessons learned — written by the people who actually used the blueprint in their projects.
+Real-world adopter stories: before/after metrics, workflow changes, lessons learned, written by the people who actually used the blueprint in their projects.
 
 ---
 
-## No Case Studies Submitted Yet — Be the First
+## No Case Studies Submitted Yet: Be the First
 
 This file ships empty intentionally. We don't fabricate case studies, and we don't list ourselves as the canonical example (we'd be marking our own homework).
 
@@ -27,12 +27,12 @@ For less formal sharing, post in [Discussions > Show & Tell](https://github.com/
 Copy this and fill it in. Skip any field that doesn't apply.
 
 ```markdown
-## [Project / Team name] — [One-line summary]
+## [Project / Team name]: [One-line summary]
 
 **Context**
 - Team size: [solo / 2-5 / 5-15 / 15+]
 - Project type: [SaaS, internal tool, agency client, OSS, research, etc.]
-- Stack: [whatever's relevant — Claude Code's value is mostly stack-agnostic]
+- Stack: [whatever's relevant, since Claude Code's value is mostly stack-agnostic]
 - Adoption date: [YYYY-MM or "rolling over N weeks"]
 
 **Which blueprint components you adopted**
@@ -66,4 +66,4 @@ Copy this and fill it in. Skip any field that doesn't apply.
 
 Honest, specific stories. Not endorsements. Not marketing. The blueprint exists because someone learned hard lessons in production; case studies pay that forward.
 
-Anonymized adopters are welcome — you don't have to name your employer. Just say enough about the shape of the team and the work that readers can decide whether your context resembles theirs.
+Anonymized adopters are welcome; you don't have to name your employer. Just say enough about the shape of the team and the work that readers can decide whether your context resembles theirs.

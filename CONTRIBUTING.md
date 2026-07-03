@@ -1,6 +1,6 @@
 # Contributing to Claude Code Blueprint
 
-Thank you for taking the time to contribute. This blueprint is a living reference — contributions from real-world Claude Code usage make it more valuable for everyone.
+Thank you for taking the time to contribute. This blueprint is a living reference, and contributions from real-world Claude Code usage make it more valuable for everyone.
 
 ## Table of Contents
 
@@ -17,10 +17,10 @@ Thank you for taking the time to contribute. This blueprint is a living referenc
 ## What We Welcome
 
 ### New Battle Stories
-Additions to `docs/WHY.md` that document a real incident — what went wrong, what was learned, and what component was built as a result. The more specific and grounded in an actual problem, the better.
+Additions to `docs/WHY.md` that document a real incident: what went wrong, what was learned, and what component was built as a result. The more specific and grounded in an actual problem, the better.
 
 ### Hook Scripts
-Shell scripts for `hooks/` that automate lifecycle events (SessionStart, PreToolUse, PostToolUse, Stop, SessionEnd, etc.). Must be general-purpose — not tied to a specific project, company, or environment. Before submitting, run `bash hooks/test-hooks.sh` — every hook must pass the smoke suite (exit 0 on empty, malformed, and missing-field stdin).
+Shell scripts for `hooks/` that automate lifecycle events (SessionStart, PreToolUse, PostToolUse, Stop, SessionEnd, etc.). Must be general-purpose, not tied to a specific project, company, or environment. Before submitting, run `bash hooks/test-hooks.sh`: every hook must pass the smoke suite (exit 0 on empty, malformed, and missing-field stdin).
 
 ### Agent Templates
 New `.md` files for `agents/` that define a specialized subagent role. Should include a clear `description` field (for Claude's tool selection), a well-scoped system prompt, and an appropriate model tier recommendation.
@@ -41,11 +41,11 @@ Clarifications, expanded explanations, better examples, or corrections to any `.
 
 ## What We Don't Accept
 
-- **Project-specific configurations** — `.env` files, database URLs, internal hostnames, team-specific conventions that don't generalize
-- **Untested components** — Hooks, agents, or skills that haven't been run against real Claude Code sessions
-- **Promotional content** — Links to paid tools, commercial products, or self-promotional material unrelated to the blueprint's purpose
-- **Platform-only solutions** — Scripts that only work on one OS without a stated reason or fallback
-- **Credentials of any kind** — API keys, tokens, passwords, or connection strings (even example/fake ones that could be mistaken for real)
+- **Project-specific configurations**: `.env` files, database URLs, internal hostnames, team-specific conventions that don't generalize
+- **Untested components**: Hooks, agents, or skills that haven't been run against real Claude Code sessions
+- **Promotional content**: Links to paid tools, commercial products, or self-promotional material unrelated to the blueprint's purpose
+- **Platform-only solutions**: Scripts that only work on one OS without a stated reason or fallback
+- **Credentials of any kind**: API keys, tokens, passwords, or connection strings (even example/fake ones that could be mistaken for real)
 
 ---
 
@@ -90,7 +90,7 @@ Remove or genericize anything found.
 
 ### 5. Open a pull request
 
-Use the PR template. Fill in all sections — especially the NDA checklist.
+Use the PR template. Fill in all sections, especially the NDA checklist.
 
 ---
 
@@ -110,7 +110,7 @@ Use the PR template. Fill in all sections — especially the NDA checklist.
 ---
 name: agent-name
 description: One sentence used by Claude for tool selection. Be specific about when this agent should be invoked.
-model: opus  # or sonnet, haiku (shorthand — Claude Code resolves to full model IDs)
+model: opus  # or sonnet, haiku (shorthand; Claude Code resolves to full model IDs)
 ---
 
 [System prompt content]
@@ -123,7 +123,7 @@ Skills live in a named directory under `skills/`:
 ```
 skills/
   my-skill/
-    SKILL.md       # Entry point — trigger phrase + instructions
+    SKILL.md       # Entry point: trigger phrase + instructions
     helpers.md     # Optional supporting content
 ```
 
@@ -163,7 +163,7 @@ Before submitting:
 - No real company names, project names, or internal product names
 - No internal hostnames or IP addresses (including `*.internal`, `*.corp`, `*.lan`)
 - No real personal names in example content
-- No API keys, tokens, or credentials — even placeholder-looking ones
+- No API keys, tokens, or credentials, even placeholder-looking ones
 - Example output should use `your-project`, `your-company`, `example.com`, or similar generic values
 
 ---
@@ -172,7 +172,7 @@ Before submitting:
 
 Use the PR template provided at `.github/PULL_REQUEST_TEMPLATE.md`. Key requirements:
 
-- **Title**: Use a verb phrase — `Add cost-limiter hook`, `Fix notify hook on Windows`, `Document battle story: context bleed`
+- **Title**: Use a verb phrase, for example `Add cost-limiter hook`, `Fix notify hook on Windows`, `Document battle story: context bleed`
 - **Description**: What does this change and why?
 - **NDA checklist**: All items must be checked before review begins
 - **Related issues**: Link any issue this resolves with `Closes #N`

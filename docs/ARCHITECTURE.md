@@ -1,4 +1,4 @@
-# Architecture — System Design
+# Architecture: System Design
 
 ## Component Relationships
 
@@ -43,22 +43,22 @@ Session End
 
 Two things live in this picture, and it matters which is which:
 
-- **WIRED** — a skill in this repo actually spawns these agents. You get this behavior out of the box.
-- **ILLUSTRATIVE** — a pattern you can build for *your* stack. The blueprint ships the agents, but does not force a one-size pipeline, because a Laravel build, a Go service, and a Django app want different flows. Wire the stages that fit your work (see the decision framework in [agents/README.md](../agents/README.md#when-to-use-an-agent-vs-a-skill-vs-the-main-thread)).
+- **WIRED**: a skill in this repo actually spawns these agents. You get this behavior out of the box.
+- **ILLUSTRATIVE**: a pattern you can build for *your* stack. The blueprint ships the agents, but does not force a one-size pipeline, because a Laravel build, a Go service, and a Django app want different flows. Wire the stages that fit your work (see the decision framework in [agents/README.md](../agents/README.md#when-to-use-an-agent-vs-a-skill-vs-the-main-thread)).
 
 ```
-WIRED (ships working) — the review-full skill spawns up to 4 agents in parallel:
+WIRED (ships working): the review-full skill spawns up to 4 agents in parallel:
 
               ┌──────────────────────┐
               │  review-full (skill) │  picks 1-4 agents by what changed:
               │  ├─ code-reviewer    │  (sonnet, worktree)
               │  ├─ security-reviewer │  (sonnet, worktree)
               │  ├─ db-analyst       │  (sonnet, plan mode)
-              │  └─ architecture-reviewer │ (sonnet, worktree — structural changes)
+              │  └─ architecture-reviewer │ (sonnet, worktree, structural changes)
               └──────────────────────┘
 
 
-ILLUSTRATIVE (a shape you can wire yourself) — a build-to-ship flow:
+ILLUSTRATIVE (a shape you can wire yourself): a build-to-ship flow:
 
    project-architect ──designs──▶ sprint-plan (skill, planning only today)
                                         │
@@ -70,7 +70,7 @@ ILLUSTRATIVE (a shape you can wire yourself) — a build-to-ship flow:
                                    qa-tester ──tests pass──▶ review-full ──GO──▶ deploy-check
 ```
 
-> The ILLUSTRATIVE flow is NOT wired: `sprint-plan`, `test-check`, and `deploy-check` are skills that run on the main thread and do not spawn `backend-specialist` / `frontend-specialist` / `qa-tester` / `devops-engineer` automatically. That is deliberate — you decide when to delegate to a specialist for your stack, rather than inheriting a pipeline that assumes one. To wire it, follow the same pattern `review-full` uses (a "spawn agents" step that names the agent by `subagent_type`).
+> The ILLUSTRATIVE flow is NOT wired: `sprint-plan`, `test-check`, and `deploy-check` are skills that run on the main thread and do not spawn `backend-specialist` / `frontend-specialist` / `qa-tester` / `devops-engineer` automatically. That is deliberate: you decide when to delegate to a specialist for your stack, rather than inheriting a pipeline that assumes one. To wire it, follow the same pattern `review-full` uses (a "spawn agents" step that names the agent by `subagent_type`).
 
 ## Model Tiering Strategy
 
@@ -92,11 +92,11 @@ Pick the model tier based on the task's **cognitive complexity**, not its import
 | Designs architecture or makes tradeoffs | **Opus** ($15/$75)* | Complex reasoning, multi-system thinking | System design, migration planning, tech decisions |
 | Quick lookups or simple transforms | **Haiku** ($0.80/$4) | Overkill to use a larger model | File search, grep analysis, format conversion |
 
-> \* Prices per million tokens, indicative — verify current pricing at [claude.com/pricing](https://claude.com/pricing).
+> \* Prices per million tokens, indicative. Verify current pricing at [claude.com/pricing](https://claude.com/pricing).
 
 **Rule of thumb:** Start with Sonnet for new agents. Promote to Opus only if the agent consistently makes poor architectural decisions. Demote to Haiku only if the agent's output is templated enough that a smaller model handles it fine.
 
-**Cost impact:** A session using all Opus agents costs roughly 5x more than the same session with Sonnet agents. The tiering in this blueprint keeps Opus to 1 agent (project-architect) while using Haiku for 1 documentation agent -- keeping the blended cost close to Sonnet-only pricing.
+**Cost impact:** A session using all Opus agents costs roughly 5x more than the same session with Sonnet agents. The tiering in this blueprint keeps Opus to 1 agent (project-architect) while using Haiku for 1 documentation agent, keeping the blended cost close to Sonnet-only pricing.
 
 ## Memory Architecture
 
