@@ -2,7 +2,7 @@
 
 ## Scope
 
-This repository contains configuration files (markdown, shell scripts, JSON templates) — not application code. However, security matters here because:
+This repository contains configuration files (markdown, shell scripts, JSON templates), not application code. However, security matters here because:
 
 - **Hook scripts** execute shell commands on your machine
 - **Settings templates** define permission boundaries
@@ -30,12 +30,12 @@ If you discover a security issue in any blueprint component (e.g., a hook script
 
 When adopting components from this blueprint:
 
-1. **Read hook scripts before installing** — they execute on your machine with your permissions
-2. **Review the settings template** — don't blindly copy permission allowlists. Remove commands you don't use.
+1. **Read hook scripts before installing**: they execute on your machine with your permissions
+2. **Review the settings template**: don't blindly copy permission allowlists. Remove commands you don't use.
 3. **Keep `defaultMode: "dontAsk"` only after** you trust your hooks to catch mistakes. Start with the default mode.
-4. **Never commit credentials** — even in CLAUDE.md or memory files. Use `.env` files excluded by `.gitignore`.
-5. **Audit Stop hook prompts** — the security verification prompt runs on every response. Ensure it checks for patterns relevant to YOUR project.
+4. **Never commit credentials**: even in CLAUDE.md or memory files. Use `.env` files excluded by `.gitignore`.
+5. **Audit Stop hook prompts**: the security verification prompt runs on every response. Ensure it checks for patterns relevant to YOUR project.
 
 ## Supported Versions
 
-This is a reference architecture, not versioned software. The `main` branch always contains the latest recommended configuration. There are no backported security fixes — update to the latest `main`.
+This is a reference architecture, not versioned software. The `main` branch always contains the latest recommended configuration. There are no backported security fixes; update to the latest `main`.

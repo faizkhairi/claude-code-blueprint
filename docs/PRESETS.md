@@ -95,7 +95,7 @@ Use the full [`settings-template.json`](../examples/settings-template.json) as y
 1. Replace all `YourUser` paths with your actual username (Windows: `C:/Users/YourUser/`, macOS: `/Users/youruser/`, Linux: `/home/youruser/`)
 2. Adjust the `allow` list for your stack (remove tools you don't use)
 3. Edit `block-git-push.sh` to match your protected remote URLs
-4. Review hook paths -- ensure they match your OS (forward slashes on all platforms)
+4. Review hook paths: ensure they match your OS (forward slashes on all platforms)
 
 ### What you get (beyond Minimal)
 
@@ -112,7 +112,7 @@ Use the full [`settings-template.json`](../examples/settings-template.json) as y
 
 **For:** Developer who wants a curated, broadly-useful set without the full specialist ecosystem.
 **Setup time:** 20 minutes.
-**Impact:** Everything in Standard, plus review/test/deploy skills and the two most broadly-useful path-scoped rules -- no stack assumptions, no memory system required.
+**Impact:** Everything in Standard, plus review/test/deploy skills and the two most broadly-useful path-scoped rules. No stack assumptions, no memory system required.
 
 ### Files to copy (everything in Standard, plus)
 
@@ -138,8 +138,8 @@ Use the full [`settings-template.json`](../examples/settings-template.json) as y
 
 ### What you don't get (and may not need)
 
-- The stack-specific specialist agents (backend / frontend / DevOps / etc.) -- add via Full when your work calls for them
-- The session/memory skills and the memory system -- enable those when you want cross-session persistence
+- The stack-specific specialist agents (backend / frontend / DevOps / etc.): add via Full when your work calls for them
+- The session/memory skills and the memory system: enable those when you want cross-session persistence
 
 ---
 
@@ -216,7 +216,7 @@ Use the full [`settings-template.json`](../examples/settings-template.json) as y
 
 ### Why `dontAsk` and not `auto` for CI/CD
 
-- `dontAsk` is deterministic -- same inputs always produce same permission decisions
+- `dontAsk` is deterministic: same inputs always produce same permission decisions
 - No classifier overhead (no extra token cost per action)
 - No risk of classifier blocking a legitimate CI action mid-pipeline
 - CI pipelines should be predictable; `auto` mode's contextual evaluation adds variability
@@ -232,13 +232,13 @@ Use the full [`settings-template.json`](../examples/settings-template.json) as y
 
 ## Upgrading Between Presets
 
-Moving from one preset to the next is additive -- you never need to redo earlier steps.
+Moving from one preset to the next is additive: you never need to redo earlier steps.
 
 ```
 Minimal → Standard:  Add 4 hooks + 2 agents + full settings.json
 Standard → Core:     Add 2 review agents + 6 skills + 2 path-scoped rules
 Core → Full:         Add remaining agents, skills, rules, memory
-Any → CI/CD:         Separate concern -- CI uses its own settings, not your dev settings
+Any → CI/CD:         Separate concern; CI uses its own settings, not your dev settings
 ```
 
 The recommended path: start Minimal, use it for a week, then upgrade to Standard when you notice gaps. Step up to Core when you want review/test/deploy skills without the full ecosystem. Move to Full only when you're actively using the specialist agents and the wider skill set in your workflow.

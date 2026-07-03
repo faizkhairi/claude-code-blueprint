@@ -68,7 +68,7 @@ Show me what you're doing at each step so I can learn.
 IMPORTANT: Do NOT modify any project-level .claude/ directory. All hooks, permissions, and personal settings belong in ~/.claude/ (your home directory).
 ```
 
-Claude Code will walk you through the setup interactively -- creating files, explaining what each one does, and wiring everything together.
+Claude Code will walk you through the setup interactively, creating files, explaining what each one does, and wiring everything together.
 
 ---
 
@@ -111,9 +111,9 @@ cd claude-code-blueprint && bash hooks/test-hooks.sh
 
 | File Type | Location | Why |
 |-----------|----------|-----|
-| CLAUDE.md | Project root | Team behavioral rules -- commit to your repo |
-| Hooks, settings, agents, skills, rules | `~/.claude/` | Personal/machine-specific -- never commit |
-| Memory | `~/.claude/projects/*/memory/` | Auto-generated -- never commit |
+| CLAUDE.md | Project root | Team behavioral rules; commit to your repo |
+| Hooks, settings, agents, skills, rules | `~/.claude/` | Personal/machine-specific; never commit |
+| Memory | `~/.claude/projects/*/memory/` | Auto-generated; never commit |
 
 For the full config placement guide with cross-platform paths, see [GETTING-STARTED.md](GETTING-STARTED.md#where-config-belongs-project-vs-personal).
 

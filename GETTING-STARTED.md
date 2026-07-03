@@ -1,8 +1,8 @@
-# Getting Started — From Zero to Productive
+# Getting Started: From Zero to Productive
 
-This guide is for anyone who wants to get more out of Claude Code — whether you're a complete beginner or an experienced developer looking to level up your setup. No prior experience required.
+This guide is for anyone who wants to get more out of Claude Code, whether you're a complete beginner or an experienced developer looking to level up your setup. No prior experience required.
 
-> **How to read this:** start with the hands-on path — **[New to Claude Code? Start Here](#new-to-claude-code-start-here)** → **[Prerequisites](#prerequisites)** → **[Your First 30 Minutes](#your-first-30-minutes)**. That gets you a working setup. The deeper topics below (MCP servers, plugins, teams, memory) are optional — read them when you need them. New to the terms (agent, skill, hook, rule)? Jump to **[The Building Blocks (Glossary)](#the-building-blocks-glossary)** any time.
+> **How to read this:** start with the hands-on path: **[New to Claude Code? Start Here](#new-to-claude-code-start-here)** → **[Prerequisites](#prerequisites)** → **[Your First 30 Minutes](#your-first-30-minutes)**. That gets you a working setup. The deeper topics below (MCP servers, plugins, teams, memory) are optional; read them when you need them. New to the terms (agent, skill, hook, rule)? Jump to **[The Building Blocks (Glossary)](#the-building-blocks-glossary)** any time.
 
 ---
 
@@ -12,7 +12,7 @@ If you've never configured Claude Code before, this section is for you. Skip to 
 
 ### What Is This Repository?
 
-This is a collection of configuration files that make Claude Code smarter, safer, and more consistent. Think of it as a recipe book — you pick the recipes you need and add them to your own kitchen. The most important file is **CLAUDE.md**, which tells Claude Code how to behave (like a set of house rules it follows every session).
+This is a collection of configuration files that make Claude Code smarter, safer, and more consistent. Think of it as a recipe book: you pick the recipes you need and add them to your own kitchen. The most important file is **CLAUDE.md**, which tells Claude Code how to behave (like a set of house rules it follows every session).
 
 ### Got This Link from a Colleague?
 
@@ -31,14 +31,14 @@ There are multiple ways to use Claude Code. Pick the one that fits you:
 
 | Method | Best For | How to Get It |
 |--------|----------|---------------|
-| **Desktop App** (Mac/Windows) | Easiest start — no terminal needed | Download from [claude.ai/code](https://claude.ai/code) |
+| **Desktop App** (Mac/Windows) | Easiest start, no terminal needed | Download from [claude.ai/code](https://claude.ai/code) |
 | **VS Code Extension** | If you already use VS Code | Search "Claude Code" in the Extensions panel |
 | **Web App** | Try it without installing anything | Visit [claude.ai/code](https://claude.ai/code) in your browser |
 | **CLI (Terminal)** | Power users, scripting, automation | `npm install -g @anthropic-ai/claude-code` |
 
 All methods support CLAUDE.md, agents, skills, and hooks. The CLI gives the most control, but you don't need it to get started.
 
-> **First time?** Try `/powerup` in any Claude Code session for interactive lessons with animated demos -- it's the fastest way to learn the features.
+> **First time?** Try `/powerup` in any Claude Code session for interactive lessons with animated demos. It's the fastest way to learn the features.
 
 ### Which Model Should I Use?
 
@@ -50,7 +50,7 @@ Claude Code can use different AI models. Here's what to pick:
 | Building complex features / architecture | **Claude Opus** | Deepest reasoning. Use for system design, hard debugging, multi-file refactors. |
 | Quick edits, docs, simple tasks | **Claude Haiku** | Fastest and cheapest. Great for straightforward work. |
 
-You don't need to pick one forever — switch anytime by typing `/model` in Claude Code. **Start with Sonnet** and move to Opus only when a task clearly needs deeper reasoning.
+You don't need to pick one forever; switch anytime by typing `/model` in Claude Code. **Start with Sonnet** and move to Opus only when a task clearly needs deeper reasoning.
 
 ### The 1-Minute Setup (Easiest Possible Start)
 
@@ -63,9 +63,9 @@ You can improve Claude Code in under a minute by adding just one file:
 **Step 3.** Start Claude Code in that folder. It automatically reads CLAUDE.md and follows the rules inside it.
 
 **That's it.** You just gave Claude Code four behavioral rules that prevent the most common AI coding mistakes:
-- **Verify-After-Complete** — Claude must prove its work before saying "done"
-- **Diagnose-First** — Claude investigates before jumping to fixes
-- **Plan-First** — Claude designs an approach before making changes
+- **Verify-After-Complete**: Claude must prove its work before saying "done"
+- **Diagnose-First**: Claude investigates before jumping to fixes
+- **Plan-First**: Claude designs an approach before making changes
 
 ### The 5-Minute Setup (Recommended)
 
@@ -80,7 +80,7 @@ For a more complete setup, **fork** this repository so you have your own copy to
    git clone https://github.com/YOUR-USERNAME/claude-code-blueprint.git
    ```
 4. Copy `CLAUDE.md` into each of your project folders
-5. *(Optional)* Run `./setup.sh` to install hooks, agents, and settings to `~/.claude/` automatically — or copy them manually (see below for what this means)
+5. *(Optional)* Run `./setup.sh` to install hooks, agents, and settings to `~/.claude/` automatically, or copy them manually (see below for what this means)
 
 ### Where Is `~/.claude/`?
 
@@ -92,26 +92,26 @@ You'll see `~/.claude/` referenced throughout this guide. This is Claude Code's 
 | **Linux** | `/home/yourname/.claude/` |
 | **Windows** | `C:\Users\yourname\.claude\` |
 
-If this folder doesn't exist yet, that's normal — Claude Code creates it the first time you run it. You can also create it manually.
+If this folder doesn't exist yet, that's normal; Claude Code creates it the first time you run it. You can also create it manually.
 
 > **Windows users:** If hooks or paths aren't working as expected, jump to [Windows Notes](#windows-notes) for platform-specific guidance before continuing.
 
 Inside `~/.claude/` you'll find (or create):
-- `settings.json` — Claude Code's main configuration (hooks, permissions, environment variables)
-- `hooks/` — Shell scripts that run automatically on specific events
-- `agents/` — Specialized sub-assistants you can invoke
-- `skills/` — Multi-step workflows triggered by natural language
-- `rules/` — Path-scoped instruction files
+- `settings.json`: Claude Code's main configuration (hooks, permissions, environment variables)
+- `hooks/`: Shell scripts that run automatically on specific events
+- `agents/`: Specialized sub-assistants you can invoke
+- `skills/`: Multi-step workflows triggered by natural language
+- `rules/`: Path-scoped instruction files
 
 ### What Is settings.json?
 
 `settings.json` is Claude Code's main configuration file at `~/.claude/settings.json`. It controls hooks (automatic behaviors), permissions (what Claude can and can't do), and environment variables.
 
-If you don't have one yet, that's normal — Claude Code works fine without it. You only need it when you want to add hooks or customize permissions. See [SETTINGS-GUIDE.md](docs/SETTINGS-GUIDE.md) for a complete reference.
+If you don't have one yet, that's normal: Claude Code works fine without it. You only need it when you want to add hooks or customize permissions. See [SETTINGS-GUIDE.md](docs/SETTINGS-GUIDE.md) for a complete reference.
 
 ### Let Claude Code Set Up for You
 
-Here's a shortcut — you can ask Claude Code to configure itself. Paste this prompt into a Claude Code session:
+Here's a shortcut: you can ask Claude Code to configure itself. Paste this prompt into a Claude Code session:
 
 ```
 I want to set up the Claude Code Blueprint from this repository.
@@ -123,7 +123,7 @@ Show me what you're doing at each step so I can learn.
 IMPORTANT: Do NOT modify any project-level .claude/ directory. All hooks, permissions, and personal settings belong in ~/.claude/ (your home directory).
 ```
 
-Claude Code will walk you through the setup interactively — creating files, explaining what each one does, and wiring everything together.
+Claude Code will walk you through the setup interactively, creating files, explaining what each one does, and wiring everything together.
 
 For a non-interactive automated setup, run `./setup.sh` from the blueprint repository. See [SETUP.md](SETUP.md) for usage, presets, and a verification checklist.
 
@@ -133,7 +133,7 @@ The short answer: **barely.** Here's why:
 
 | Component | Token Cost | When It Loads |
 |-----------|-----------|---------------|
-| **Hooks** (all 10) | **Zero** | External shell scripts — never touch your token budget |
+| **Hooks** (all 10) | **Zero** | External shell scripts, never touch your token budget |
 | **CLAUDE.md** | ~2,300 tokens | Once at session start (stays in context) |
 | **Rules** | ~700-1,500 each | Only when editing matching files (path-scoped) |
 | **Skills** | ~500-1,100 each | Only when you trigger them |
@@ -141,23 +141,23 @@ The short answer: **barely.** Here's why:
 
 For perspective: a typical 30-turn coding session uses 50,000-200,000+ tokens. The blueprint adds ~2,300 tokens (~1-5% overhead). Meanwhile, one prevented wrong-approach-then-redo cycle saves 5,000-20,000 tokens. **The blueprint saves more than it costs.**
 
-**Subscription users (Pro, Max):** Start with CLAUDE.md + hooks (the Minimal preset). Hooks are free. CLAUDE.md is a tiny fraction of your usage. When you want more, the `core` preset is a sensible next step -- a curated set of review/test/deploy skills and two path-scoped rules, without the full specialist ecosystem.
+**Subscription users (Pro, Max):** Start with CLAUDE.md + hooks (the Minimal preset). Hooks are free. CLAUDE.md is a tiny fraction of your usage. When you want more, the `core` preset is a sensible next step: a curated set of review/test/deploy skills and two path-scoped rules, without the full specialist ecosystem.
 
 **API billing users:** The blueprint adds roughly 1-3 cents per session. Model tiering (Haiku for docs, Sonnet for code) is your biggest savings lever.
 
-**Budget-conscious?** Hooks give the most value per token spent (literally free). CLAUDE.md is the second-best ROI. Agents are the most expensive — add them one at a time, starting with `verify-plan`.
+**Budget-conscious?** Hooks give the most value per token spent (literally free). CLAUDE.md is the second-best ROI. Agents are the most expensive; add them one at a time, starting with `verify-plan`.
 
 See [BENCHMARKS.md](docs/BENCHMARKS.md#token-cost-per-component) for the complete breakdown, including subscription plan recommendations and an upgrade guide.
 
 ### Important: Placeholder Variables
 
-Several files in this blueprint contain placeholder variables like `{PROJECTS_ROOT}` and `{CLAUDE_CONFIG_PATH}`. You must replace these with your actual paths before use (the `./setup.sh` installer does this for you). Note that `./memory/` is not a placeholder -- it is the built-in opt-in memory folder shipped with the blueprint, and needs no replacement. See [skills/README.md](skills/README.md#required-replace-placeholder-variables) for the full list and platform-specific examples.
+Several files in this blueprint contain placeholder variables like `{PROJECTS_ROOT}` and `{CLAUDE_CONFIG_PATH}`. You must replace these with your actual paths before use (the `./setup.sh` installer does this for you). Note that `./memory/` is not a placeholder: it is the built-in opt-in memory folder shipped with the blueprint, and needs no replacement. See [skills/README.md](skills/README.md#required-replace-placeholder-variables) for the full list and platform-specific examples.
 
 ### Ready for More?
 
-The rest of this guide covers the full Claude Code ecosystem — prerequisites, MCP servers, agents, skills, hooks, and memory systems. Continue to [Prerequisites](#prerequisites) when you're ready to go deeper.
+The rest of this guide covers the full Claude Code ecosystem: prerequisites, MCP servers, agents, skills, hooks, and memory systems. Continue to [Prerequisites](#prerequisites) when you're ready to go deeper.
 
-> **Have questions?** See the [FAQ](FAQ.md) for answers to the most common community questions -- framework support, skill levels, pricing plans, and more.
+> **Have questions?** See the [FAQ](FAQ.md) for answers to the most common community questions: framework support, skill levels, pricing plans, and more.
 
 ---
 
@@ -171,15 +171,15 @@ Before you begin, make sure you have:
 | **npm** | v9+ (ships with Node) | `npm --version` | Included with Node.js |
 | **Git** | v2.30+ | `git --version` | [git-scm.com](https://git-scm.com) |
 | **Bash shell** | Any | `bash --version` | macOS/Linux: built-in. Windows: see [Windows Notes](#windows-notes) |
-| **Claude Code access** | A Claude subscription (Pro/Max/Team/Enterprise) **or** an Anthropic API key | — | See below |
+| **Claude Code access** | A Claude subscription (Pro/Max/Team/Enterprise) **or** an Anthropic API key | n/a | See below |
 
 ### Claude Code Access
 
-Claude Code authenticates one of two ways -- you only need one:
+Claude Code authenticates one of two ways; you only need one:
 
-**Option A -- Claude subscription (recommended for most people).** If you have a Claude Pro, Max, Team, or Enterprise plan, just run `claude` and sign in with your Claude account in the browser. No API key needed.
+**Option A, Claude subscription (recommended for most people).** If you have a Claude Pro, Max, Team, or Enterprise plan, just run `claude` and sign in with your Claude account in the browser. No API key needed.
 
-**Option B -- Anthropic API key (usage-based billing).** If you prefer to pay per token via the API:
+**Option B, Anthropic API key (usage-based billing).** If you prefer to pay per token via the API:
 
 1. Sign up or log in at [console.anthropic.com](https://console.anthropic.com)
 2. Navigate to **API Keys**, create a new key, and enable billing under the Billing section
@@ -189,7 +189,7 @@ Claude Code authenticates one of two ways -- you only need one:
    export ANTHROPIC_API_KEY="sk-ant-..."
    ```
 
-Then run `claude` to start. Note: if you have a subscription **and** an `ANTHROPIC_API_KEY` set, the API key takes precedence -- `unset ANTHROPIC_API_KEY` to use your subscription instead.
+Then run `claude` to start. Note: if you have a subscription **and** an `ANTHROPIC_API_KEY` set, the API key takes precedence. Run `unset ANTHROPIC_API_KEY` to use your subscription instead.
 
 ### Enable Agent Teams (Required for Agents)
 
@@ -263,22 +263,22 @@ Copy [hooks/cost-tracker.sh](hooks/cost-tracker.sh) to `~/.claude/hooks/` and ad
 
 ### Minute 20-30: Read WHY.md
 
-Read [WHY.md](docs/WHY.md) to understand why each component exists. This is where the real value is — not in copying files, but in understanding the thinking behind them.
+Read [WHY.md](docs/WHY.md) to understand why each component exists. This is where the real value is: not in copying files, but in understanding the thinking behind them.
 
 ---
 
 ## Common Mistakes (and How to Avoid Them)
 
 ### 1. Context Window Bloat
-**Mistake:** Loading everything into every session — massive CLAUDE.md, every agent, every rule.
+**Mistake:** Loading everything into every session: massive CLAUDE.md, every agent, every rule.
 **Fix:** Keep CLAUDE.md under 100 lines. Use path-scoped rules. Extract details to topic files that load on-demand.
 
 ### 2. No Verification
-**Mistake:** Accepting "done" at face value. Claude says it fixed the bug → you move on.
+**Mistake:** Accepting "done" at face value. Claude says it fixed the bug, you move on.
 **Fix:** Always verify. Run the tests. Hit the endpoint. Re-read the file. A 200 response with empty data is not success.
 
 ### 3. Skipping Plan Mode
-**Mistake:** Asking Claude to "just do it" for complex changes. It implements fast — but wrong.
+**Mistake:** Asking Claude to "just do it" for complex changes. It implements fast, but wrong.
 **Fix:** Use plan mode for anything touching more than 1-2 files. Five minutes of review saves hours of rework.
 
 ### 4. Too Many Permissions
@@ -309,7 +309,7 @@ Claude Code is Anthropic's **command-line interface (CLI)** for Claude. Unlike t
 - Has a permission system so you control what it can do
 - Supports hooks, agents, skills, and MCP servers for automation
 
-Think of it as having a senior developer sitting in your terminal who can read your codebase, write code, run tests, and follow your team's conventions — if you configure it well.
+Think of it as having a senior developer sitting in your terminal who can read your codebase, write code, run tests, and follow your team's conventions, if you configure it well.
 
 ### Installation
 
@@ -334,15 +334,15 @@ Before diving in, here's what each piece does:
 | Component | What It Is | Analogy |
 |-----------|-----------|---------|
 | **CLAUDE.md** | A markdown file in your project root with behavioral rules | Like a `.editorconfig` but for AI behavior |
-| **settings.json** | Configuration at `~/.claude/settings.json` — hooks, permissions, env vars | Like VS Code's `settings.json` |
-| **Agents** | Specialized sub-assistants with their own model, tools, and instructions | Like microservices — each does one thing well |
-| **Skills** | Step-by-step workflows triggered by natural language | Like shell aliases — "deploy" triggers a 10-step checklist |
-| **Hooks** | Shell scripts that run automatically on lifecycle events | Like git hooks — deterministic, can't be skipped |
+| **settings.json** | Configuration at `~/.claude/settings.json`: hooks, permissions, env vars | Like VS Code's `settings.json` |
+| **Agents** | Specialized sub-assistants with their own model, tools, and instructions | Like microservices: each does one thing well |
+| **Skills** | Step-by-step workflows triggered by natural language | Like shell aliases: "deploy" triggers a 10-step checklist |
+| **Hooks** | Shell scripts that run automatically on lifecycle events | Like git hooks: deterministic, can't be skipped |
 | **Rules** | Path-scoped instruction files that load only for specific file types | Like ESLint configs that only apply to certain folders |
-| **MCP Servers** | External tools that give Claude new capabilities | Like VS Code extensions — add features without modifying core |
+| **MCP Servers** | External tools that give Claude new capabilities | Like VS Code extensions: add features without modifying core |
 | **Memory** | Persistent context files that survive across sessions | Like a dev journal that Claude reads at the start of each session |
 
-Knowing *what* each piece is only gets you halfway — the harder question is *when* to reach for an agent versus a skill versus just letting Claude work on the main thread. For that, see **[When to Use an Agent vs a Skill vs the Main Thread](agents/README.md#when-to-use-an-agent-vs-a-skill-vs-the-main-thread)**. The short version: most work stays on the main thread, skills are cheap repeatable recipes, agents earn their cost only when a task needs its own context window, and hooks are for what must happen every time.
+Knowing *what* each piece is only gets you halfway; the harder question is *when* to reach for an agent versus a skill versus just letting Claude work on the main thread. For that, see **[When to Use an Agent vs a Skill vs the Main Thread](agents/README.md#when-to-use-an-agent-vs-a-skill-vs-the-main-thread)**. The short version: most work stays on the main thread, skills are cheap repeatable recipes, agents earn their cost only when a task needs its own context window, and hooks are for what must happen every time.
 
 ### How They Work Together
 
@@ -366,7 +366,7 @@ You type a message
 
 ---
 
-## MCP Servers -- Giving Claude Superpowers
+## MCP Servers: Giving Claude Superpowers
 
 ### What Are MCP Servers?
 
@@ -378,7 +378,7 @@ MCP (Model Context Protocol) servers are external processes that give Claude new
 - **Query databases** (various DB MCPs)
 - **Interact with APIs** (custom MCPs)
 
-MCP servers are safe to use alongside this blueprint -- they add tools, not rules, so there's no conflict with your configuration.
+MCP servers are safe to use alongside this blueprint: they add tools, not rules, so there's no conflict with your configuration.
 
 ### Adding MCP Servers
 
@@ -387,10 +387,10 @@ MCP servers are safe to use alongside this blueprint -- they add tools, not rule
 The `claude mcp add` command is the easiest way to add MCP servers. Run it in your terminal (or VS Code's integrated terminal):
 
 ```bash
-# Context7 -- live library documentation (works for any project)
+# Context7: live library documentation (works for any project)
 claude mcp add context7 -- npx -y @upstash/context7-mcp@latest
 
-# Playwright -- browser automation (works for any web project)
+# Playwright: browser automation (works for any web project)
 claude mcp add playwright -- npx -y @playwright/mcp@latest
 ```
 
@@ -434,7 +434,7 @@ After manual edits, restart Claude Code to load the new servers.
 | MCP Server | What It Does | When You Need It |
 |------------|-------------|-----------------|
 | **Context7** | Fetches up-to-date library documentation | When working with any framework or library |
-| **Playwright** | Controls a real browser -- navigate, click, fill forms, screenshot | When you need to verify UI, test in browser, or scrape |
+| **Playwright** | Controls a real browser: navigate, click, fill forms, screenshot | When you need to verify UI, test in browser, or scrape |
 | **Docker** (optional) | Runs Docker commands through Claude | When managing containers (requires Docker Desktop) |
 
 ### Where MCP Config Lives
@@ -456,9 +456,9 @@ claude mcp remove <name>     # Remove a server
 
 ### Managing MCP Servers in VS Code
 
-The VS Code extension uses the same config files as the CLI -- no separate setup needed. To add a new MCP server, run `claude mcp add` in VS Code's integrated terminal (`` Ctrl+` `` or `` Cmd+` ``).
+The VS Code extension uses the same config files as the CLI, so no separate setup is needed. To add a new MCP server, run `claude mcp add` in VS Code's integrated terminal (`` Ctrl+` `` or `` Cmd+` ``).
 
-Once servers are added, type `/mcp` in the Claude Code chat panel to manage them: enable/disable servers, reconnect after a crash, or complete OAuth flows. The `/mcp` dialog manages existing servers -- adding new ones requires the CLI command.
+Once servers are added, type `/mcp` in the Claude Code chat panel to manage them: enable/disable servers, reconnect after a crash, or complete OAuth flows. The `/mcp` dialog manages existing servers; adding new ones requires the CLI command.
 
 ### Allowing MCP Tools in Permissions
 
@@ -478,19 +478,19 @@ After adding an MCP server, you need to allow its tools in `settings.json`:
 }
 ```
 
-Or let Claude ask for permission each time (safer for beginners -- just don't add them to the allow list).
+Or let Claude ask for permission each time (safer for beginners; just don't add them to the allow list).
 
 ### Troubleshooting MCP Servers
 
-**"MCP tool call failed"** -- If you installed the blueprint's hooks, the `PostToolUseFailure` hook automatically instructs Claude to retry once and then fall back to non-MCP alternatives (e.g., `curl` instead of Playwright, `docker` CLI instead of Docker MCP).
+**"MCP tool call failed"**: If you installed the blueprint's hooks, the `PostToolUseFailure` hook automatically instructs Claude to retry once and then fall back to non-MCP alternatives (e.g., `curl` instead of Playwright, `docker` CLI instead of Docker MCP).
 
-**"MCP tools not appearing"** -- Three quick checks:
+**"MCP tools not appearing"**: Three quick checks:
 
 1. **Restart Claude Code** after any config changes (MCP servers load at startup)
 2. **Verify the config file** is in the right location (`.mcp.json` for project, `~/.claude.json` for user)
 3. **Run `claude mcp list`** to confirm the server is registered and connected
 
-For more causes and fixes, see [TROUBLESHOOTING.md -- MCP Servers](TROUBLESHOOTING.md#mcp-servers). If you use Claude Code across CLI, VS Code, and Cursor, the [verify-mcp-sync.sh](hooks/verify-mcp-sync.sh) utility checks that MCP configs are consistent across all three.
+For more causes and fixes, see [TROUBLESHOOTING.md: MCP Servers](TROUBLESHOOTING.md#mcp-servers). If you use Claude Code across CLI, VS Code, and Cursor, the [verify-mcp-sync.sh](hooks/verify-mcp-sync.sh) utility checks that MCP configs are consistent across all three.
 
 ---
 
@@ -502,16 +502,16 @@ Claude Code supports a plugin marketplace where community-built plugins can add 
 
 ### When to Use Plugins
 
-- **Starting out** — plugins give you a quick boost before you build your own setup
-- **Generic capabilities** — a plugin that adds Playwright MCP is useful for everyone
-- **Exploring ideas** — try a plugin to see if a concept works for you, then build your own version
+- **Starting out**: plugins give you a quick boost before you build your own setup
+- **Generic capabilities**: a plugin that adds Playwright MCP is useful for everyone
+- **Exploring ideas**: try a plugin to see if a concept works for you, then build your own version
 
 ### When to Use Custom Setup (This Blueprint)
 
-- **Project-specific conventions** — a plugin can't know your team's naming conventions
-- **Domain knowledge** — your database constraints, API patterns, deployment pipeline
-- **Full control** — no unexpected updates, no context injection you didn't ask for
-- **Maximum efficiency** — load only what's relevant to the current task
+- **Project-specific conventions**: a plugin can't know your team's naming conventions
+- **Domain knowledge**: your database constraints, API patterns, deployment pipeline
+- **Full control**: no unexpected updates, no context injection you didn't ask for
+- **Maximum efficiency**: load only what's relevant to the current task
 
 ### The Migration Path
 
@@ -564,7 +564,7 @@ Or add a `.gitattributes` file to force LF for hooks:
 
 ### File Permissions
 
-`chmod +x` is a no-op on NTFS. This is fine -- the blueprint invokes hooks via `bash "path/to/script.sh"` in settings.json, which doesn't require execute permission.
+`chmod +x` is a no-op on NTFS. This is fine: the blueprint invokes hooks via `bash "path/to/script.sh"` in settings.json, which doesn't require execute permission.
 
 ### CLI Tools You May Need to Install
 
@@ -572,9 +572,9 @@ Or add a `.gitattributes` file to force LF for hooks:
 |------|---------|-------------------|
 | `python` | All hook scripts (JSON parsing) | `winget install Python.Python.3` or [python.org](https://python.org) |
 
-All hooks auto-detect Python using `command -v python3 || command -v python`. You need either `python3` or `python` on your PATH -- not both. If neither is found, hooks print a warning and exit cleanly (no blocking).
+All hooks auto-detect Python using `command -v python3 || command -v python`. You need either `python3` or `python` on your PATH, not both. If neither is found, hooks print a warning and exit cleanly (no blocking).
 
-On Windows, `python` is the typical command name. On macOS/Linux, `python3` is standard. The hooks handle both automatically -- no aliasing or script editing needed.
+On Windows, `python` is the typical command name. On macOS/Linux, `python3` is standard. The hooks handle both automatically; no aliasing or script editing needed.
 
 ### Common Edge Cases
 
@@ -617,10 +617,10 @@ Before setting up, understand what goes where. This prevents mistakes like commi
 
 When you fork this blueprint for a team, follow these rules to protect shared config:
 
-- **Never let an AI agent modify shared project configs** — `.claude/settings.json`, `CLAUDE.md`, or team rules without human review first
+- **Never let an AI agent modify shared project configs**: `.claude/settings.json`, `CLAUDE.md`, or team rules without human review first
 - **Personal hooks, permissions, and environment variables** belong in `~/.claude/settings.json`, not in the project
 - **When asking Claude to "set up the blueprint"**, always specify: "install to my user-level config at `~/.claude/`" to avoid confusion
-- **Memory is personal** — no developer should ever commit their `~/.claude/projects/*/memory/` to the team repo
+- **Memory is personal**: no developer should ever commit their `~/.claude/projects/*/memory/` to the team repo
 
 ---
 
@@ -636,15 +636,15 @@ The blueprint includes an opt-in memory system that gives Claude persistent cont
 
 **Where it lives**: `./memory/` folder inside your fork of this blueprint.
 
-**Privacy**: personal content is `.gitignore`d by default — if you push your fork publicly, your memory stays local. The `memory/.gitignore` excludes `core/session.md`, `core/reminders.md`, `diary/`, and `projects/active/`. Append-only structural files (`core/decisions.md`, `core/identity.md`, `core/preferences.md`) are tracked by default since they're less sensitive — review them before pushing if you want stricter privacy.
+**Privacy**: personal content is `.gitignore`d by default, so if you push your fork publicly, your memory stays local. The `memory/.gitignore` excludes `core/session.md`, `core/reminders.md`, `diary/`, and `projects/active/`. Append-only structural files (`core/decisions.md`, `core/identity.md`, `core/preferences.md`) are tracked by default since they're less sensitive; review them before pushing if you want stricter privacy.
 
 **How to enable**: just run `./setup.sh` and answer **Y** when prompted "Enable persistent memory? [Y/n]". The setup wizard handles the rest.
 
-**How to disable**: re-run `./setup.sh` and answer **n** to the memory prompt. The memory skills (`load-session`, `save-session`, `save-diary`, `session-end`) become no-ops with a clear "memory disabled" message. Your data is not deleted — `memory/` stays on disk unchanged in case you re-enable later.
+**How to disable**: re-run `./setup.sh` and answer **n** to the memory prompt. The memory skills (`load-session`, `save-session`, `save-diary`, `session-end`) become no-ops with a clear "memory disabled" message. Your data is not deleted; `memory/` stays on disk unchanged in case you re-enable later.
 
-**Optional cross-machine sync**: the default setup gives you memory on this machine only. For cross-machine sync, see `memory/README.md` — short version: fork the blueprint to a **private** repo, comment out the `.gitignore` entries, and push. Treat the fork as private since it now contains your personal memory content.
+**Optional cross-machine sync**: the default setup gives you memory on this machine only. For cross-machine sync, see `memory/README.md`. Short version: fork the blueprint to a **private** repo, comment out the `.gitignore` entries, and push. Treat the fork as private since it now contains your personal memory content.
 
-> **Credit**: the memory pattern in this blueprint was inspired by [Project-AI-MemoryCore](https://github.com/Kiyoraka/Project-AI-MemoryCore) by Kiyoraka. The blueprint ships a lean built-in version; for a deeper memory architecture with LRU project management, echo recall, and 11 feature extensions, check out the original project — it's the more comprehensive option for users who want full memory architecture.
+> **Credit**: the memory pattern in this blueprint was inspired by [Project-AI-MemoryCore](https://github.com/Kiyoraka/Project-AI-MemoryCore) by Kiyoraka. The blueprint ships a lean built-in version; for a deeper memory architecture with LRU project management, echo recall, and 11 feature extensions, check out the original project. It's the more comprehensive option for users who want full memory architecture.
 
 ---
 
@@ -666,7 +666,7 @@ If you're adopting this blueprint across a team (startup, company, open source p
 1. **Fork this blueprint** (or your team's adapted version) as a reference
 2. **Copy hooks** from the blueprint to `~/.claude/hooks/` on the developer's machine
 3. **Copy settings-template.json** to `~/.claude/settings.json` and customize paths (especially `additionalDirectories`)
-4. **Set up Claude Code access** -- each developer signs in with their own Claude subscription, or sets their own Anthropic API key
+4. **Set up Claude Code access**: each developer signs in with their own Claude subscription, or sets their own Anthropic API key
 
 ### Permission Modes for Teams
 
@@ -690,17 +690,17 @@ Start new developers on the default (ask) mode. Graduate to `"auto"` once they'v
 
 Once you're comfortable with the basics:
 
-1. **Agents** — Read [agents/README.md](agents/README.md) to understand model tiering and permission modes
-2. **Skills** — Read [skills/README.md](skills/README.md) to see how multi-step workflows are built
-3. **Hooks deep dive** — Read [hooks/README.md](hooks/README.md) for the full lifecycle and design principles
-4. **Settings deep dive** — Read [SETTINGS-GUIDE.md](docs/SETTINGS-GUIDE.md) for every env var, permission, and cost implication explained
-5. **Memory system** — Read [memory/README.md](memory/README.md) when you need cross-session persistence
-6. **ADR template** — Use [memory/templates/adr-template.md](memory/templates/adr-template.md) when documenting architectural decisions
-7. **Architecture** — Read [ARCHITECTURE.md](docs/ARCHITECTURE.md) for how everything connects
-8. **Cross-tool** — Read [CROSS-TOOL-GUIDE.md](docs/CROSS-TOOL-GUIDE.md) if you also use Copilot, Cursor, Cline, Roo Code, OpenCode, or other AI tools
-9. **FAQ** — See [FAQ.md](FAQ.md) for answers to the most common community questions
-10. **Troubleshooting** — Read [TROUBLESHOOTING.md](TROUBLESHOOTING.md) if something isn't working as expected
+1. **Agents**: Read [agents/README.md](agents/README.md) to understand model tiering and permission modes
+2. **Skills**: Read [skills/README.md](skills/README.md) to see how multi-step workflows are built
+3. **Hooks deep dive**: Read [hooks/README.md](hooks/README.md) for the full lifecycle and design principles
+4. **Settings deep dive**: Read [SETTINGS-GUIDE.md](docs/SETTINGS-GUIDE.md) for every env var, permission, and cost implication explained
+5. **Memory system**: Read [memory/README.md](memory/README.md) when you need cross-session persistence
+6. **ADR template**: Use [memory/templates/adr-template.md](memory/templates/adr-template.md) when documenting architectural decisions
+7. **Architecture**: Read [ARCHITECTURE.md](docs/ARCHITECTURE.md) for how everything connects
+8. **Cross-tool**: Read [CROSS-TOOL-GUIDE.md](docs/CROSS-TOOL-GUIDE.md) if you also use Copilot, Cursor, Cline, Roo Code, OpenCode, or other AI tools
+9. **FAQ**: See [FAQ.md](FAQ.md) for answers to the most common community questions
+10. **Troubleshooting**: Read [TROUBLESHOOTING.md](TROUBLESHOOTING.md) if something isn't working as expected
 
 ---
 
-*This guide assumes Claude Code CLI. If you're using the VS Code extension, the concepts are identical — only the installation step differs.*
+*This guide assumes Claude Code CLI. If you're using the VS Code extension, the concepts are identical; only the installation step differs.*

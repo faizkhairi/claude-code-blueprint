@@ -14,7 +14,7 @@ These live under the `"env"` key in `settings.json` and control Claude Code's ru
 "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
 ```
 
-**What it does:** Enables multi-agent spawning -- the ability for Claude to launch specialized subagents that run in parallel with independent context windows.
+**What it does:** Enables multi-agent spawning, the ability for Claude to launch specialized subagents that run in parallel with independent context windows.
 
 **Why it matters:** Without this, the entire [agents/](../agents/) directory in this blueprint is non-functional. The Agent tool won't appear, `subagent_type` has no effect, and skills that orchestrate multiple agents (like the review-full skill spawning code-reviewer + security-reviewer + db-analyst + architecture-reviewer in parallel) silently degrade to single-agent mode.
 
@@ -30,7 +30,7 @@ These live under the `"env"` key in `settings.json` and control Claude Code's ru
 
 **What it does:** Triggers context compaction when the context window is 80% full, instead of Claude's default threshold (higher).
 
-**Why 80%:** Compaction is aggressive -- it summarizes and discards earlier context. By triggering it earlier, you give the PreCompact hook more room to serialize working state (active plan, modified files, current branch) to disk before context is lost. See [WHY.md](WHY.md#postcompact-hook-why-state-serialization) for the battle story.
+**Why 80%:** Compaction is aggressive: it summarizes and discards earlier context. By triggering it earlier, you give the PreCompact hook more room to serialize working state (active plan, modified files, current branch) to disk before context is lost. See [WHY.md](WHY.md#postcompact-hook-why-state-serialization) for the battle story.
 
 **Default:** Claude's built-in threshold (not publicly documented, but higher than 80%).
 
@@ -54,13 +54,13 @@ These live under the `"env"` key in `settings.json` and control Claude Code's ru
 "CLAUDE_CODE_SUBPROCESS_ENV_SCRUB": "1"
 ```
 
-**What it does:** Strips sensitive environment variables (ANTHROPIC_API_KEY, AWS credentials, cloud tokens) from subprocess environments -- hooks, MCP servers, and Bash commands.
+**What it does:** Strips sensitive environment variables (ANTHROPIC_API_KEY, AWS credentials, cloud tokens) from subprocess environments: hooks, MCP servers, and Bash commands.
 
 **Why it matters:** Without this, any subprocess Claude spawns inherits your full environment, including API keys. A malicious or buggy MCP server could read your Anthropic API key from its own environment.
 
 **Default:** Not set (subprocesses inherit all env vars).
 
-**Who needs it:** Everyone running MCP servers or custom hooks. Minimal risk to enable -- your hooks and MCP servers almost never need your Anthropic API key.
+**Who needs it:** Everyone running MCP servers or custom hooks. Minimal risk to enable, since your hooks and MCP servers almost never need your Anthropic API key.
 
 ### CLAUDE_CODE_NO_FLICKER
 
@@ -70,7 +70,7 @@ These live under the `"env"` key in `settings.json` and control Claude Code's ru
 
 **What it does:** Enables flicker-free alt-screen rendering with virtualized scrollback. Eliminates visual flicker during streaming responses.
 
-**When to use:** If you experience screen flashing or flickering during Claude's responses, especially in certain terminal emulators (iTerm2, tmux, WezTerm). Has no downside -- safe to enable always.
+**When to use:** If you experience screen flashing or flickering during Claude's responses, especially in certain terminal emulators (iTerm2, tmux, WezTerm). Has no downside; safe to enable always.
 
 **Default:** Not set (standard rendering).
 
@@ -84,7 +84,7 @@ These live under the `"env"` key in `settings.json` and control Claude Code's ru
 "cleanupPeriodDays": 60
 ```
 
-Auto-deletes Claude Code session data older than 60 days. This includes conversation logs and temporary files -- not your project code, hooks, or agents.
+Auto-deletes Claude Code session data older than 60 days. This includes conversation logs and temporary files, not your project code, hooks, or agents.
 
 **Default:** Check Claude Code docs for the current default. 60 days is a reasonable balance between disk usage and being able to reference old sessions.
 
@@ -108,7 +108,7 @@ Auto-deletes Claude Code session data older than 60 days. This includes conversa
 
 **What it does:** Claude uses extended thinking (chain-of-thought reasoning) on every response, not just when the task seems complex.
 
-**Trade-off:** Better reasoning quality, especially for subtle bugs and architectural decisions. Costs more tokens per response (thinking tokens are billed). For simple tasks like "rename this variable," extended thinking is overkill -- but the quality improvement on complex tasks outweighs the cost.
+**Trade-off:** Better reasoning quality, especially for subtle bugs and architectural decisions. Costs more tokens per response (thinking tokens are billed). For simple tasks like "rename this variable," extended thinking is overkill, but the quality improvement on complex tasks outweighs the cost.
 
 ### showThinkingSummaries
 
@@ -116,7 +116,7 @@ Auto-deletes Claude Code session data older than 60 days. This includes conversa
 "showThinkingSummaries": true
 ```
 
-**What it does:** Shows summarized thinking output in the UI. Since v2.1.89, thinking summaries are **off by default** -- you must opt in to see them.
+**What it does:** Shows summarized thinking output in the UI. Since v2.1.89, thinking summaries are **off by default**: you must opt in to see them.
 
 **Why it changed:** Most users found summaries noisy during normal coding. Disabling them by default keeps the output clean while `alwaysThinkingEnabled` still gives Claude full reasoning depth behind the scenes.
 
@@ -161,7 +161,7 @@ Claude Code has four permission modes, each balancing safety against productivit
 | *(not set)* | Asks permission for every tool use | New users building trust |
 | `"dontAsk"` | Allow-listed tools run silently; unlisted tools are silently **denied** | CI pipelines, locked-down environments |
 | `"auto"` | Allow-listed tools run silently; unlisted tools go through an **AI classifier** that evaluates safety contextually | Power users who want fewer prompts without losing safety |
-| `"bypassPermissions"` | Everything runs without checks | Isolated containers/VMs only -- never on a real machine |
+| `"bypassPermissions"` | Everything runs without checks | Isolated containers/VMs only, never on a real machine |
 
 **`"auto"` mode:**
 
@@ -169,19 +169,19 @@ Claude Code has four permission modes, each balancing safety against productivit
 "defaultMode": "auto"
 ```
 
-The auto mode classifier (runs on Sonnet) reviews each non-allow-listed action against 26 built-in safety rules (force push, data exfiltration, production deploys, `curl | bash`, etc.). It approves safe actions and blocks risky ones -- no manual prompting needed.
+The auto mode classifier (runs on Sonnet) reviews each non-allow-listed action against 26 built-in safety rules (force push, data exfiltration, production deploys, `curl | bash`, etc.). It approves safe actions and blocks risky ones, no manual prompting needed.
 
 **Key facts about auto mode:**
 - Allow-listed commands bypass the classifier entirely (saves tokens and latency)
-- Hooks still run regardless of mode -- your `block-git-push.sh` and `protect-config.sh` remain active
+- Hooks still run regardless of mode: your `block-git-push.sh` and `protect-config.sh` remain active
 - Classifier calls add token cost (small per call, but adds up in long sessions)
 - If the classifier blocks an action 3 times consecutively, it falls back to prompting you
-- The `PermissionDenied` hook (v2.1.89+) fires after each classifier denial -- return `{retry: true}` to retry, or use it for logging/alerting
+- The `PermissionDenied` hook (v2.1.89+) fires after each classifier denial: return `{retry: true}` to retry, or use it for logging/alerting
 
 **Recommendation:**
 - **New users:** Don't set this. Use the default mode until you trust your setup.
-- **Power users with hooks:** `"auto"` is the sweet spot -- intelligent safety without prompt fatigue. The allow list becomes a performance optimization, not a security boundary.
-- **CI/CD pipelines:** `"dontAsk"` is still better here -- predictable behavior, no classifier overhead.
+- **Power users with hooks:** `"auto"` is the sweet spot: intelligent safety without prompt fatigue. The allow list becomes a performance optimization, not a security boundary.
+- **CI/CD pipelines:** `"dontAsk"` is still better here: predictable behavior, no classifier overhead.
 - **Teams:** See [GETTING-STARTED.md](../GETTING-STARTED.md#setting-up-for-teams).
 
 ### autoMode.environment
@@ -203,7 +203,7 @@ When using `"auto"` mode, you can tell the classifier about your trusted infrast
 
 **What it does:** Provides context so the classifier can distinguish between "pushing to our GitHub org" (safe) and "pushing to an unknown remote" (blocked).
 
-**Important:** Only set `environment`. Do NOT set `autoMode.allow` or `autoMode.soft_deny` unless you copy ALL defaults first -- setting them **replaces the entire default list**.
+**Important:** Only set `environment`. Do NOT set `autoMode.allow` or `autoMode.soft_deny` unless you copy ALL defaults first: setting them **replaces the entire default list**.
 
 **Verification:** Check your effective auto mode configuration by reviewing `~/.claude/settings.json` and any project-level overrides. Consult Claude Code's CLI reference (`claude --help`) for available auto-mode subcommands in your version.
 
@@ -244,12 +244,12 @@ The `allow` list in the template is organized by category. Here's what each allo
 | **Build + Deploy** | `docker`, `vercel`, `./gradlew` | Building containers, deploying, running Gradle tasks. |
 | **CLI Utilities** | `curl`, `ls`, `jq`, `chmod`, `unzip`, `echo`, `sort`, `cut`, `tr`, `tee`, `code` | Common shell utilities for investigation and scripting. |
 | **Web Access** | `raw.githubusercontent.com`, `api.github.com`, `registry.npmjs.org`, `WebSearch` | Fetching files from GitHub, checking npm registry, web searches. |
-| **MCP Tools** | Playwright browser tools, Context7 docs | Browser automation and documentation lookup. See [GETTING-STARTED.md](../GETTING-STARTED.md#mcp-servers----giving-claude-superpowers) for setup. |
+| **MCP Tools** | Playwright browser tools, Context7 docs | Browser automation and documentation lookup. See [GETTING-STARTED.md](../GETTING-STARTED.md#mcp-servers-giving-claude-superpowers) for setup. |
 | **Skills** | `update-config` | Allows Claude to modify settings via the update-config skill. |
 
 ### additionalDirectories
 
-Claude Code can only read/write files in the current working directory by default. This setting grants access to additional paths -- typically your `~/.claude/` directory so Claude can read/edit hooks, agents, skills, and plan files.
+Claude Code can only read/write files in the current working directory by default. This setting grants access to additional paths, typically your `~/.claude/` directory so Claude can read/edit hooks, agents, skills, and plan files.
 
 **Windows:**
 ```json
@@ -283,7 +283,7 @@ Claude Code can only read/write files in the current working directory by defaul
 
 Replace `YourUser` (Windows) or `youruser` (macOS/Linux) with your actual username.
 
-> **macOS/Linux note:** Tilde expansion (`~/.claude`) is NOT supported in `additionalDirectories` -- use full absolute paths.
+> **macOS/Linux note:** Tilde expansion (`~/.claude`) is NOT supported in `additionalDirectories`; use full absolute paths.
 
 ---
 
@@ -306,13 +306,13 @@ The template configures hooks across 8 lifecycle events. For the full lifecycle 
 
 ### The Stop Hook's Sonnet Model
 
-The Stop hook uses `"model": "sonnet"` for its security verification prompt. This means every Claude response triggers a Sonnet evaluation for SQL injection, XSS, exposed secrets, and verification gaps. This is the single biggest recurring cost in the blueprint -- but it caught a SQL injection that Haiku missed (see [WHY.md](WHY.md#stop-hook-why-sonnet-not-haiku)).
+The Stop hook uses `"model": "sonnet"` for its security verification prompt. This means every Claude response triggers a Sonnet evaluation for SQL injection, XSS, exposed secrets, and verification gaps. This is the single biggest recurring cost in the blueprint, but it caught a SQL injection that Haiku missed (see [WHY.md](WHY.md#stop-hook-why-sonnet-not-haiku)).
 
 ---
 
 ## Cost Implications
 
-**Prices as of March 2026 -- verify at [Anthropic's pricing page](https://docs.anthropic.com/en/docs/about-claude/pricing) for current rates.**
+**Prices as of March 2026. Verify at [Anthropic's pricing page](https://docs.anthropic.com/en/docs/about-claude/pricing) for current rates.**
 
 ### Model Pricing Reference
 
@@ -328,11 +328,11 @@ The Stop hook uses `"model": "sonnet"` for its security verification prompt. Thi
 2. **Parallel agent spawns:** The review-full skill spawns up to 4 agents simultaneously. Each agent has its own context window and token budget.
 3. **Always-thinking + high effort:** Extended thinking generates additional tokens that are billed. `effortLevel: "high"` increases this further.
 4. **Agent teams:** Sessions with active agent teams use roughly 7x more tokens than standard sessions (per Anthropic's official docs).
-5. **Playwright MCP vs CLI:** The Playwright MCP server streams full DOM accessibility trees into context (~114K tokens per task). Running `npx playwright test` via Bash uses ~27K tokens for the same work -- a 76% reduction. Use MCP for interactive browser exploration; use CLI for test execution.
+5. **Playwright MCP vs CLI:** The Playwright MCP server streams full DOM accessibility trees into context (~114K tokens per task). Running `npx playwright test` via Bash uses ~27K tokens for the same work, a 76% reduction. Use MCP for interactive browser exploration; use CLI for test execution.
 
 ### Rough Daily Estimates
 
-From [Anthropic's Claude Code documentation](https://docs.anthropic.com/en/docs/claude-code) (verify current URL -- cost docs may move between releases):
+From [Anthropic's Claude Code documentation](https://docs.anthropic.com/en/docs/claude-code) (verify current URL, since cost docs may move between releases):
 
 | Usage Pattern | Daily Cost (approx) |
 |--------------|-------------------|

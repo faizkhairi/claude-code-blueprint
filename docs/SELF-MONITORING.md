@@ -65,7 +65,7 @@ Per-repo allowlists go in `.gitleaks.toml` at the project root (see gitleaks doc
 
 **Problem it solves:** Your `~/.claude/projects/*/memory/MEMORY.md` index drifts from reality over time. Files get added without indexing. Filenames in the index point to files that no longer exist. Section counts say "(15)" when there are actually 18 bullets. None of this breaks immediately, but it slowly degrades how reliably Claude can find what you've written down.
 
-**What it is:** A small agent you invoke manually (weekly is fine) — or wire into `/schedule` if you have it — that audits your memory folder for orphans, phantoms, broken wiki-links, and section-count drift. It writes a dated report and never edits anything itself.
+**What it is:** A small agent you invoke manually (weekly is fine), or wire into `/schedule` if you have it, that audits your memory folder for orphans, phantoms, broken wiki-links, and section-count drift. It writes a dated report and never edits anything itself.
 
 **Agent file (`~/.claude/agents/memory-curator.md`):**
 ```markdown
@@ -88,7 +88,7 @@ You are a memory-system librarian. Your job is read-only audit.
 6. **Write report** to `~/.claude/memory-health-YYYY-MM-DD.md`. Sections: Orphans / Phantoms / Section Drift / Broken Links / Stale / All-Clear.
 7. **End with one-line verdict**: HEALTHY or "N issues found — see report".
 
-Operating rules: read-only. Do not edit memory files. Be conservative on stale flagging — most memory is evergreen.
+Operating rules: read-only. Do not edit memory files. Be conservative on stale flagging, since most memory is evergreen.
 ```
 
 **Invoke manually:**
@@ -102,7 +102,7 @@ Agent({ subagent_type: "memory-curator", description: "Memory health check", pro
 
 Two patterns from heavier setups were considered and excluded:
 
-- **Skill test harness** (bash assertions per SKILL.md) — useful for maintainers tracking 10+ custom skills with strict structural invariants. Too specific to recommend as a default.
-- **Transcript cleanup script** (delete `.jsonl` >90 days) — Anthropic ships better lifecycle tooling over time; rolling your own may be redundant soon. Check your CLI version first.
+- **Skill test harness** (bash assertions per SKILL.md): useful for maintainers tracking 10+ custom skills with strict structural invariants. Too specific to recommend as a default.
+- **Transcript cleanup script** (delete `.jsonl` >90 days): Anthropic ships better lifecycle tooling over time, so rolling your own may be redundant soon. Check your CLI version first.
 
 Both can be added later as the setup demands. Start with the two above.
