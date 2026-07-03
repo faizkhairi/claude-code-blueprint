@@ -1,6 +1,47 @@
 # Troubleshooting
 
-Common issues and fixes. Search this page (Ctrl+F) for your error message or symptom.
+Common issues and fixes. Search this page (Ctrl+F) for your error message or symptom, or use the quick triage below to jump to the right section.
+
+## Quick triage
+
+```
+What is going wrong?
+|
+|-- A hook does not run, runs but does nothing, or blocks everything
+|     -> Hooks
+|
+|-- An agent will not spawn, fails, edits the wrong files, or stops early
+|     -> Agents  (also: Agents (continued))
+|
+|-- An MCP server crashes, or its tools do not appear
+|     -> MCP Servers
+|
+|-- Claude ignores CLAUDE.md, or path-scoped rules do not load
+|     -> Rules and CLAUDE.md
+|
+|-- A setting has no effect, or permissions behave unexpectedly
+|     -> Settings
+|
+|-- Sessions cost more than expected
+|     -> Cost
+|
+|-- "command not found", "permission denied", or path/tilde issues
+|     -> Windows-Specific  (and: Hooks work on Mac but not Windows)
+|
+|-- Skills report "file not found" for ./memory
+|     -> Skills and Memory
+|
+|-- Files were created in the project instead of ~/.claude/
+|     -> Configuration
+|
+|-- You use Fish/Zsh, or cloned the full git history
+|     -> Shell Compatibility
+|
+|-- A deprecated permission wildcard syntax warning
+      -> Syntax Changes
+```
+
+Each branch maps to a section below. Ctrl+F the section name if a link does not jump.
 
 ---
 
