@@ -3,7 +3,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Tell the community what you built or adapted from the blueprint. Show & Tell posts help others see real-world adoption — even small wins are valuable.
+        Tell the community what you built or adapted from the blueprint. Show & Tell posts help others see real-world adoption, and even small wins are valuable.
 
         Don't worry about polish. Half a story honestly told beats a marketing-style post.
 
@@ -37,7 +37,7 @@ body:
     id: what-you-changed
     attributes:
       label: What did you change from the original?
-      description: Forking and adapting is the whole point — share what you customized and why.
+      description: Forking and adapting is the whole point, so share what you customized and why.
       placeholder: "e.g., Replaced the example Prisma rules with our own Drizzle conventions. Removed the QA-tester agent since our test suite is too slow for it to be useful."
 
   - type: textarea

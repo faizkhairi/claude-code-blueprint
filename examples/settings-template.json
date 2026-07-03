@@ -117,7 +117,7 @@
     "__defaultMode_WARNING": "dontAsk silently denies unlisted tools with no error message. New users should remove this line and learn the permission system before enabling it.",
     "defaultMode": "dontAsk",
 
-    "__additionalDirectories_note": "Replace paths below with YOUR home directory. Windows: C:\\Users\\YourUser\\.claude | macOS: /Users/youruser/.claude | Linux: /home/youruser/.claude. Tilde (~) is NOT supported here -- use full absolute paths.",
+    "__additionalDirectories_note": "Replace paths below with YOUR home directory. Windows: C:\\Users\\YourUser\\.claude | macOS: /Users/youruser/.claude | Linux: /home/youruser/.claude. Tilde (~) is NOT supported here; use full absolute paths.",
     "additionalDirectories": [
       "C:\\Users\\YourUser\\.claude",
       "C:\\Users\\YourUser\\.claude\\skills",
@@ -216,7 +216,7 @@
         "hooks": [
           {
             "type": "prompt",
-            "prompt": "An MCP tool call failed. Common causes: 1) MCP server crashed -- try once more. 2) Docker not running (docker MCP). 3) Browser closed (playwright MCP). If retry fails, fall back to non-MCP alternatives (curl for web, docker CLI for containers)."
+            "prompt": "An MCP tool call failed. Common causes: 1) MCP server crashed, so try once more. 2) Docker not running (docker MCP). 3) Browser closed (playwright MCP). If retry fails, fall back to non-MCP alternatives (curl for web, docker CLI for containers)."
           }
         ]
       }
@@ -232,7 +232,7 @@
           },
           {
             "type": "prompt",
-            "prompt": "Compaction is imminent. Ensure your current todo items, active file paths, pending verifications, and current plan step are included in the compacted summary. State snapshot saved at ~/.claude/precompact-state.json -- read it to restore context about the active plan and working state."
+            "prompt": "Compaction is imminent. Ensure your current todo items, active file paths, pending verifications, and current plan step are included in the compacted summary. State snapshot saved at ~/.claude/precompact-state.json; read it to restore context about the active plan and working state."
           }
         ]
       }
@@ -243,7 +243,7 @@
         "hooks": [
           {
             "type": "prompt",
-            "prompt": "Context was just compacted. CRITICAL: 1) Check your todo list and resume in-progress tasks. 2) Re-read the active plan file if one exists. 3) Key rules from CLAUDE.md still apply -- re-read it if needed. 4) If you lost track, read the session checkpoint at ~/.claude/session-checkpoint.txt. 5) State snapshot at ~/.claude/precompact-state.json -- read it to restore context about the active plan and working state."
+            "prompt": "Context was just compacted. CRITICAL: 1) Check your todo list and resume in-progress tasks. 2) Re-read the active plan file if one exists. 3) Key rules from CLAUDE.md still apply, so re-read it if needed. 4) If you lost track, read the session checkpoint at ~/.claude/session-checkpoint.txt. 5) State snapshot at ~/.claude/precompact-state.json; read it to restore context about the active plan and working state."
           }
         ]
       }
@@ -255,7 +255,7 @@
         "hooks": [
           {
             "type": "prompt",
-            "prompt": "If the last response contained no code, no file edits, no bash commands, and no git operations -- just conversation or explanation -- respond {\"ok\": true} immediately without further analysis. Otherwise, review the last response for these issues: 1) Security vulnerabilities: SQL injection, XSS, command injection, exposed secrets or hardcoded credentials. 2) ORM models referenced that don't exist in the schema. 3) Project-specific violations from CLAUDE.md (check soft-delete patterns, API conventions, navigation patterns). 4) Unauthorized git push commands (check CLAUDE.md for push policy). 5) Verification gap: if code was written or a feature was implemented but NO verification step was performed (no test run, no endpoint check, no file re-read to confirm changes), this is a violation. Respond with JSON only: {\"ok\": true} or {\"ok\": false, \"reason\": \"concise description of the issue\"}",
+            "prompt": "If the last response contained no code, no file edits, no bash commands, and no git operations (just conversation or explanation), respond {\"ok\": true} immediately without further analysis. Otherwise, review the last response for these issues: 1) Security vulnerabilities: SQL injection, XSS, command injection, exposed secrets or hardcoded credentials. 2) ORM models referenced that don't exist in the schema. 3) Project-specific violations from CLAUDE.md (check soft-delete patterns, API conventions, navigation patterns). 4) Unauthorized git push commands (check CLAUDE.md for push policy). 5) Verification gap: if code was written or a feature was implemented but NO verification step was performed (no test run, no endpoint check, no file re-read to confirm changes), this is a violation. Respond with JSON only: {\"ok\": true} or {\"ok\": false, \"reason\": \"concise description of the issue\"}",
             "model": "sonnet"
           },
           {

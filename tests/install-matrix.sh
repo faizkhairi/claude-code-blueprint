@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# install-matrix.sh -- exercise setup.sh across every preset and entry scenario,
+# install-matrix.sh: exercise setup.sh across every preset and entry scenario,
 # asserting it never crashes and never wires a hook it did not install.
 #
 # Each case runs the installer with an isolated HOME (a throwaway temp dir), so the
@@ -16,7 +16,7 @@
 # Exit:  0 if every case passes, 1 otherwise.
 #
 # Known gap: the fully-interactive TTY path (a human answering the prompts) is not
-# exercised -- piped/redirected stdin auto-confirms via the non-TTY guard. Testing the
+# exercised: piped/redirected stdin auto-confirms via the non-TTY guard. Testing the
 # interactive path would need expect/pexpect, which is out of scope for a portable CI
 # matrix; the interactive read is also the simplest, lowest-regression-risk path.
 
@@ -182,7 +182,7 @@ for preset in "${PRESETS[@]}"; do
 done
 
 # 5) Cross-preset upgrade: install minimal, then re-run as standard into the same HOME.
-#    This is the highest-risk merge path -- PYMERGE must ADD the new hooks without
+#    This is the highest-risk merge path; PYMERGE must ADD the new hooks without
 #    duplicating, and the result must still wire only installed scripts.
 echo ""
 echo "-- cross-preset upgrade (minimal -> standard) --"

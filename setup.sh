@@ -89,7 +89,7 @@ log_dry()   { echo "  [DRY]   $*"; }
 confirm() {
   # Auto-confirm when --yes is set OR stdin is not a TTY (piped/redirected/CI).
   # A bare `read` against a non-TTY hits EOF and, under `set -e`, aborts the whole
-  # install. Returning 0 here means "proceed with the default" -- correct for an
+  # install. Returning 0 here means "proceed with the default", correct for an
   # unattended run. Covers all callers (safe_copy, offer_claude_md, replace_placeholders).
   if [ "$AUTO_YES" = true ] || ! [ -t 0 ]; then return 0; fi
   local prompt="$1 [y/N] "
@@ -252,10 +252,10 @@ select_preset() {
 
   echo "  Choose a preset:"
   echo ""
-  echo "    1) Minimal   -- CLAUDE.md + 2 hooks (config protection, edit verification)"
-  echo "    2) Standard  -- + 4 more hooks, 2 agents, settings.json"
-  echo "    3) Core      -- + 2 review agents, 6 universal skills, 2 path-scoped rules"
-  echo "    4) Full      -- + all 11 agents, 17 skills, 6 rules (everything)"
+  echo "    1) Minimal   : CLAUDE.md + 2 hooks (config protection, edit verification)"
+  echo "    2) Standard  : + 4 more hooks, 2 agents, settings.json"
+  echo "    3) Core      : + 2 review agents, 6 universal skills, 2 path-scoped rules"
+  echo "    4) Full      : + all 11 agents, 17 skills, 6 rules (everything)"
   echo ""
   echo "  Not sure? Start with Standard or Core. You can run this script again to add more later."
   echo ""
@@ -286,7 +286,7 @@ create_directories() {
 
   for dir in "${dirs[@]}"; do
     if [ "$DRY_RUN" = true ]; then
-      # Full if/then -- a bare `[ ! -d ] && cmd` returns 1 when the dir exists,
+      # Full if/then, since a bare `[ ! -d ] && cmd` returns 1 when the dir exists,
       # and as the loop body's last statement that aborts the whole script under `set -e`.
       if [ ! -d "$dir" ]; then
         log_dry "Would create: $dir"
@@ -379,7 +379,7 @@ install_settings() {
   # Every preset gets a settings.json so its installed hooks are actually wired
   # (minimal previously returned early, leaving its 2 hooks copied but never fired).
   # We ship ONE template and prune it down to the hooks this preset installed
-  # (prune_settings_to_installed_hooks) -- so the wiring always matches reality.
+  # (prune_settings_to_installed_hooks), so the wiring always matches reality.
   local src="${SCRIPT_DIR}/examples/settings-template.json"
   local dst="${CLAUDE_DIR}/settings.json"
 
@@ -400,7 +400,7 @@ install_settings() {
     return
   fi
 
-  # Existing settings.json -- try merge, fallback to template copy
+  # Existing settings.json: try merge, fallback to template copy
   log_info "Existing settings.json found. Attempting merge..."
   backup_file "$dst"
 
@@ -529,7 +529,7 @@ def keep(inner):
         return True
     m = HOOKS_REF.search(cmd)
     if not m:
-        return True  # command points somewhere else (user's own hook) -- leave it
+        return True  # command points somewhere else (user's own hook), leave it
     return os.path.isfile(os.path.join(hooks_dir, m.group(1)))
 
 removed = 0
@@ -605,7 +605,7 @@ replace_placeholders() {
     return
   fi
 
-  # Memory enablement (hybrid prompt — Y/n default Y)
+  # Memory enablement (hybrid prompt, Y/n default Y)
   echo ""
   log_info "Memory persistence is an opt-in feature."
   log_info "When enabled, Claude remembers preferences, decisions, and session"
@@ -623,7 +623,7 @@ replace_placeholders() {
     log_ok "Memory enabled. session + reminders + diary are git-ignored; preferences/identity/decisions stay tracked unless you uncomment them in memory/.gitignore."
     rm -f "${CLAUDE_DIR}/.memory-disabled" 2>/dev/null || true
     # Seed personal session/reminders files from the tracked .example templates
-    # (only if the real, git-ignored file does not already exist — never overwrite).
+    # (only if the real, git-ignored file does not already exist; never overwrite).
     for mem in session reminders; do
       mem_real="${SCRIPT_DIR}/memory/core/${mem}.md"
       mem_tmpl="${SCRIPT_DIR}/memory/core/${mem}.md.example"
@@ -631,7 +631,7 @@ replace_placeholders() {
         if cp "$mem_tmpl" "$mem_real"; then
           log_info "Seeded memory/core/${mem}.md from template (this file is git-ignored)."
         else
-          log_warn "Could not seed memory/core/${mem}.md (copy failed) -- create it manually if needed."
+          log_warn "Could not seed memory/core/${mem}.md (copy failed); create it manually if needed."
         fi
       fi
     done
@@ -740,7 +740,7 @@ verify_installation() {
   local remaining
   # {BOILERPLATE_NAME} is intentionally left for the user to set in their own copy of the
   # scaffold-project skill (it names THEIR template repo, e.g. "nuxt-boilerplate"), so it is
-  # not an installer responsibility -- excluded from this check to avoid a permanent false WARN.
+  # not an installer responsibility, excluded from this check to avoid a permanent false WARN.
   remaining="$( { grep -rho '{PROJECTS_ROOT}\|{CLAUDE_CONFIG_PATH}\|{USER_NAME}\|{MEMORY_MD_PATH}' "${CLAUDE_DIR}/" 2>/dev/null || true; } | wc -l | tr -d '[:space:]')"
   remaining="${remaining:-0}"
   if [ "$remaining" -gt 0 ]; then
@@ -791,7 +791,7 @@ main() {
   print_header
 
   if [ "$DRY_RUN" = true ]; then
-    log_info "DRY RUN -- no files will be modified"
+    log_info "DRY RUN: no files will be modified"
     echo ""
   fi
 

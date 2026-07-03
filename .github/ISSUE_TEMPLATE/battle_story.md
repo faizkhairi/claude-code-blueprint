@@ -1,6 +1,6 @@
 ---
 name: Battle Story
-about: Submit a new docs/WHY.md entry — share what went wrong and what you built
+about: Submit a new docs/WHY.md entry: share what went wrong and what you built
 title: "[Story] "
 labels: battle-story
 ---

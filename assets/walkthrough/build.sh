@@ -24,7 +24,7 @@ const dir = process.argv[2], out = process.argv[3];
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
 for (let n = 1; n <= 7; n++) {
-  // file URL is derived from the passed-in dir at runtime -- no hardcoded paths.
+  // file URL is derived from the passed-in dir at runtime (no hardcoded paths).
   const url = 'file://' + dir.replace(/\\/g, '/') + '/slide-' + n + '.html';
   await page.goto(url, { waitUntil: 'load' });
   await page.waitForTimeout(250);
