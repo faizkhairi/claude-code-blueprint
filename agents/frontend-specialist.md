@@ -4,6 +4,7 @@ description: Expert frontend engineer for building UI components, pages, forms, 
 model: sonnet
 tools: Read, Write, Edit, Bash, Grep, Glob
 maxTurns: 25
+permissionMode: default
 memory: user
 ---
 

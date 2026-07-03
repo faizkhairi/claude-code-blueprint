@@ -4,6 +4,7 @@ description: Creates and runs test suites. Use after implementing features to ge
 model: sonnet
 tools: Read, Write, Edit, Bash, Grep, Glob
 maxTurns: 25
+permissionMode: default
 memory: user
 ---
 
