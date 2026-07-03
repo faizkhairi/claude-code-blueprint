@@ -97,12 +97,12 @@ You pay per token, so exact costs matter. Based on [current pricing](https://doc
 
 | Blueprint Component | Per-Session Cost (Sonnet) | Per-Session Cost (Opus) |
 |--------------------|--------------------------|------------------------|
-| CLAUDE.md (input) | ~2,300 x $3/MTok = **$0.007** | ~2,300 x $5/MTok = **$0.012** |
-| 1 rule (input) | ~1,000 x $3/MTok = **$0.003** | ~1,000 x $5/MTok = **$0.005** |
-| 1 skill (input) | ~700 x $3/MTok = **$0.002** | ~700 x $5/MTok = **$0.004** |
-| **Typical session overhead** | **~$0.01-0.02** | **~$0.02-0.03** |
+| CLAUDE.md (input) | ~2,300 x $3/MTok = **$0.007** | ~2,300 x $15/MTok = **$0.035** |
+| 1 rule (input) | ~1,000 x $3/MTok = **$0.003** | ~1,000 x $15/MTok = **$0.015** |
+| 1 skill (input) | ~700 x $3/MTok = **$0.002** | ~700 x $15/MTok = **$0.011** |
+| **Typical session overhead** | **~$0.01-0.02** | **~$0.05-0.06** |
 
-For API users, the blueprint adds roughly 1-3 cents per session in context loading costs. A single prevented redo cycle saves 10-60 cents. The ROI is immediate.
+For API users, the blueprint adds roughly 1-6 cents per session in context loading costs (Sonnet at the low end, Opus at the high end). A single prevented redo cycle saves 10-60 cents. The ROI is immediate.
 
 **API optimization tips:**
 1. Model tiering is your biggest lever -- Haiku for docs ($0.80/$4 MTok) vs Opus for everything ($15/$75 MTok) saves 80%

@@ -18,6 +18,7 @@ The Claude Code Blueprint is a reference architecture for configuring Claude Cod
 - **3 localized READMEs** -- Japanese, Korean, Simplified Chinese landing pages (English root + 3 translations = 4 README files total)
 - **Built-in opt-in memory** -- Setup.sh prompts to enable persistent session memory; no external repo required
 - **AGENTS.md** -- AI-assistant orientation file at repo root
+- **Advisory CI** -- a link check (lychee) on Markdown and an installer matrix (`tests/install-matrix.sh`) run on push/PR. These are advisory checks that catch broken links and install regressions early; they do not gate merges or imply a "broken build," in keeping with this being a reference-config repo rather than a build target.
 
 ## In Progress
 
@@ -44,7 +45,6 @@ Things we've considered and explicitly decided against:
 
 - **Framework-specific CLAUDE.md recipes** -- Blueprint is Claude Code's *harness*, not a project starter. Framework-specific rules belong in your own fork's CLAUDE.md. Even ones we previously shipped (Python/React/Go/Rails) were removed because they contradicted the mission. If you want a stack-specific template, fork and add your own.
 - **CLI scaffolder (`create-claude-blueprint` etc.)** -- Defeats the "understand and adapt each component" principle. An installer that hides the choices removes the educational value.
-- **GitHub Actions CI for hook tests / link checks** -- This is a reference-config repo, not a build target. Hook tests run locally via `bash hooks/test-hooks.sh` (43 automated tests). Adding CI implies a "broken build" status that's misaligned with what this repo IS.
 - **Video walkthrough on YouTube** -- The existing `assets/walkthrough.gif` is sufficient for a docs-first GitHub repo. Production-quality video adds maintenance burden without proportional value.
 - **SVG / Mermaid architecture diagrams** -- ASCII art in [ARCHITECTURE.md](ARCHITECTURE.md) is intentional. Renders everywhere, needs no tooling, copy-pastes into any editor, survives GitHub re-renders.
 - **npm package** -- This is a reference architecture, not a library. Installing it via npm would defeat the purpose of understanding and adapting each component. The `setup.sh` script handles automated installation.

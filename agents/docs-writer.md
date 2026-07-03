@@ -4,6 +4,7 @@ description: Creates and maintains project documentation, README files, API docs
 model: haiku
 tools: Read, Write, Edit, Grep, Glob
 maxTurns: 15
+permissionMode: default
 memory: user
 ---
 

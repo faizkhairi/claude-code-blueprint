@@ -4,6 +4,7 @@ description: Designs system architecture, plans features, breaks work into tasks
 model: opus
 tools: Read, Grep, Glob, Bash, WebSearch
 maxTurns: 30
+permissionMode: default
 memory: user
 ---
 
