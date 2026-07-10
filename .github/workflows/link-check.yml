@@ -8,8 +8,9 @@ on:
   push:
     branches: [main]
     paths: ["**/*.md"]
+  # Runs on every PR (no path filter) so it can be a required status check:
+  # a required check that is skipped on some PRs would block their merge forever.
   pull_request:
-    paths: ["**/*.md"]
 
 permissions:
   contents: read
