@@ -12,12 +12,10 @@ on:
       - "examples/settings-template.json"
       - "tests/**"
       - ".github/workflows/install-test.yml"
+  # Runs on every PR (no path filter) so it can be a required status check:
+  # a required check that is skipped on some PRs would block their merge forever.
+  # The matrix is self-contained (it installs and tests regardless of the diff).
   pull_request:
-    paths:
-      - "setup.sh"
-      - "examples/settings-template.json"
-      - "tests/**"
-      - ".github/workflows/install-test.yml"
 
 permissions:
   contents: read
