@@ -206,7 +206,7 @@ The [memory/](../memory/) pattern (markdown files like `session.md`, decisions, 
 
 This is the most portable concept. Every AI coding tool reads a project-level instruction file.
 
-**Claude Code** -> `CLAUDE.md` in project root
+**Claude Code** -> `CLAUDE.md` (global at `~/.claude/CLAUDE.md`, or a project-level `CLAUDE.md`)
 
 **Copilot** -> Combine as needed:
 

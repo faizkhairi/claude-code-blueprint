@@ -16,7 +16,7 @@ See [README.md](../README.md#who-is-this-for) for which preset matches your prof
 
 | Source | Destination | Purpose |
 |--------|-------------|---------|
-| [`CLAUDE.md`](../CLAUDE.md) | Your project root | Behavioral rules (biggest single impact) |
+| [`CLAUDE.md`](../CLAUDE.md) | `~/.claude/CLAUDE.md` | Behavioral rules (biggest single impact) |
 | [`hooks/protect-config.sh`](../hooks/protect-config.sh) | `~/.claude/hooks/` | Block accidental config weakening |
 | [`hooks/notify-file-changed.sh`](../hooks/notify-file-changed.sh) | `~/.claude/hooks/` | Remind to verify after source edits |
 
