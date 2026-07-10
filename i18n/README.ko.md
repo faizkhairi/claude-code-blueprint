@@ -6,7 +6,7 @@
 
 60초 안에 한 파일을 복사하세요. 프로젝트가 커지면 더 복사하세요. 모든 언어, 모든 프레임워크, 모든 스킬 레벨에서 작동합니다.
 
-[![Stars](https://img.shields.io/github/stars/faizkhairi/claude-code-blueprint?style=flat)](https://github.com/faizkhairi/claude-code-blueprint/stargazers)
+[![Stars](https://img.shields.io/github/stars/faizkhairi/claude-code-blueprint?style=flat)](https://github.com/faizkhairi/claude-code-blueprint)
 [![Forks](https://img.shields.io/github/forks/faizkhairi/claude-code-blueprint?style=flat)](https://github.com/faizkhairi/claude-code-blueprint/network/members)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](../LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-compatible-blueviolet)](https://docs.anthropic.com/en/docs/claude-code)
