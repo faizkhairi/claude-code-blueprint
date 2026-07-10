@@ -6,11 +6,11 @@ Action-focused setup for the Claude Code Blueprint. For explanations and backgro
 
 ## Quick Setup (60 seconds)
 
-Copy one file. Four behavioral rules. No installation needed.
+Install one file. Four behavioral rules, applied to every project.
 
 ```bash
-# In your project root
-curl -o CLAUDE.md https://raw.githubusercontent.com/faizkhairi/claude-code-blueprint/main/CLAUDE.md
+# Installs globally for every project
+mkdir -p ~/.claude && curl -o ~/.claude/CLAUDE.md https://raw.githubusercontent.com/faizkhairi/claude-code-blueprint/main/CLAUDE.md
 ```
 
 This gives Claude Code: **Verify-After-Complete**, **Diagnose-First**, **Plan-First**. That's enough to start. Add more when you're ready.
@@ -61,7 +61,7 @@ Let Claude Code configure itself. Paste this into a Claude Code session:
 ```
 I want to set up the Claude Code Blueprint from this repository.
 Please help me:
-1. Copy the CLAUDE.md behavioral rules into my current project root (this is the only project-level file)
+1. Install the CLAUDE.md behavioral rules to ~/.claude/CLAUDE.md (global, applies to every project)
 2. Set up hooks in my USER-LEVEL config at ~/.claude/hooks/ (NOT in the project directory)
 3. Set up permissions in ~/.claude/settings.json (NOT in .claude/settings.json in the project)
 Show me what you're doing at each step so I can learn.
@@ -76,7 +76,7 @@ Claude Code will walk you through the setup interactively, creating files, expla
 
 After any setup method, verify these items:
 
-- [ ] `CLAUDE.md` exists in your project root
+- [ ] `CLAUDE.md` exists at ~/.claude/CLAUDE.md
 - [ ] `~/.claude/hooks/` contains hook scripts (`ls ~/.claude/hooks/`)
 - [ ] `~/.claude/settings.json` exists and is valid JSON
 - [ ] `~/.claude/agents/` contains agent definitions (Standard, Core, or Full)
@@ -111,7 +111,7 @@ cd claude-code-blueprint && bash hooks/test-hooks.sh
 
 | File Type | Location | Why |
 |-----------|----------|-----|
-| CLAUDE.md | Project root, or `~/.claude/CLAUDE.md` | Project root for team/stack-specific conventions (commit to your repo); `~/.claude/CLAUDE.md` to apply the behavioral rules across every project on your machine |
+| CLAUDE.md | `~/.claude/CLAUDE.md` | Global behavioral rules applied to every project on your machine |
 | Hooks, settings, agents, skills, rules | `~/.claude/` | Personal/machine-specific; never commit |
 | Memory | `~/.claude/projects/*/memory/` | Auto-generated; never commit |
 
