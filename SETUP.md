@@ -111,7 +111,7 @@ cd claude-code-blueprint && bash hooks/test-hooks.sh
 
 | File Type | Location | Why |
 |-----------|----------|-----|
-| CLAUDE.md | Project root | Team behavioral rules; commit to your repo |
+| CLAUDE.md | Project root, or `~/.claude/CLAUDE.md` | Project root for team/stack-specific conventions (commit to your repo); `~/.claude/CLAUDE.md` to apply the behavioral rules across every project on your machine |
 | Hooks, settings, agents, skills, rules | `~/.claude/` | Personal/machine-specific; never commit |
 | Memory | `~/.claude/projects/*/memory/` | Auto-generated; never commit |
 
