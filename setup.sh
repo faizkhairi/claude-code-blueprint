@@ -39,7 +39,7 @@ FULL_AGENTS=(architecture-reviewer.md backend-specialist.md db-analyst.md
              devops-engineer.md docs-writer.md frontend-specialist.md project-architect.md
              qa-tester.md security-reviewer.md)
 SKILL_DIRS=(changelog db-check deploy-check e2e-check elicit-requirements
-            scaffold-project load-session register-project review-full review-diff
+            scaffold-project load-session pr-review register-project review-full review-diff
             save-diary save-session session-end sprint-plan status tech-radar test-check)
 RULE_FILES=(api-endpoints.md database-schema.md memory-session.md
             session-lifecycle.md testing.md testing-general.md)
@@ -70,7 +70,7 @@ print_usage() {
   echo "  minimal   4 files   CLAUDE.md + 2 hooks + settings.json (60 seconds)"
   echo "  standard  10 files  + 4 hooks, 2 agents, settings.json (5 minutes)"
   echo "  core      20 files  + 2 review agents, 6 skills, 2 rules (curated, broadly useful)"
-  echo "  full      48 files  + all agents, skills, rules (30 minutes)"
+  echo "  full      49 files  + all agents, skills, rules (30 minutes)"
   echo ""
   echo "Examples:"
   echo "  ./setup.sh                          Interactive preset selection"
@@ -255,7 +255,7 @@ select_preset() {
   echo "    1) Minimal   : CLAUDE.md + 2 hooks (config protection, edit verification)"
   echo "    2) Standard  : + 4 more hooks, 2 agents, settings.json"
   echo "    3) Core      : + 2 review agents, 6 universal skills, 2 path-scoped rules"
-  echo "    4) Full      : + all 11 agents, 17 skills, 6 rules (everything)"
+    echo "    4) Full      : + all 11 agents, 18 skills, 6 rules (everything)"
   echo ""
   echo "  Not sure? Start with Standard or Core. You can run this script again to add more later."
   echo ""
