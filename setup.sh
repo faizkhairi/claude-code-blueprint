@@ -238,7 +238,7 @@ check_prerequisites() {
   # Warn if running from the blueprint repo directory itself
   if [ "$(pwd)" = "$SCRIPT_DIR" ]; then
     log_warn "You're in the blueprint repo directory."
-    log_warn "CLAUDE.md will NOT be copied here (it should go in your project root)."
+    log_warn "That's fine: CLAUDE.md installs to ${CLAUDE_DIR}/CLAUDE.md (global), not here."
     echo ""
   fi
 }
@@ -575,23 +575,19 @@ PYPRUNE
 
 offer_claude_md() {
   echo ""
-  if [ "$(pwd)" = "$SCRIPT_DIR" ]; then
-    log_info "Skipping CLAUDE.md (you're in the blueprint repo)."
-    log_info "Copy it to your project root: cp ${SCRIPT_DIR}/CLAUDE.md /path/to/your/project/"
-    return
-  fi
-
+  # CLAUDE.md installs globally to ~/.claude/CLAUDE.md so its behavioral rules
+  # apply to every project on this machine. If one already exists (e.g. your own
+  # customized rules), safe_copy shows the diff, prompts, and backs it up first.
   if [ "$DRY_RUN" = true ]; then
-    log_dry "Would offer to copy CLAUDE.md to $(pwd)/"
+    log_dry "Would copy CLAUDE.md to ${CLAUDE_DIR}/CLAUDE.md (applies to every project)"
     return
   fi
 
-  if [ -f "$(pwd)/CLAUDE.md" ]; then
-    log_skip "CLAUDE.md already exists in $(pwd)/"
-  elif confirm "Copy CLAUDE.md to $(pwd)/ (your project root)?"; then
-    cp "${SCRIPT_DIR}/CLAUDE.md" "$(pwd)/CLAUDE.md"
-    log_ok "Copied CLAUDE.md to $(pwd)/"
-    log_info "Tip: the four behavioral rules are project-agnostic. To apply them to every project, copy CLAUDE.md to ~/.claude/CLAUDE.md instead of (or in addition to) each project root."
+  if confirm "Copy CLAUDE.md to ${CLAUDE_DIR}/CLAUDE.md (applies to every project)?"; then
+    safe_copy "${SCRIPT_DIR}/CLAUDE.md" "${CLAUDE_DIR}/CLAUDE.md" "claudemd"
+    log_info "CLAUDE.md is global: its four behavioral rules now apply to every project you open."
+  else
+    log_skip "Skipped CLAUDE.md. Install later: cp ${SCRIPT_DIR}/CLAUDE.md ${CLAUDE_DIR}/CLAUDE.md"
   fi
 }
 
@@ -773,7 +769,7 @@ print_summary() {
   echo "  Total:    $total files installed"
   echo ""
   echo "  Next steps:"
-  echo "  1. Copy CLAUDE.md to your project root (if not done)"
+  echo "  1. Confirm CLAUDE.md is at ~/.claude/CLAUDE.md (global; applies to every project)"
   echo "  2. Start Claude Code in your project: cd your-project && claude"
   echo "  3. Review ~/.claude/settings.json and adjust permissions"
   echo "  4. Read docs/WHY.md to understand the reasoning behind each component"

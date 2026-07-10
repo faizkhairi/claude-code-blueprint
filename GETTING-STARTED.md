@@ -18,7 +18,7 @@ This is a collection of configuration files that make Claude Code smarter, safer
 
 Welcome. Here's your fastest path:
 
-1. **Right now (60 seconds):** Open [CLAUDE.md](CLAUDE.md) in this repo. Click "Raw" (top-right), copy everything, and paste it into a new file called `CLAUDE.md` in your project's root folder.
+1. **Right now (60 seconds):** Open [CLAUDE.md](CLAUDE.md) in this repo. Click "Raw" (top-right), copy everything, and paste it into a new file at `~/.claude/CLAUDE.md` (global, applies to every project).
 2. **Start using Claude Code normally.** No special prompts needed. Claude automatically reads CLAUDE.md and follows the four rules inside it (Verify-After-Complete, Diagnose-First, Plan-First, Verify-Before-Exit-Plan).
 3. **When curious:** Read the rest of this section to understand what Claude Code is and how to access it.
 4. **When ready for more:** Follow the [recommended adoption path](README.md#recommended-adoption-path) to add hooks, agents, and skills incrementally.
@@ -58,9 +58,9 @@ You can improve Claude Code in under a minute by adding just one file:
 
 **Step 1.** Open the [CLAUDE.md](CLAUDE.md) file in this repository. Click **"Raw"** (top-right of the file view), then **select all** and **copy** the entire contents.
 
-**Step 2.** Go to your project folder (the folder where your code lives). Create a new file called `CLAUDE.md` in the root of that folder. Paste the contents you copied and save.
+**Step 2.** Create a new file at `~/.claude/CLAUDE.md` (your Claude Code user config folder, global, applies to every project). Paste the contents you copied and save.
 
-**Step 3.** Start Claude Code in that folder. It automatically reads CLAUDE.md and follows the rules inside it.
+**Step 3.** Start Claude Code in any project folder. It automatically reads CLAUDE.md and follows the rules inside it.
 
 **That's it.** You just gave Claude Code four behavioral rules that prevent the most common AI coding mistakes:
 - **Verify-After-Complete**: Claude must prove its work before saying "done"
@@ -79,7 +79,7 @@ For a more complete setup, **fork** this repository so you have your own copy to
    ```bash
    git clone https://github.com/YOUR-USERNAME/claude-code-blueprint.git
    ```
-4. Copy `CLAUDE.md` into each of your project folders
+4. Copy `CLAUDE.md` to `~/.claude/CLAUDE.md` (once, applies to all projects)
 5. *(Optional)* Run `./setup.sh` to install hooks, agents, and settings to `~/.claude/` automatically, or copy them manually (see below for what this means)
 
 ### Where Is `~/.claude/`?
@@ -116,7 +116,7 @@ Here's a shortcut: you can ask Claude Code to configure itself. Paste this promp
 ```
 I want to set up the Claude Code Blueprint from this repository.
 Please help me:
-1. Copy the CLAUDE.md behavioral rules into my current project root (this is the only project-level file)
+1. Install the CLAUDE.md behavioral rules to ~/.claude/CLAUDE.md (global, applies to every project)
 2. Set up hooks in my USER-LEVEL config at ~/.claude/hooks/ (NOT in the project directory)
 3. Set up permissions in ~/.claude/settings.json (NOT in .claude/settings.json in the project)
 Show me what you're doing at each step so I can learn.
@@ -214,11 +214,11 @@ Here's what to do right now to get the most out of Claude Code:
 ### Minute 0-5: Install and Create CLAUDE.md
 
 ```bash
-# In your project root
+# Installs globally for every project
 claude  # start Claude Code
 ```
 
-Copy the [CLAUDE.md](CLAUDE.md) from this blueprint into your project root. This alone gives you:
+Copy the [CLAUDE.md](CLAUDE.md) from this blueprint to `~/.claude/CLAUDE.md`. This alone gives you:
 - Verify-After-Complete rule (prevents "done" without proof)
 - Diagnose-First rule (prevents wasted investigation)
 - Plan-First rule (prevents implementing the wrong approach)
@@ -333,7 +333,7 @@ Before diving in, here's what each piece does:
 
 | Component | What It Is | Analogy |
 |-----------|-----------|---------|
-| **CLAUDE.md** | A markdown file in your project root with behavioral rules | Like a `.editorconfig` but for AI behavior |
+| **CLAUDE.md** | A markdown file at `~/.claude/CLAUDE.md` with behavioral rules | Like a `.editorconfig` but for AI behavior |
 | **settings.json** | Configuration at `~/.claude/settings.json`: hooks, permissions, env vars | Like VS Code's `settings.json` |
 | **Agents** | Specialized sub-assistants with their own model, tools, and instructions | Like microservices: each does one thing well |
 | **Skills** | Step-by-step workflows triggered by natural language | Like shell aliases: "deploy" triggers a 10-step checklist |
@@ -657,7 +657,7 @@ If you're adopting this blueprint across a team (startup, company, open source p
 | Scope | Location | Commit to Repo? | Contains |
 |-------|----------|-----------------|----------|
 | **Project** | `.claude/` in project root | Yes | Agents, skills, rules specific to this project |
-| **Project** | `CLAUDE.md` in project root | Yes | Behavioral rules the whole team follows |
+| **Project** | `CLAUDE.md` in project root | Yes | Optional: team-shared behavioral rules a team commits to the repo |
 | **Personal** | `~/.claude/settings.json` | No (per-user) | Hooks, permissions, API key, env vars |
 | **Personal** | `~/.claude/projects/*/memory/` | No (per-user) | Session memory (what Claude learns per-user over time) |
 
