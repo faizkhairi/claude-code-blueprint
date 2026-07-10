@@ -37,6 +37,8 @@ curl -o CLAUDE.md https://raw.githubusercontent.com/faizkhairi/claude-code-bluep
 
 That gives Claude Code four behavioral rules that prevent the most common AI coding mistakes: **Verify-After-Complete** · **Diagnose-First** · **Plan-First** · **Verify-Before-Exit-Plan**. That's the whole first step; try it, then come back for more.
 
+> **Tip:** these four rules are behavioral, not stack-specific, so they apply the same in every project. If you want them everywhere without copying per-project, drop the file at `~/.claude/CLAUDE.md` once and Claude Code loads it for every session. Keep project-specific conventions in the project's own CLAUDE.md. See [where config belongs](GETTING-STARTED.md#where-config-belongs-project-vs-personal) for the full project-vs-personal breakdown.
+
 <details>
 <summary><strong>Want more than CLAUDE.md?</strong> (hooks, agents, settings)</summary>
 
