@@ -135,13 +135,14 @@ See [agents/README.md](agents/README.md) for permission modes, cost estimates, a
 </details>
 
 <details>
-<summary><strong>17 Skills</strong>: Natural-language-triggered workflows (no slash commands needed)</summary>
+<summary><strong>18 Skills</strong>: Natural-language-triggered workflows (no slash commands needed)</summary>
 
 &nbsp;
 
 | Category | Skills | Triggers |
 |----------|--------|----------|
 | Code Quality | review-full, review-diff | "is this secure?", "scan diff", "check for vulnerabilities" |
+| PR Review | pr-review | "review this PR", "review PR #N", "post a PR review" |
 | Testing | test-check, e2e-check | "run the tests", "browser test", "are tests passing?" |
 | Deployment | deploy-check | "deploy", "push to prod", "ready to ship" |
 | Planning | sprint-plan, elicit-requirements | "let's build", "new feature", multi-step tasks |
