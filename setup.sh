@@ -591,6 +591,7 @@ offer_claude_md() {
   elif confirm "Copy CLAUDE.md to $(pwd)/ (your project root)?"; then
     cp "${SCRIPT_DIR}/CLAUDE.md" "$(pwd)/CLAUDE.md"
     log_ok "Copied CLAUDE.md to $(pwd)/"
+    log_info "Tip: the four behavioral rules are project-agnostic. To apply them to every project, copy CLAUDE.md to ~/.claude/CLAUDE.md instead of (or in addition to) each project root."
   fi
 }
 
