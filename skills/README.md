@@ -1,12 +1,13 @@
 # Skills
 
-17 domain-specific skills triggered by natural language (no slash commands needed).
+18 domain-specific skills triggered by natural language (no slash commands needed).
 
 ## Skill Categories
 
 | Category | Skills | Triggers |
 |----------|--------|----------|
 | **Code Quality** | review-full, review-diff | "is this secure?", "scan diff", "check for vulnerabilities" |
+| **PR Review** | pr-review | "review this PR", "review PR #N", "post a PR review" |
 | **Testing** | test-check, e2e-check | "run the tests", "browser test", "are tests passing?" |
 | **Deployment** | deploy-check | "deploy", "push to prod", "ready to ship", "npm audit" |
 | **Planning** | sprint-plan, elicit-requirements | "let's build", "new feature", multi-step tasks |
