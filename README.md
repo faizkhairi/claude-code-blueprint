@@ -28,16 +28,14 @@
 
 ## Quick Start
 
-**Do this first.** Copy one file into your project and you're done in 60 seconds:
+**Do this first.** Install one file and you're done in 60 seconds:
 
 ```bash
-# In your project root
-curl -o CLAUDE.md https://raw.githubusercontent.com/faizkhairi/claude-code-blueprint/main/CLAUDE.md
+# Installs globally for every project
+mkdir -p ~/.claude && curl -o ~/.claude/CLAUDE.md https://raw.githubusercontent.com/faizkhairi/claude-code-blueprint/main/CLAUDE.md
 ```
 
-That gives Claude Code four behavioral rules that prevent the most common AI coding mistakes: **Verify-After-Complete** · **Diagnose-First** · **Plan-First** · **Verify-Before-Exit-Plan**. That's the whole first step; try it, then come back for more.
-
-> **Tip:** these four rules are behavioral, not stack-specific, so they apply the same in every project. If you want them everywhere without copying per-project, drop the file at `~/.claude/CLAUDE.md` once and Claude Code loads it for every session. Keep project-specific conventions in the project's own CLAUDE.md. See [where config belongs](GETTING-STARTED.md#where-config-belongs-project-vs-personal) for the full project-vs-personal breakdown.
+That gives Claude Code four behavioral rules that prevent the most common AI coding mistakes: **Verify-After-Complete** · **Diagnose-First** · **Plan-First** · **Verify-Before-Exit-Plan**, applied to every project on your machine. That's the whole first step; try it, then come back for more. See [where config belongs](GETTING-STARTED.md#where-config-belongs-project-vs-personal) if you also want project-specific conventions.
 
 <details>
 <summary><strong>Want more than CLAUDE.md?</strong> (hooks, agents, settings)</summary>
@@ -48,7 +46,7 @@ Once CLAUDE.md is working, add the rest. Easiest path: run the installer from a 
 ./setup.sh --preset=standard
 ```
 
-Or let Claude do it: paste into a Claude Code session: *"Set up the Claude Code Blueprint. Copy CLAUDE.md to my project root, set up hooks and settings in ~/.claude/. Show me each step."*
+Or let Claude do it: paste into a Claude Code session: *"Set up the Claude Code Blueprint. Install CLAUDE.md to ~/.claude/CLAUDE.md, set up hooks and settings in ~/.claude/. Show me each step."*
 
 For every install option (fork / clone / cherry-pick / presets) plus a verification checklist, see **[SETUP.md](SETUP.md)**.
 </details>

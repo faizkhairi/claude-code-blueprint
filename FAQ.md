@@ -21,7 +21,7 @@ These are the questions we hear most from the community. If yours isn't here, [o
 
 **Yes.** The blueprint has a graduated adoption path: you don't need to understand all 11 agents on day one.
 
-- **Level 1 (60 seconds):** Copy [CLAUDE.md](CLAUDE.md) into your project root. This single file gives Claude Code four behavioral rules that prevent the most common AI coding mistakes. No configuration, no terminal commands, no dependencies.
+- **Level 1 (60 seconds):** Copy [CLAUDE.md](CLAUDE.md) to `~/.claude/CLAUDE.md` (global, applies to every project). This single file gives Claude Code four behavioral rules that prevent the most common AI coding mistakes. No configuration, no terminal commands, no dependencies.
 - **Level 2 (5 minutes):** Add 2-3 hooks for automated safety (config protection, edit verification). See [PRESETS.md](docs/PRESETS.md#minimal) for the minimal preset.
 - **Level 3 (ongoing):** Add agents, skills, rules, and memory as your workflow matures. You'll know when you need them.
 - The [Getting Started guide](GETTING-STARTED.md#new-to-claude-code-start-here) assumes zero prior experience and walks you through everything step by step.
@@ -45,7 +45,7 @@ These are the questions we hear most from the community. If yours isn't here, [o
 
 **With one file.** The blueprint is a menu, not a mandatory checklist.
 
-- Start with [CLAUDE.md](CLAUDE.md) only: it's the single highest-impact component. Copy it into your project root. Done.
+- Start with [CLAUDE.md](CLAUDE.md) only: it's the single highest-impact component. Copy it to `~/.claude/CLAUDE.md`. Done.
 - Don't add anything else until you feel the need. You might never need all 11 agents.
 - When ready, add hooks next (zero token cost, automated safety). See [PRESETS.md](docs/PRESETS.md#minimal) for the minimal 3-file setup.
 - Then add agents one at a time. Start with `verify-plan` (catches plan mistakes) or `code-reviewer` (catches code mistakes).
@@ -84,7 +84,7 @@ These are the questions we hear most from the community. If yours isn't here, [o
 
 Welcome. Here's your fastest path:
 
-1. **Right now (60 seconds):** Open [CLAUDE.md](CLAUDE.md) in this repo. Click "Raw" (top-right), copy everything, and paste it into a new file called `CLAUDE.md` in your project's root folder.
+1. **Right now (60 seconds):** Open [CLAUDE.md](CLAUDE.md) in this repo. Click "Raw" (top-right), copy everything, and paste it into a new file at `~/.claude/CLAUDE.md` (global, applies to every project).
 2. **Start using Claude Code normally.** No special prompts needed. Claude automatically reads your CLAUDE.md and follows the four rules inside it (Verify-After-Complete, Diagnose-First, Plan-First, Verify-Before-Exit-Plan).
 3. **When ready for hooks and agents:** Run `./setup.sh --preset=standard` from a cloned copy, or [let Claude set it up for you](GETTING-STARTED.md#let-claude-code-set-up-for-you) interactively. See [SETUP.md](SETUP.md) for all options.
 4. **When curious:** Read the [beginner guide](GETTING-STARTED.md#new-to-claude-code-start-here) to understand what Claude Code is and how to access it (Desktop app, VS Code extension, CLI, or web).

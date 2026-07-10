@@ -24,7 +24,7 @@ The user typically does one of three things:
 |------|---------|
 | `README.md` | Entry point for humans |
 | `AGENTS.md` | This file: entry point for AI assistants |
-| `CLAUDE.md` | The "hero file": the user copies this into their project root |
+| `CLAUDE.md` | The "hero file": the user copies this to `~/.claude/CLAUDE.md` (global, applies to every project) |
 | `GETTING-STARTED.md` | Beginner walkthrough |
 | `SETUP.md` | Install paths (curl, setup.sh, manual) |
 | `FAQ.md` | Common questions |
