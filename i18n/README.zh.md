@@ -144,13 +144,14 @@ CLAUDE.md 生效后，再添加其余部分。最简单的方法是从克隆或 
 </details>
 
 <details>
-<summary><strong>17 个 Skills</strong>：自然语言触发的工作流（无需斜杠命令）</summary>
+<summary><strong>18 个 Skills</strong>：自然语言触发的工作流（无需斜杠命令）</summary>
 
 &nbsp;
 
 | 类别 | Skills | 触发方式 |
 |------|--------|---------|
 | Code Quality | review-full, review-diff | "is this secure?", "scan diff", "check for vulnerabilities" |
+| PR Review | pr-review | "review this PR", "review PR #N", "post a PR review" |
 | Testing | test-check, e2e-check | "run the tests", "browser test", "are tests passing?" |
 | Deployment | deploy-check | "deploy", "push to prod", "ready to ship" |
 | Planning | sprint-plan, elicit-requirements | "let's build", "new feature", multi-step tasks |
