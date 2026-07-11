@@ -53,11 +53,11 @@ Note: if an agent omits the `permissionMode` field, Claude Code falls back to wr
 
 ## Worktree Isolation
 
-`isolation: worktree` creates a temporary git worktree so the agent sees a clean copy of the repo. If the project is not a git repository, worktree isolation is skipped and the agent runs in the main context.
+`isolation: worktree` creates a temporary git worktree so an agent that WRITES files works on an isolated copy and cannot disturb the main working tree. It requires a git repository at the workspace root; if the Claude Code root is a non-git parent directory (for example, one folder holding several project repos), worktree creation fails and the agent cannot start.
 
-**Agents using worktree**: verify-plan, code-reviewer, security-reviewer, architecture-reviewer. Reason: these are review agents that benefit from a fresh checkout, since their analysis isn't biased by the main session's in-progress edits.
+**None of the review agents use worktree.** `verify-plan`, `code-reviewer`, `security-reviewer`, and `architecture-reviewer` are read-only (`Read`, `Grep`, `Glob`) under `permissionMode: plan`, so worktree isolation would guard against writes they can never make while adding a git-root requirement for no benefit. The property that actually gives them unbiased "cold" review is the fresh CONTEXT WINDOW every subagent gets, not a fresh checkout: a read-only agent reads the same committed files whether or not it sits in a worktree. Removing the pin lets these agents run at any workspace root, git or not.
 
-**Analysis-only agents NOT using worktree**: db-analyst, devops-engineer. Reason: these read live config/schema state (e.g., the current schema/ORM state, the current Dockerfile). A worktree could give them stale state if the main session has uncommitted changes that matter for analysis.
+**When to use worktree**: reserve `isolation: worktree` for an agent that actually mutates files and could otherwise collide with the main session. For a read-only reviewer it is unnecessary.
 
 ## Named Subagents
 
