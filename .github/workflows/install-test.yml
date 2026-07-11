@@ -11,6 +11,7 @@ on:
       - "setup.sh"
       - "examples/settings-template.json"
       - "tests/**"
+      - "hooks/**"
       - ".github/workflows/install-test.yml"
   # Runs on every PR (no path filter) so it can be a required status check:
   # a required check that is skipped on some PRs would block their merge forever.
@@ -28,3 +29,11 @@ jobs:
 
       - name: Run installer matrix
         run: bash tests/install-matrix.sh
+
+  hook-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run hook smoke tests
+        run: bash hooks/test-hooks.sh

@@ -20,7 +20,7 @@ Thank you for taking the time to contribute. This blueprint is a living referenc
 Additions to `docs/WHY.md` that document a real incident: what went wrong, what was learned, and what component was built as a result. The more specific and grounded in an actual problem, the better.
 
 ### Hook Scripts
-Shell scripts for `hooks/` that automate lifecycle events (SessionStart, PreToolUse, PostToolUse, Stop, SessionEnd, etc.). Must be general-purpose, not tied to a specific project, company, or environment. Before submitting, run `bash hooks/test-hooks.sh`: every hook must pass the smoke suite (exit 0 on empty, malformed, and missing-field stdin).
+Shell scripts for `hooks/` that automate lifecycle events (SessionStart, PreToolUse, PostToolUse, Stop, SessionEnd, etc.). Must be general-purpose, not tied to a specific project, company, or environment. Before submitting, run `bash hooks/test-hooks.sh`: every hook must pass the smoke suite (exit 0 on empty, malformed, and missing-field stdin). This suite also runs in CI on every pull request (the `hook-tests` job), so a hook that fails the smoke suite blocks merge.
 
 ### Agent Templates
 New `.md` files for `agents/` that define a specialized subagent role. Should include a clear `description` field (for Claude's tool selection), a well-scoped system prompt, and an appropriate model tier recommendation.
