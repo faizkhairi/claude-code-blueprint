@@ -291,7 +291,7 @@ Read [WHY.md](docs/WHY.md) to understand why each component exists. This is wher
 
 ### 6. Not Using Agents for Review
 **Mistake:** Asking Claude to review its own code in the same context window.
-**Fix:** Use a separate review agent with `isolation: worktree`. Fresh context catches blind spots that self-review in the same window misses.
+**Fix:** Use a separate review agent (for example `code-reviewer` or `verify-plan`). Because it runs as its own subagent with a fresh context window, it catches blind spots that self-review in the same window misses.
 
 ### 7. Fighting the AI Instead of Guiding It
 **Mistake:** Correcting the same behavior over and over without writing it down.

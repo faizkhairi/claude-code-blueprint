@@ -4,7 +4,6 @@ description: Performs comprehensive code review focusing on quality, patterns, a
 model: sonnet
 tools: Read, Grep, Glob
 permissionMode: plan
-isolation: worktree
 maxTurns: 15
 memory: user
 ---

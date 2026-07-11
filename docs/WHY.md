@@ -85,13 +85,13 @@ This reduced costs significantly while maintaining quality where it matters.
 
 ---
 
-### Worktree Isolation: Why Review Agents Need Fresh Context
+### Fresh Context: Why Review Agents Run as Separate Subagents
 
 **What happened:** A verify-plan agent was spawned in the same context window to review a plan before execution. It found 0 issues. After implementation, 4 bugs were discovered, all of which were visible in the plan text. The in-context reviewer had the same blind spots as the planner because it shared the same attention patterns.
 
 **What we learned:** Self-review in the same context window has inherent blind spots. The reviewer sees what the author saw, including the author's assumptions. A fresh context window means fresh attention patterns, which catch things that in-context review cannot.
 
-**What we built:** Review agents (`verify-plan`, `code-reviewer`, `security-reviewer`) use `isolation: worktree`, which gives them a clean git worktree and a fresh context window. They see the plan or code cold, without the planning session's assumptions. This consistently catches issues that 3+ rounds of in-context review miss.
+**What we built:** Review agents (`verify-plan`, `code-reviewer`, `security-reviewer`, `architecture-reviewer`) run as separate subagents, each in its own fresh context window. They see the plan or code cold, without the planning session's assumptions. This consistently catches issues that 3+ rounds of in-context review miss. The load-bearing property is the fresh context, not the filesystem: these agents are read-only, so they read the same committed files with or without a worktree. (Earlier versions pinned `isolation: worktree` on them; that was removed because it added a git-repository-at-the-root requirement for no benefit on read-only agents, and broke setups whose Claude Code root is a non-git parent directory.)
 
 ---
 
@@ -101,7 +101,7 @@ This reduced costs significantly while maintaining quality where it matters.
 
 **What we learned:** Code review and architecture review answer different questions. Code review asks "is this file correct?" Architecture review asks "do these files relate correctly?" A reviewer focused on line-level quality has no reason to trace import chains across directories or flag a god file: those are structural properties, invisible at the diff level.
 
-**What we built:** A dedicated `architecture-reviewer` agent (sonnet, `permissionMode: plan`, `isolation: worktree`) that checks the things code review misses: dependency direction (imports should flow inward), circular dependencies, god files, dead exports, and feature-vs-layer modularity. It outputs an architecture health score, not a line-by-line critique. Run it after a significant refactor or when picking up an unfamiliar codebase.
+**What we built:** A dedicated `architecture-reviewer` agent (sonnet, `permissionMode: plan`, read-only) that checks the things code review misses: dependency direction (imports should flow inward), circular dependencies, god files, dead exports, and feature-vs-layer modularity. It outputs an architecture health score, not a line-by-line critique. Run it after a significant refactor or when picking up an unfamiliar codebase.
 
 ---
 

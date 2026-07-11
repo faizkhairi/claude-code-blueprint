@@ -4,7 +4,6 @@ description: Reviews code for OWASP Top 10 vulnerabilities, authentication flaws
 model: sonnet
 tools: Read, Grep, Glob
 permissionMode: plan
-isolation: worktree
 maxTurns: 15
 memory: user
 ---
