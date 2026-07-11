@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and the 
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-07-11
+
 ### Added
 
 - A `hook-tests` CI job (in the Install Test workflow) that runs `hooks/test-hooks.sh` on every pull request, so a hook that fails the smoke suite (syntax, or mishandling empty / malformed / missing-field stdin) now blocks merge instead of only being checked when a contributor remembers to run it locally.
@@ -62,5 +64,6 @@ Initial public release.
 - A beginner guide, cross-tool guide, FAQ, troubleshooting guide, and four framework-specific CLAUDE.md examples.
 - Battle-story documentation (`docs/WHY.md`) explaining the reasoning behind each component.
 
-[Unreleased]: https://github.com/faizkhairi/claude-code-blueprint/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/faizkhairi/claude-code-blueprint/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/faizkhairi/claude-code-blueprint/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/faizkhairi/claude-code-blueprint/releases/tag/v1.0.0
