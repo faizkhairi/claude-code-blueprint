@@ -51,10 +51,10 @@ WIRED (ships working): the review-full skill spawns up to 4 agents in parallel:
 
               ┌──────────────────────┐
               │  review-full (skill) │  picks 1-4 agents by what changed:
-              │  ├─ code-reviewer    │  (sonnet, worktree)
-              │  ├─ security-reviewer │  (sonnet, worktree)
+              │  ├─ code-reviewer    │  (sonnet, read-only)
+              │  ├─ security-reviewer │  (sonnet, read-only)
               │  ├─ db-analyst       │  (sonnet, plan mode)
-              │  └─ architecture-reviewer │ (sonnet, worktree, structural changes)
+              │  └─ architecture-reviewer │ (sonnet, read-only, structural changes)
               └──────────────────────┘
 
 

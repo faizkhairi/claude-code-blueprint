@@ -4,7 +4,6 @@ description: Analyzes codebase architecture for structural issues, dependency di
 model: sonnet
 tools: Read, Grep, Glob
 permissionMode: plan
-isolation: worktree
 maxTurns: 20
 memory: user
 ---
