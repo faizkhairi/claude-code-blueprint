@@ -102,7 +102,7 @@ Other repos dump dozens of agents on you. We give you **11**, and explain why ea
 | [4 behavioral rules](CLAUDE.md) that prevent AI coding mistakes | Lists of settings to copy |
 | [Cross-tool guide](docs/CROSS-TOOL-GUIDE.md) for 10 other tools (Copilot, Cursor, Cline, Roo Code, OpenCode, and more) | Single-tool only |
 | [Beginner-friendly](GETTING-STARTED.md) with 6 adoption personas | Assumed expertise |
-| [Smoke-tested hooks](hooks/test-hooks.sh) with 43 automated tests | Untested scripts |
+| [Smoke-tested hooks](hooks/test-hooks.sh) with 55 automated tests | Untested scripts |
 | Safety-first: [config placement guide](GETTING-STARTED.md#where-config-belongs-project-vs-personal), privacy warnings, [graceful degradation](agents/README.md#agents-are-not-infallible) | No safety guidance |
 | [Framework-agnostic](FAQ.md#what-framework-or-language-does-this-work-with): works with any language and stack | Assumes a specific language/framework |
 
@@ -178,7 +178,7 @@ See [skills/README.md](skills/README.md) for customization and placeholder varia
 
 Plus 2 utility scripts: `verify-mcp-sync.sh` (MCP config checker) and `status-line.sh` (branch/project status), both deployed by the full preset, and a companion tool `check-no-dash-file.py` (a pre-post prose sanitizer for the `no-dash-check.sh` hook). The last file in the folder is `test-hooks.sh`, the local test harness, run via `bash hooks/test-hooks.sh` to verify all hooks. It's the only one not deployed to `~/.claude/hooks/`, and isn't counted in the "15 hooks" total.
 
-Run `bash hooks/test-hooks.sh` to verify all hooks pass (43 automated tests).
+Run `bash hooks/test-hooks.sh` to verify all hooks pass (55 automated tests).
 
 See [hooks/README.md](hooks/README.md) for the full lifecycle, testing guide, and design principles.
 

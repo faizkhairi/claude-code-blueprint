@@ -18,6 +18,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and the 
 - The link-check CI now runs lychee with `--include-fragments`, so `#anchor` targets are validated against real headings, not just that the target file exists. This catches broken heading-slug links that the previous config could not detect.
 - The post-commit review hook (`post-commit-review.sh`) now explains WHY auth/guard/middleware/schema/env files are higher-risk (a bug there changes access control, request handling, or data shape, so its blast radius is wider than an ordinary file) instead of only flagging them as high-risk.
 
+### Fixed
+- Updated the visual assets to the current component counts. The overview and social-preview cards, the architecture card footer, and the walkthrough deck (slides 2 and 5) showed stale figures (11 agents / 17 skills / 12 hooks / 16 battle stories / 48-file full preset); their HTML sources were corrected to 12 agents / 19 skills / 15 hooks / 21 battle stories / 55-file full preset, and the `card-*.png` images and `walkthrough.gif` were regenerated to match.
+- Corrected the "43 automated tests" figure to 55 in `README.md`, `docs/ROADMAP.md`, and the three translated READMEs, matching the current `hooks/test-hooks.sh` suite after the three new hooks were added.
+
 ## [1.1.0] - 2026-07-11
 
 ### Added
