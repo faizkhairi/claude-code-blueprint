@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and the 
 ## [Unreleased]
 
 ### Added
+- A `memory-curator` agent (bringing the roster to 12), installed by the `full` preset. It audits a memory directory against its index file whole-tree: orphans, phantom references, section-count drift, broken wiki-links, stale entries, and near-duplicates, then writes a dated health report. Report-only (its one Write is the report), with a conservative compaction-safety analysis that never recommends dropping the sole pointer to a note. Has a `docs/WHY.md` entry.
 - A "Scoping a hook to specific projects" section in `hooks/README.md`, documenting two patterns for running a hook in some projects but not others: a working-directory allowlist inside a shared hook (no-op outside the allowlist), or wiring the hook in a project's own `.claude/settings.json`. Also clarifies when to reach for a path-scoped rule instead of a hook.
 - A "Why this rule exists" intent preamble at the top of the five path-scoped rule files (`api-endpoints`, `database-schema`, `memory-session`, `testing-general`, `testing`), so the reasoning travels with the file when it is copied out of the repo, instead of living only in `docs/WHY.md`. Matches the existing design-rationale note in `session-lifecycle.md`.
 
