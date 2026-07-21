@@ -13,7 +13,7 @@
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-compatible-blueviolet)](https://docs.anthropic.com/en/docs/claude-code)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
-**11 agents** · **18 skills** · **12 hooks** · **6 rules**, copy only what you need, or install a preset (minimal / standard / core / full)
+**11 agents** · **19 skills** · **12 hooks** · **6 rules**, copy only what you need, or install a preset (minimal / standard / core / full)
 
 [English](README.md) | [日本語](i18n/README.ja.md) | [한국어](i18n/README.ko.md) | [简体中文](i18n/README.zh.md)
 
@@ -134,7 +134,7 @@ See [agents/README.md](agents/README.md) for permission modes, cost estimates, a
 </details>
 
 <details>
-<summary><strong>18 Skills</strong>: Natural-language-triggered workflows (no slash commands needed)</summary>
+<summary><strong>19 Skills</strong>: Natural-language-triggered workflows (no slash commands needed)</summary>
 
 &nbsp;
 
@@ -144,7 +144,7 @@ See [agents/README.md](agents/README.md) for permission modes, cost estimates, a
 | PR Review | pr-review | "review this PR", "review PR #N", "post a PR review" |
 | Testing | test-check, e2e-check | "run the tests", "browser test", "are tests passing?" |
 | Deployment | deploy-check | "deploy", "push to prod", "ready to ship" |
-| Planning | sprint-plan, elicit-requirements | "let's build", "new feature", multi-step tasks |
+| Planning | sprint-plan, elicit-requirements, self-audit | "let's build", "new feature", "audit yourself", "did you check everything?" |
 | Session | load-session, save-session, session-end, save-diary | Session start/end, "save", "bye", "done" |
 | Project | scaffold-project, register-project, status, changelog | "new project", "status", "changelog" |
 | Database | db-check | "check the schema", "validate models" |

@@ -147,6 +147,16 @@ This reduced costs significantly while maintaining quality where it matters.
 
 ---
 
+### Self-Audit Skill: Why a Rule Needs a Trigger to Actually Fire
+
+**What happened:** The plan-verification checklist existed and was good, but it kept getting skipped at the exact moment it mattered. Heads-down at the end of planning, the author would call ExitPlanMode without running the checklist against their own plan, and the same blind spots that produced the plan carried straight through review. Having the rule written down was not enough; nothing forced it to run at the decision point.
+
+**What we learned:** Knowing a check and applying it at the right moment are different problems. A rule you have to remember to invoke is a rule you will skip under pressure. The reliable fix is a trigger that fires the check automatically at the boundary where it matters, so the discipline does not depend on remembering.
+
+**What we built:** A `self-audit` skill that runs the `verify-plan` checklist against your own plan before ExitPlanMode, so the same checks that would review someone else's plan now review yours, with extra weight on the consumer audit (grep both the repo and your own global config for every shared value the plan changes, since a repo-only search misses consumers in your personal setup). It turns a passive rule into an active gate, which is why it lives here in Rules rather than as just another workflow.
+
+---
+
 ## Memory System
 
 ### Dual Memory: Why Auto-Memory + External Persistence

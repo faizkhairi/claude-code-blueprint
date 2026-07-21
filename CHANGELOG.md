@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and the 
 ## [Unreleased]
 
 ### Added
+- A `self-audit` skill (bringing the total to 19), installed by the `full` preset. It runs the `verify-plan` checklist against your own plan before ExitPlanMode, so the same checks that would review someone else's plan now review yours, with extra weight on the consumer audit (grep both the repo and your own global config for every shared value the plan changes). It turns a passive plan-verification rule into an active gate at the decision point. Has a `docs/WHY.md` entry.
 - A "Scoping a hook to specific projects" section in `hooks/README.md`, documenting two patterns for running a hook in some projects but not others: a working-directory allowlist inside a shared hook (no-op outside the allowlist), or wiring the hook in a project's own `.claude/settings.json`. Also clarifies when to reach for a path-scoped rule instead of a hook.
 - A "Why this rule exists" intent preamble at the top of the five path-scoped rule files (`api-endpoints`, `database-schema`, `memory-session`, `testing-general`, `testing`), so the reasoning travels with the file when it is copied out of the repo, instead of living only in `docs/WHY.md`. Matches the existing design-rationale note in `session-lifecycle.md`.
 
