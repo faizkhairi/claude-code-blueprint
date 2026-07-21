@@ -25,6 +25,31 @@
 
 > `CwdChanged`, `FileChanged`, `PermissionDenied`, and `TaskCreated` are available but not used in this blueprint. They're useful for monorepo setups (auto-switching context on `cd`), reactive config reloading, auto-mode denial logging, and background agent governance.
 
+## Scoping a hook to specific projects
+
+A hook wired in `~/.claude/settings.json` fires for **every** project you open. If you want a hook (say `protect-config.sh`) active in some projects but not others, you have two options.
+
+**Pattern A: allowlist inside the hook (shared, conditionally active).** Keep the single copy in `~/.claude/hooks/` and add a working-directory guard at the top of the script. When the current project is not in your allowlist, the hook exits 0 (no-op) before doing anything. This keeps ONE copy of the hook while scoping its effect:
+
+```bash
+# Only act inside allowlisted project roots; no-op everywhere else.
+ALLOWED_ROOTS="/home/you/work/api /home/you/work/web"
+CURRENT="$PWD"
+IN_SCOPE=0
+for ROOT in $ALLOWED_ROOTS; do
+  case "$CURRENT" in
+    "$ROOT"|"$ROOT"/*) IN_SCOPE=1; break;;
+  esac
+done
+[ "$IN_SCOPE" -eq 1 ] || exit 0   # not an allowlisted project: allow/no-op
+```
+
+This matches the "exit 0 = allow/no-op" convention every hook here follows, so a scoped-out project behaves exactly as if the hook were not installed.
+
+**Pattern B: wire the hook per-project (isolated).** Instead of `~/.claude/settings.json`, wire the hook in a specific project's own `.claude/settings.json`. It then loads only for that project. The trade-off: it is NOT shared, so if you want the same hook in three projects you wire it in three places. Pattern A is better when you want one shared hook active in a chosen subset; Pattern B is better when a hook is genuinely specific to one project.
+
+**For context injection, prefer a path-scoped rule over a hook.** If your goal is to load guidance only when certain files are open (not to block or act on a command), the [rules](../rules/) mechanism already does this natively: a rule's `paths:` frontmatter loads it only when a matching file is in play. Reach for a scoped hook when you need to gate an *action*; reach for a path-scoped rule when you need to inject *context*.
+
 **Utility scripts** (not lifecycle hooks, run manually):
 - `verify-mcp-sync.sh`: Compares MCP server configs across CLI, VS Code extension, and Cursor. Run with `bash ~/.claude/hooks/verify-mcp-sync.sh`
 - `status-line.sh`: Generates a status line showing project name, branch, and dirty state

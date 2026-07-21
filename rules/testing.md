@@ -9,6 +9,14 @@ paths:
 <!-- This template uses Vitest + Vue as examples. Adapt framework references, directory structure,
      and mock patterns to match your project's test stack. -->
 
+<!--
+  Why this rule exists: a testing checklist that only lives in someone's head gets
+  skipped under deadline pressure. Writing out the required coverage (happy path,
+  auth failure, validation failure, edge cases) and the mocking rules for external
+  systems means AI and human contributors follow the same bar, and it's the layer
+  that adds stack-specific detail on top of testing-general.md.
+-->
+
 # Testing Rules & Conventions
 
 > **Example only, replace with your own conventions.** This file uses Vitest + Vue, and the deeper

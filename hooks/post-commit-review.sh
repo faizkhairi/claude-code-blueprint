@@ -49,7 +49,7 @@ else
 fi
 HIGH_RISK=""
 if echo "$CHANGED_FILES" | grep -qiE '(guard|middleware|auth|prisma\.schema|\.env)'; then
-  HIGH_RISK=" HIGH-RISK FILES DETECTED (auth/guard/middleware/schema/env): review is strongly recommended."
+  HIGH_RISK=" HIGH-RISK FILES DETECTED (auth/guard/middleware/schema/env): a bug here changes who can access what, how requests are handled, or your data shape, so its blast radius is wider than an ordinary file. Review is strongly recommended."
 fi
 
 # Build file list (truncate if >10 files)

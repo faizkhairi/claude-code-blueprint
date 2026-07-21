@@ -6,6 +6,14 @@ paths:
   - "**/__tests__/**"
 ---
 
+<!--
+  Why this rule exists: without a shared baseline, tests drift toward flakiness
+  (hardcoded dates, real network calls, shared state) and coverage gaps go
+  unnoticed. This rule sets framework-agnostic conventions that apply no matter
+  which stack a project uses, so a project-specific testing.md only needs to add
+  what is unique to that stack.
+-->
+
 # Testing Rules & Conventions (framework-agnostic)
 
 These apply to ANY project's tests (fires on all test files). A project-specific

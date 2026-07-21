@@ -7,6 +7,12 @@ paths:
   - "**/models/**"
 ---
 
+<!--
+  Why this rule exists: an ORM that does not know about a table can silently drop
+  it on the next schema sync (e.g. Prisma db push). These rules keep your schema
+  and ORM models in agreement so a migration never destroys data you forgot to model.
+-->
+
 # Database Schema & Migration Rules
 
 These rules apply when working with database schemas, ORM models, and migrations. Adapt to your project's ORM (Prisma, Drizzle, TypeORM, Sequelize, Knex, etc.).
