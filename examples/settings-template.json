@@ -170,6 +170,10 @@
           {
             "type": "command",
             "command": "bash \"$HOME/.claude/hooks/protect-config.sh\""
+          },
+          {
+            "type": "command",
+            "command": "bash \"$HOME/.claude/hooks/protect-claude-settings.sh\""
           }
         ]
       }
@@ -195,6 +199,11 @@
             "type": "command",
             "command": "bash \"$HOME/.claude/hooks/notify-file-changed.sh\"",
             "async": true
+          },
+          {
+            "type": "command",
+            "command": "bash \"$HOME/.claude/hooks/no-dash-check.sh\"",
+            "async": true
           }
         ]
       },
@@ -205,6 +214,15 @@
             "type": "command",
             "command": "bash \"$HOME/.claude/hooks/post-commit-review.sh\"",
             "async": true
+          }
+        ]
+      },
+      {
+        "matcher": "Agent|Task",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$HOME/.claude/hooks/verify-subagent-findings.sh\""
           }
         ]
       }
