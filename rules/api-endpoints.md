@@ -4,6 +4,13 @@ paths:
   - "**/server/api/**/*.ts"
 ---
 
+<!--
+  Why this rule exists: API endpoints are a common place for validation gaps, auth
+  bypasses, and silent error handling to slip in unnoticed. This rule keeps every
+  endpoint on the same checklist (validation, auth, logging, error handling) so
+  security and audit requirements do not depend on remembering them each time.
+-->
+
 # API Endpoint Development Rules
 
 > **Example only, replace with your own conventions.** The patterns below (a central endpoint
