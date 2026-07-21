@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and the 
 
 ## [Unreleased]
 
+### Changed
+- The link-check CI now runs lychee with `--include-fragments`, so `#anchor` targets are validated against real headings, not just that the target file exists. This catches broken heading-slug links that the previous config could not detect.
+
 ## [1.1.0] - 2026-07-11
 
 ### Added

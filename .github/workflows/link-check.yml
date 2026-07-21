@@ -26,9 +26,12 @@ jobs:
         with:
           # Scan all Markdown. --no-progress keeps CI logs clean.
           # 429 (rate-limited) is accepted so a throttled host does not fail the build.
+          # --include-fragments validates #anchor targets against actual headings,
+          # not just that the target file exists (catches broken heading-slug links).
           args: >-
             --no-progress
             --accept 200,429
+            --include-fragments
             "**/*.md"
           # Fail the job if any link is broken.
           fail: true
