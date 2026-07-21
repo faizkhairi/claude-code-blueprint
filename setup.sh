@@ -71,7 +71,7 @@ print_usage() {
   echo "  minimal   4 files   CLAUDE.md + 2 hooks + settings.json (60 seconds)"
   echo "  standard  10 files  + 4 hooks, 2 agents, settings.json (5 minutes)"
   echo "  core      20 files  + 2 review agents, 6 skills, 2 rules (curated, broadly useful)"
-  echo "  full      49 files  + all agents, skills, rules (30 minutes)"
+  echo "  full      53 files  + all agents, skills, rules (30 minutes)"
   echo ""
   echo "Examples:"
   echo "  ./setup.sh                          Interactive preset selection"
