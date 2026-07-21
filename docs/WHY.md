@@ -58,6 +58,36 @@ Every component in this blueprint exists because something went wrong without it
 
 ---
 
+### Settings-Protection Hook: Why Guard Your Own Config
+
+**What happened:** With file edits broadly allowed, nothing gated an edit to `~/.claude/settings.json` itself. A single edit could remove a deny rule, flip the harness into a less-guarded mode, or disable hooks entirely, and it would look like any other routine settings change. Schema validation catches invalid keys, but not valid-but-dangerous ones.
+
+**What we learned:** The config that protects you is itself unprotected by default. A permission allow-list skips the confirmation PROMPT, not the hook, so a `PreToolUse` hook can still fire on a settings edit even when broad edits are allowed. That makes it the right place for a mechanical backstop.
+
+**What we built:** A `PreToolUse` hook on Write|Edit that fires only on edits to `settings.json` and prompts (`decision:ask`) ONLY when the edit touches a safety key (`defaultMode`, the `deny`/`ask` lists, `disableAllHooks`, `disableAutoMode`, or `bypassPermissions`). Routine settings edits (an allow rule, a theme, an env var) pass through untouched. It protects the config that protects you, without nagging on ordinary changes.
+
+---
+
+### Verify-Subagent-Findings Hook: Why Findings Are Hypotheses
+
+**What happened:** A fresh-context review subagent returned a confident "[MUST FIX]" finding. Acting on it directly would have injected a regression, because the finding came from the subagent's narrow slice of the codebase and dissolved the moment it was checked against the actual data flow, a whole-tree grep, and the test suite.
+
+**What we learned:** A subagent sees only what its prompt and its limited window showed it. Findings phrased as certainties ("X is missing", "this is a bug") routinely turn out to be false once verified against the authoritative source. The risk is not the subagent being wrong; it is the main agent treating the report as fact and editing on it.
+
+**What we built:** A `PostToolUse` hook on the Agent/Task tool that, when a subagent finishes, emits a one-line reminder: treat the findings as hypotheses, verify each against the actual values / a whole-tree grep / the file at the real ref / the test suite before acting. It skips pure search agents (whose results are locations, not verdicts). A deterministic nudge at the moment the report lands beats hoping the reader remembers to verify.
+
+---
+
+### No-Dash-Check Hook (and its companion): Why a Style Gate Needs Two Halves
+
+**What happened:** A team enforced a prose style rule (no em-dashes) via a `PostToolUse` hook, and it worked for files written through the editor. Then a batch of text composed in a shell and POSTed to an external system with curl shipped with the banned characters intact. The `PostToolUse` hook never saw it, because that content never passed through Write/Edit.
+
+**What we learned:** Tool-gated hooks only inspect what flows through their tool. Any content policy you enforce on Write/Edit has a blind spot: text assembled in Bash (a heredoc into a curl body) bypasses it entirely. A single hook cannot cover both paths.
+
+**What we built:** Two halves. `no-dash-check.sh` is a warn-only `PostToolUse` hook that flags the style violation in files just written (it ships configured for em-dashes, but the pattern is meant to be swapped for whatever rule your team enforces). Its companion `check-no-dash-file.py` is a manual gate you run on a file before POSTing it externally; a non-zero exit means do not post. Together they close both the editor path and the shell-to-network path.
+
+---
+
 ### InstructionsLoaded Hook: Why Make Rule-Loading Observable
 
 **What happened:** A path-scoped rule (load only when editing schema files) was written, but it wasn't clear whether it actually fired when the relevant files were opened. The rule's effect was indirect, so the only evidence was Claude's behavior, which is not a reliable signal for "did this specific file load into context?"
@@ -78,7 +108,7 @@ Every component in this blueprint exists because something went wrong without it
 
 **What we built:** A three-tier model strategy:
 - **Opus**: Architecture, planning, complex multi-system design (1 agent)
-- **Sonnet**: Implementation, review, analysis, testing (9 agents)
+- **Sonnet**: Implementation, review, analysis, testing (10 agents)
 - **Haiku**: Documentation (1 agent)
 
 This reduced costs significantly while maintaining quality where it matters.
@@ -112,6 +142,16 @@ This reduced costs significantly while maintaining quality where it matters.
 **What we learned:** Agents that are meant to analyze should not have write access. The temptation to "fix while analyzing" is strong, and without explicit constraints, agents will act on what they find.
 
 **What we built:** Analysis-only agents (`verify-plan`, `code-reviewer`, `security-reviewer`, `db-analyst`, `devops-engineer`, `architecture-reviewer`) use `permissionMode: plan`, which restricts them to read-only tools. They can Read, Grep, and Glob, but not Write, Edit, or Bash. Their findings go into their response, not into the codebase.
+
+---
+
+### Memory Curator: Why a Librarian for Your Memory Store
+
+**What happened:** A memory directory (notes plus an index file that lists them) grew over months. Notes were added, renamed, and occasionally deleted, but the index was updated by hand and drifted: it pointed at files that no longer existed, missed files that did, and its per-section counts stopped matching reality. Nobody noticed until a session failed to find a note it should have had, because the only pointer to it had been silently dropped from the index.
+
+**What we learned:** An index maintained by hand rots. The failure is invisible day to day, then expensive all at once: a fact you saved is unreachable because the one discoverable pointer to it is gone. You need a periodic check that compares what the index claims against what is actually on disk, and flags the drift before it costs you.
+
+**What we built:** A `memory-curator` agent that audits the store whole-tree (never a sample): it finds orphans (files not in the index), phantoms (index entries with no file), section-count drift, broken wiki-links, stale entries, and near-duplicates, then writes a dated health report. It is report-only (its one Write is the report itself), and its highest-stakes rule is conservatism: it never recommends dropping the sole pointer to a note without pairing that with a safe backfill, so a cleanup pass can never quietly cause the exact data loss it exists to prevent.
 
 ---
 

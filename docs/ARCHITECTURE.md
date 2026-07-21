@@ -77,7 +77,7 @@ ILLUSTRATIVE (a shape you can wire yourself): a build-to-ship flow:
 | Model | Cost | Use For | Agents |
 |-------|------|---------|--------|
 | **Opus** | $$$ | Complex architecture, multi-system planning | project-architect |
-| **Sonnet** | $$ | Implementation, review, analysis | 9 agents (backend, frontend, code-reviewer, etc.) |
+| **Sonnet** | $$ | Implementation, review, analysis | 10 agents (backend, frontend, code-reviewer, memory-curator, etc.) |
 | **Haiku** | $ | Documentation, API docs | docs-writer |
 
 ### When to Use Each Model
