@@ -13,7 +13,7 @@
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-compatible-blueviolet)](https://docs.anthropic.com/en/docs/claude-code)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
-**12 agents** · **18 skills** · **12 hooks** · **6 rules**, copy only what you need, or install a preset (minimal / standard / core / full)
+**12 agents** · **18 skills** · **15 hooks** · **6 rules**, copy only what you need, or install a preset (minimal / standard / core / full)
 
 [English](README.md) | [日本語](i18n/README.ja.md) | [한국어](i18n/README.ko.md) | [简体中文](i18n/README.zh.md)
 
@@ -156,7 +156,7 @@ See [skills/README.md](skills/README.md) for customization and placeholder varia
 </details>
 
 <details>
-<summary><strong>12 Hooks</strong>: Deterministic lifecycle automation (always fire, unlike CLAUDE.md rules which the model can deprioritize)</summary>
+<summary><strong>15 Hooks</strong>: Deterministic lifecycle automation (always fire, unlike CLAUDE.md rules which the model can deprioritize)</summary>
 
 &nbsp;
 
@@ -167,13 +167,16 @@ See [skills/README.md](skills/README.md) for customization and placeholder varia
 | PreToolUse (Bash) | block-git-push.sh | Protect remote repos |
 | PreToolUse (Bash) | pre-commit-secret-scan.sh | Block commits containing secrets |
 | PreToolUse (Write/Edit) | protect-config.sh | Guard linter/build configs |
+| PreToolUse (Write/Edit) | protect-claude-settings.sh | Confirm edits to safety keys in your own settings.json |
 | PostToolUse (Write/Edit) | notify-file-changed.sh | Verify reminder |
+| PostToolUse (Write/Edit) | no-dash-check.sh | Warn on a prose-style violation (example: em-dashes) |
 | PostToolUse (Bash) | post-commit-review.sh | Post-commit review |
+| PostToolUse (Agent/Task) | verify-subagent-findings.sh | Treat subagent findings as hypotheses to verify |
 | PreCompact | precompact-state.sh | Serialize state to disk |
 | Stop | security check + cost-tracker.sh + session-checkpoint.sh | Last defense + metrics |
 | SessionEnd | session-checkpoint.sh | Guaranteed final save |
 
-Plus 2 utility scripts: `verify-mcp-sync.sh` (MCP config checker) and `status-line.sh` (branch/project status), both deployed by the full preset. The 13th file in the folder is `test-hooks.sh`, the local test harness, run via `bash hooks/test-hooks.sh` to verify all hooks. It's the only one not deployed to `~/.claude/hooks/`, and isn't counted in the "12 hooks" total.
+Plus 2 utility scripts: `verify-mcp-sync.sh` (MCP config checker) and `status-line.sh` (branch/project status), both deployed by the full preset, and a companion tool `check-no-dash-file.py` (a pre-post prose sanitizer for the `no-dash-check.sh` hook). The last file in the folder is `test-hooks.sh`, the local test harness, run via `bash hooks/test-hooks.sh` to verify all hooks. It's the only one not deployed to `~/.claude/hooks/`, and isn't counted in the "15 hooks" total.
 
 Run `bash hooks/test-hooks.sh` to verify all hooks pass (43 automated tests).
 
@@ -217,7 +220,7 @@ See [rules/README.md](rules/README.md) for creating custom rules.
 
 3. **Context is currency**: Every token loaded into context is a token not available for your code. Keep MEMORY.md under 100 lines. Extract to topic files. Use path-scoped rules so irrelevant rules don't load.
 
-4. **Hooks are free, context is cheap**: The 12 hook scripts cost zero tokens (they run outside Claude's context). CLAUDE.md adds ~2,300 tokens per session, roughly 1-5% of a typical session. The blueprint saves more tokens than it costs by preventing redo cycles. See [BENCHMARKS.md](docs/BENCHMARKS.md#token-cost-per-component).
+4. **Hooks are free, context is cheap**: The 15 hook scripts cost zero tokens (they run outside Claude's context). CLAUDE.md adds ~2,300 tokens per session, roughly 1-5% of a typical session. The blueprint saves more tokens than it costs by preventing redo cycles. See [BENCHMARKS.md](docs/BENCHMARKS.md#token-cost-per-component).
 
 5. **Battle-tested over theoretical**: Every rule in this repo exists because something went wrong without it. The "WHY" matters more than the "WHAT".
 

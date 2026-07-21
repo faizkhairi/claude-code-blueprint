@@ -12,7 +12,7 @@
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-compatible-blueviolet)](https://docs.anthropic.com/en/docs/claude-code)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](../CONTRIBUTING.md)
 
-**12 agents** · **18 skills** · **12 hooks** · **6 rules**，在真实项目中验证
+**12 agents** · **18 skills** · **15 hooks** · **6 rules**，在真实项目中验证
 
 [English](../README.md) | [日本語](README.ja.md) | [한국어](README.ko.md) | [简体中文](README.zh.md)
 
@@ -166,7 +166,7 @@ CLAUDE.md 生效后，再添加其余部分。最简单的方法是从克隆或 
 </details>
 
 <details>
-<summary><strong>12 个 Hooks</strong>：确定性的生命周期自动化（每次确定性触发，不同于 CLAUDE.md 规则并非始终被遵循）</summary>
+<summary><strong>15 个 Hooks</strong>：确定性的生命周期自动化（每次确定性触发，不同于 CLAUDE.md 规则并非始终被遵循）</summary>
 
 &nbsp;
 
@@ -183,7 +183,7 @@ CLAUDE.md 生效后，再添加其余部分。最简单的方法是从克隆或 
 | Stop | security check + cost-tracker.sh + session-checkpoint.sh | 最后防线 + 指标 |
 | SessionEnd | session-checkpoint.sh | 保证最终保存 |
 
-另外 2 个实用脚本：`verify-mcp-sync.sh`（MCP 配置检查器）和 `status-line.sh`（分支/项目状态），两者均由 full 预设部署。文件夹中的第 13 个文件是 `test-hooks.sh`，作为本地测试工具，通过 `bash hooks/test-hooks.sh` 运行以验证所有 hooks。它是唯一不会部署到 `~/.claude/hooks/` 的文件，也不计入“12 hooks”的总数。
+另外 2 个实用脚本：`verify-mcp-sync.sh`（MCP 配置检查器）和 `status-line.sh`（分支/项目状态），以及配套工具 `check-no-dash-file.py`（用于 `no-dash-check.sh` 的发布前文本检查）。实用脚本均由 full 预设部署。文件夹中的最后一个文件是 `test-hooks.sh`，作为本地测试工具，通过 `bash hooks/test-hooks.sh` 运行以验证所有 hooks。它是唯一不会部署到 `~/.claude/hooks/` 的文件，也不计入“15 hooks”的总数。
 
 运行 `bash hooks/test-hooks.sh` 验证所有 hooks 通过（43 个自动化测试）。
 
@@ -227,7 +227,7 @@ CLAUDE.md 生效后，再添加其余部分。最简单的方法是从克隆或 
 
 3. **上下文是货币**：加载到上下文的每个 token 都是无法用于代码的 token。让 MEMORY.md 保持在 100 行以下。提取到专题文件。使用路径作用域规则，防止无关规则加载。
 
-4. **Hooks 免费，上下文便宜**：12 个 hook 脚本零 token 成本（在 Claude 上下文外部运行）。CLAUDE.md 每个会话增加约 2,300 个 token，大约是典型会话的 1-5%。蓝图通过防止重做循环节省的 token 超过其成本。参见 [BENCHMARKS.md](../docs/BENCHMARKS.md#token-cost-per-component)。
+4. **Hooks 免费，上下文便宜**：15 个 hook 脚本零 token 成本（在 Claude 上下文外部运行）。CLAUDE.md 每个会话增加约 2,300 个 token，大约是典型会话的 1-5%。蓝图通过防止重做循环节省的 token 超过其成本。参见 [BENCHMARKS.md](../docs/BENCHMARKS.md#token-cost-per-component)。
 
 5. **实战验证优于理论**：本仓库的每条规则都存在，因为某个事件说明它是必需的。"为什么"比"是什么"重要得多。
 
