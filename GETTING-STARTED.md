@@ -193,7 +193,7 @@ Then run `claude` to start. Note: if you have a subscription **and** an `ANTHROP
 
 ### Enable Agent Teams (Required for Agents)
 
-If you plan to use any of the [11 agents](agents/) in this blueprint, you must enable the agent teams feature. Add this to your `~/.claude/settings.json`:
+If you plan to use any of the [12 agents](agents/) in this blueprint, you must enable the agent teams feature. Add this to your `~/.claude/settings.json`:
 
 ```json
 {

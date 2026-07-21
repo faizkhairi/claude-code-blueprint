@@ -38,7 +38,7 @@ FULL_HOOKS=(session-start.sh precompact-state.sh status-line.sh verify-mcp-sync.
             verify-subagent-findings.sh no-dash-check.sh check-no-dash-file.py)
 FULL_AGENTS=(architecture-reviewer.md backend-specialist.md db-analyst.md
              devops-engineer.md docs-writer.md frontend-specialist.md project-architect.md
-             qa-tester.md security-reviewer.md)
+             qa-tester.md security-reviewer.md memory-curator.md)
 SKILL_DIRS=(changelog db-check deploy-check e2e-check elicit-requirements
             scaffold-project load-session pr-review register-project review-full review-diff
             save-diary save-session session-end sprint-plan status tech-radar test-check)
@@ -71,7 +71,7 @@ print_usage() {
   echo "  minimal   4 files   CLAUDE.md + 2 hooks + settings.json (60 seconds)"
   echo "  standard  10 files  + 4 hooks, 2 agents, settings.json (5 minutes)"
   echo "  core      20 files  + 2 review agents, 6 skills, 2 rules (curated, broadly useful)"
-  echo "  full      53 files  + all agents, skills, rules (30 minutes)"
+  echo "  full      54 files  + all agents, skills, rules (30 minutes)"
   echo ""
   echo "Examples:"
   echo "  ./setup.sh                          Interactive preset selection"

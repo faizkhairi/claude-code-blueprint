@@ -108,7 +108,7 @@ Every component in this blueprint exists because something went wrong without it
 
 **What we built:** A three-tier model strategy:
 - **Opus**: Architecture, planning, complex multi-system design (1 agent)
-- **Sonnet**: Implementation, review, analysis, testing (9 agents)
+- **Sonnet**: Implementation, review, analysis, testing (10 agents)
 - **Haiku**: Documentation (1 agent)
 
 This reduced costs significantly while maintaining quality where it matters.
@@ -142,6 +142,16 @@ This reduced costs significantly while maintaining quality where it matters.
 **What we learned:** Agents that are meant to analyze should not have write access. The temptation to "fix while analyzing" is strong, and without explicit constraints, agents will act on what they find.
 
 **What we built:** Analysis-only agents (`verify-plan`, `code-reviewer`, `security-reviewer`, `db-analyst`, `devops-engineer`, `architecture-reviewer`) use `permissionMode: plan`, which restricts them to read-only tools. They can Read, Grep, and Glob, but not Write, Edit, or Bash. Their findings go into their response, not into the codebase.
+
+---
+
+### Memory Curator: Why a Librarian for Your Memory Store
+
+**What happened:** A memory directory (notes plus an index file that lists them) grew over months. Notes were added, renamed, and occasionally deleted, but the index was updated by hand and drifted: it pointed at files that no longer existed, missed files that did, and its per-section counts stopped matching reality. Nobody noticed until a session failed to find a note it should have had, because the only pointer to it had been silently dropped from the index.
+
+**What we learned:** An index maintained by hand rots. The failure is invisible day to day, then expensive all at once: a fact you saved is unreachable because the one discoverable pointer to it is gone. You need a periodic check that compares what the index claims against what is actually on disk, and flags the drift before it costs you.
+
+**What we built:** A `memory-curator` agent that audits the store whole-tree (never a sample): it finds orphans (files not in the index), phantoms (index entries with no file), section-count drift, broken wiki-links, stale entries, and near-duplicates, then writes a dated health report. It is report-only (its one Write is the report itself), and its highest-stakes rule is conservatism: it never recommends dropping the sole pointer to a note without pairing that with a safe backfill, so a cleanup pass can never quietly cause the exact data loss it exists to prevent.
 
 ---
 

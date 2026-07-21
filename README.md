@@ -13,7 +13,7 @@
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-compatible-blueviolet)](https://docs.anthropic.com/en/docs/claude-code)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
-**11 agents** · **18 skills** · **15 hooks** · **6 rules**, copy only what you need, or install a preset (minimal / standard / core / full)
+**12 agents** · **18 skills** · **15 hooks** · **6 rules**, copy only what you need, or install a preset (minimal / standard / core / full)
 
 [English](README.md) | [日本語](i18n/README.ja.md) | [한국어](i18n/README.ko.md) | [简体中文](i18n/README.zh.md)
 
@@ -111,7 +111,7 @@ Other repos dump dozens of agents on you. We give you **11**, and explain why ea
 ## What's Inside
 
 <details>
-<summary><strong>11 Agents</strong>: Specialized subagents with model tiering (opus/sonnet/haiku)</summary>
+<summary><strong>12 Agents</strong>: Specialized subagents with model tiering (opus/sonnet/haiku)</summary>
 
 &nbsp;
 
@@ -128,6 +128,7 @@ Other repos dump dozens of agents on you. We give you **11**, and explain why ea
 | verify-plan | sonnet | 7-point mechanical plan verification (read-only) |
 | docs-writer | haiku | README, API docs, changelogs, architecture docs |
 | architecture-reviewer | sonnet | Dependency direction, god files, dead code, modularity (read-only) |
+| memory-curator | sonnet | Audits your memory directory for orphans, index drift, broken links, stale entries (report-only) |
 
 See [agents/README.md](agents/README.md) for permission modes, cost estimates, and maxTurns.
 

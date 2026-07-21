@@ -1,12 +1,12 @@
 # Agents
 
-11 specialized subagents with model tiering, permission modes, and worktree isolation.
+12 specialized subagents with model tiering, permission modes, and worktree isolation.
 
 > **Framework-agnostic by design.** These agents adapt to any stack. Each one reads your `CLAUDE.md` and detects the project from its manifest (`package.json`, `composer.json`, `pom.xml`, `Gemfile`, `*.csproj`, `go.mod`, `Cargo.toml`, `pyproject.toml`, ...), so the same roster serves a Laravel, Spring Boot, Rails, Django, Go, .NET, or Node project. Where an example names a specific tool, it is an example, not a requirement.
 
 ## When to Use an Agent vs a Skill vs the Main Thread
 
-This is the most important page in the repo, and the easiest to skip. Copying 11 agent files is not the goal: *knowing which to reach for, and wiring only those, is.* An agent you never invoke is dead weight: it adds nothing and quietly implies your setup does more than it does.
+This is the most important page in the repo, and the easiest to skip. Copying 12 agent files is not the goal: *knowing which to reach for, and wiring only those, is.* An agent you never invoke is dead weight: it adds nothing and quietly implies your setup does more than it does.
 
 Use this table to decide where a piece of work belongs:
 
@@ -21,7 +21,7 @@ Use this table to decide where a piece of work belongs:
 
 **How to right-size for yourself:** start from zero wired agents. Add the ones your actual work reaches for (watch which you invoke by hand over a week), and wire those into the skill where they naturally belong: copy the "spawn agents" step from [`review-full`](../skills/review-full/SKILL.md) and name the agent by `subagent_type`. Delete the agents you never touch. A lean, wired roster beats a large, inert one every time.
 
-Anthropic's own guidance leans skill-heavy for exactly this reason, since skills are cheaper to keep and easier to trigger than agents. Treat 11 as a menu, not a checklist.
+Anthropic's own guidance leans skill-heavy for exactly this reason, since skills are cheaper to keep and easier to trigger than agents. Treat 12 as a menu, not a checklist.
 
 ## The Standard Agent Pattern
 
@@ -47,7 +47,7 @@ Every agent follows this structure:
 | Mode | Agents | Why |
 |------|--------|-----|
 | `default` (explicit) | backend, frontend, qa-tester, project-architect, docs-writer | Need write access to implement or generate. Frontmatter declares `permissionMode: default` explicitly for clarity. |
-| `plan` | verify-plan, code-reviewer, security-reviewer, db-analyst, devops-engineer, architecture-reviewer | Read-only analysis, should never modify files. Cannot use Write/Edit tools. |
+| `plan` | verify-plan, code-reviewer, security-reviewer, db-analyst, devops-engineer, architecture-reviewer, memory-curator | Read-only analysis, should never modify files. (memory-curator uses Write only to emit its health report.) |
 
 Note: if an agent omits the `permissionMode` field, Claude Code falls back to write-access default. We declare `permissionMode: default` explicitly on write-access agents to make the intent visible in the frontmatter.
 
@@ -80,6 +80,7 @@ Each agent has a `maxTurns` limit in its frontmatter that caps the number of too
 | docs-writer | haiku | 15 |
 | architecture-reviewer | sonnet | 20 |
 | verify-plan | sonnet | 3 |
+| memory-curator | sonnet | 25 |
 
 **If an agent stops mid-task:**
 1. Check what was completed: `git diff` for file changes, `git status` for uncommitted work
@@ -105,7 +106,7 @@ Agents are powerful but imperfect. Common failure modes:
 - **Hallucination**: An agent may reference files, functions, or APIs that do not exist. Always verify with `git diff` (for write agents) or manual inspection (for analysis agents).
 - **Stale context**: Agents cannot see the main session's full history. They may repeat work or miss earlier decisions.
 - **Overconfidence**: An agent that says "all checks pass" may not have actually run all checks. Verify critical claims.
-- **Read-only safety**: Agents with `permissionMode: plan` (verify-plan, code-reviewer, security-reviewer, db-analyst, devops-engineer, architecture-reviewer) cannot modify files; they can only analyze and report. This is a safety feature, not a limitation.
+- **Read-only safety**: Agents with `permissionMode: plan` (verify-plan, code-reviewer, security-reviewer, db-analyst, devops-engineer, architecture-reviewer, memory-curator) analyze and report rather than modify source files. This is a safety feature, not a limitation. (memory-curator is the one exception that uses Write, and only to emit its own health-report file.)
 
 **Rule of thumb:** Trust agents for research and drafting. Verify before committing their output.
 

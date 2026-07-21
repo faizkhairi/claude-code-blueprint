@@ -181,7 +181,7 @@ Based on [Anthropic's pricing](https://docs.anthropic.com/en/docs/about-claude/p
 |--------------|---------------|-------------|
 | All Opus agents | 5x baseline | Every agent uses the most expensive model |
 | All Sonnet agents | 1x baseline | Standard pricing |
-| Blueprint tiering (1 Opus + 9 Sonnet + 2 Haiku) | ~1.1x baseline | Minimal premium for architecture quality |
+| Blueprint tiering (1 Opus + 10 Sonnet + 1 Haiku) | ~1.1x baseline | Minimal premium for architecture quality |
 
 The blueprint's model tiering keeps costs close to all-Sonnet pricing while reserving Opus reasoning for architecture decisions (project-architect agent only).
 
