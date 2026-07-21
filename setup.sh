@@ -34,7 +34,8 @@ CORE_SKILLS=(review-full review-diff test-check deploy-check db-check changelog)
 CORE_RULES=(testing.md database-schema.md)
 
 FULL_HOOKS=(session-start.sh precompact-state.sh status-line.sh verify-mcp-sync.sh
-            instructions-loaded.sh pre-commit-secret-scan.sh)
+            instructions-loaded.sh pre-commit-secret-scan.sh protect-claude-settings.sh
+            verify-subagent-findings.sh no-dash-check.sh check-no-dash-file.py)
 FULL_AGENTS=(architecture-reviewer.md backend-specialist.md db-analyst.md
              devops-engineer.md docs-writer.md frontend-specialist.md project-architect.md
              qa-tester.md security-reviewer.md)

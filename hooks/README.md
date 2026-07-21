@@ -1,6 +1,6 @@
 # Hooks
 
-10 lifecycle hooks + 2 utility scripts, covering 9 lifecycle events. Hooks are deterministic (they fire every time) vs CLAUDE.md instructions (followed most of the time, but not guaranteed).
+13 lifecycle hooks + 2 utility scripts (plus one companion tool, `check-no-dash-file.py`), covering 9 lifecycle events. Hooks are deterministic (they fire every time) vs CLAUDE.md instructions (followed most of the time, but not guaranteed).
 
 ## Hook Lifecycle
 
@@ -11,8 +11,11 @@
 | PreToolUse (Bash) | Before any bash command | block-git-push.sh | Protect remote repos |
 | PreToolUse (Bash) | Before any bash command | pre-commit-secret-scan.sh | Block commits containing secrets (gitleaks) |
 | PreToolUse (Write/Edit) | Before any file edit | protect-config.sh | Guard linter/build configs |
+| PreToolUse (Write/Edit) | Before any file edit | protect-claude-settings.sh | Confirm edits to safety keys in your own settings.json |
 | PostToolUse (Write/Edit) | After file edits | notify-file-changed.sh | Verify reminder |
+| PostToolUse (Write/Edit) | After file edits | no-dash-check.sh | Warn on a prose-style violation (example: em-dashes) |
 | PostToolUse (Bash) | After bash commands | post-commit-review.sh | Post-commit review |
+| PostToolUse (Agent/Task) | After a subagent finishes | verify-subagent-findings.sh | Treat subagent findings as hypotheses to verify |
 | PostToolUseFailure | When MCP tools fail | (prompt hook) | Fallback guidance |
 | PreCompact | Before context compaction | precompact-state.sh | Serialize state to disk |
 | PostCompact | After compaction | (prompt hook) | Restore awareness |
@@ -53,6 +56,9 @@ This matches the "exit 0 = allow/no-op" convention every hook here follows, so a
 **Utility scripts** (not lifecycle hooks, run manually):
 - `verify-mcp-sync.sh`: Compares MCP server configs across CLI, VS Code extension, and Cursor. Run with `bash ~/.claude/hooks/verify-mcp-sync.sh`
 - `status-line.sh`: Generates a status line showing project name, branch, and dirty state
+
+**Companion tool** (a helper for the `no-dash-check.sh` hook, not itself a hook or counted in the hook total):
+- `check-no-dash-file.py`: A sanitizer gate for prose about to be POSTed to an external system (a PR comment, a webhook) from a shell command, which bypasses the Write/Edit hooks. Run `python hooks/check-no-dash-file.py <file>` before posting; a non-zero exit means do not post.
 
 ## Design Principles
 
