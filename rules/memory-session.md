@@ -3,6 +3,13 @@ paths:
   - "**/memory/**"
 ---
 
+<!--
+  Why this rule exists: the memory system is meant to accumulate durable context
+  (session history, preferences, decisions) across long stretches of time. Deleting
+  or overwriting entries destroys that history, and secrets stored in memory files
+  would leak with every session load. These rules keep memory additive and secret-free.
+-->
+
 # Memory Session Management Rules
 
 When working with memory system files:
