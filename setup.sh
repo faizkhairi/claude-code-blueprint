@@ -41,7 +41,7 @@ FULL_AGENTS=(architecture-reviewer.md backend-specialist.md db-analyst.md
              qa-tester.md security-reviewer.md memory-curator.md)
 SKILL_DIRS=(changelog db-check deploy-check e2e-check elicit-requirements
             scaffold-project load-session pr-review register-project review-full review-diff
-            save-diary save-session session-end sprint-plan status tech-radar test-check)
+            save-diary save-session self-audit session-end sprint-plan status tech-radar test-check)
 RULE_FILES=(api-endpoints.md database-schema.md memory-session.md
             session-lifecycle.md testing.md testing-general.md)
 
@@ -71,7 +71,7 @@ print_usage() {
   echo "  minimal   4 files   CLAUDE.md + 2 hooks + settings.json (60 seconds)"
   echo "  standard  10 files  + 4 hooks, 2 agents, settings.json (5 minutes)"
   echo "  core      20 files  + 2 review agents, 6 skills, 2 rules (curated, broadly useful)"
-  echo "  full      54 files  + all agents, skills, rules (30 minutes)"
+  echo "  full      55 files  + all agents, skills, rules (30 minutes)"
   echo ""
   echo "Examples:"
   echo "  ./setup.sh                          Interactive preset selection"

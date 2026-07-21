@@ -1,6 +1,6 @@
 # Skills
 
-18 domain-specific skills triggered by natural language (no slash commands needed).
+19 domain-specific skills triggered by natural language (no slash commands needed).
 
 ## Skill Categories
 
@@ -10,7 +10,7 @@
 | **PR Review** | pr-review | "review this PR", "review PR #N", "post a PR review" |
 | **Testing** | test-check, e2e-check | "run the tests", "browser test", "are tests passing?" |
 | **Deployment** | deploy-check | "deploy", "push to prod", "ready to ship", "npm audit" |
-| **Planning** | sprint-plan, elicit-requirements | "let's build", "new feature", multi-step tasks |
+| **Planning** | sprint-plan, elicit-requirements, self-audit | "let's build", "new feature", "audit yourself", "did you check everything?" |
 | **Session** | load-session, save-session, session-end, save-diary | Session start/end, "save", "bye", "done" |
 | **Project** | scaffold-project, register-project, status, changelog | "new project", "register project", "status" |
 | **Database** | db-check | "check the schema", "database health", "validate models" |

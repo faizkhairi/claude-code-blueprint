@@ -36,7 +36,7 @@ The script will ask you to choose a preset, then install everything to `~/.claud
 | **Minimal** | 4 | CLAUDE.md + 2 hooks (config protection, edit verification) + settings.json |
 | **Standard** | 10 | + 4 more hooks, 2 agents (verify-plan, code-reviewer), settings.json |
 | **Core** | 20 | + 2 review agents, 6 universal skills, 2 path-scoped rules (curated, broadly useful) |
-| **Full** | 49 | + all 12 agents, 18 skills, 6 rules (everything in the blueprint) |
+| **Full** | 55 | + all 12 agents, 19 skills, 6 rules (everything in the blueprint) |
 
 ### Usage examples
 
