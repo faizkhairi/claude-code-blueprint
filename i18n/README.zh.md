@@ -12,7 +12,7 @@
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-compatible-blueviolet)](https://docs.anthropic.com/en/docs/claude-code)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](../CONTRIBUTING.md)
 
-**12 agents** · **18 skills** · **15 hooks** · **6 rules**，在真实项目中验证
+**12 agents** · **19 skills** · **15 hooks** · **6 rules**，在真实项目中验证
 
 [English](../README.md) | [日本語](README.ja.md) | [한국어](README.ko.md) | [简体中文](README.zh.md)
 
@@ -145,7 +145,7 @@ CLAUDE.md 生效后，再添加其余部分。最简单的方法是从克隆或 
 </details>
 
 <details>
-<summary><strong>18 个 Skills</strong>：自然语言触发的工作流（无需斜杠命令）</summary>
+<summary><strong>19 个 Skills</strong>：自然语言触发的工作流（无需斜杠命令）</summary>
 
 &nbsp;
 
@@ -155,7 +155,7 @@ CLAUDE.md 生效后，再添加其余部分。最简单的方法是从克隆或 
 | PR Review | pr-review | "review this PR", "review PR #N", "post a PR review" |
 | Testing | test-check, e2e-check | "run the tests", "browser test", "are tests passing?" |
 | Deployment | deploy-check | "deploy", "push to prod", "ready to ship" |
-| Planning | sprint-plan, elicit-requirements | "let's build", "new feature", multi-step tasks |
+| Planning | sprint-plan, elicit-requirements, self-audit | "let's build", "new feature", "audit yourself", "did you check everything?" |
 | Session | load-session, save-session, session-end, save-diary | Session start/end, "save", "bye", "done" |
 | Project | scaffold-project, register-project, status, changelog | "new project", "status", "changelog" |
 | Database | db-check | "check the schema", "validate models" |
