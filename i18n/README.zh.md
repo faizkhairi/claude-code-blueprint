@@ -112,7 +112,7 @@ CLAUDE.md 生效后，再添加其余部分。最简单的方法是从克隆或 
 | [4 条行为规则](../CLAUDE.md)防止 AI 编码错误 | 要复制的设置列表 |
 | [跨工具指南](../docs/CROSS-TOOL-GUIDE.md) 覆盖 Copilot、Cursor、Cline、Roo Code、OpenCode 等10个工具 | 仅单一工具 |
 | [初学者友好的](../GETTING-STARTED.md)包含 6 个采用角色 | 假设具有专业知识 |
-| [烟雾测试的 hooks](../hooks/test-hooks.sh)包含 43 个自动化测试 | 未测试的脚本 |
+| [烟雾测试的 hooks](../hooks/test-hooks.sh)包含 55 个自动化测试 | 未测试的脚本 |
 | 安全优先：[配置放置指南](../GETTING-STARTED.md#where-config-belongs-project-vs-personal)、隐私警告、[优雅降级](../agents/README.md#agents-are-not-infallible) | 无安全指导 |
 | [框架无关](../FAQ.md#what-framework-or-language-does-this-work-with)：支持任何语言和技术栈 | 假设使用特定语言/框架 |
 
@@ -185,7 +185,7 @@ CLAUDE.md 生效后，再添加其余部分。最简单的方法是从克隆或 
 
 另外 2 个实用脚本：`verify-mcp-sync.sh`（MCP 配置检查器）和 `status-line.sh`（分支/项目状态），以及配套工具 `check-no-dash-file.py`（用于 `no-dash-check.sh` 的发布前文本检查）。实用脚本均由 full 预设部署。文件夹中的最后一个文件是 `test-hooks.sh`，作为本地测试工具，通过 `bash hooks/test-hooks.sh` 运行以验证所有 hooks。它是唯一不会部署到 `~/.claude/hooks/` 的文件，也不计入“15 hooks”的总数。
 
-运行 `bash hooks/test-hooks.sh` 验证所有 hooks 通过（43 个自动化测试）。
+运行 `bash hooks/test-hooks.sh` 验证所有 hooks 通过（55 个自动化测试）。
 
 参见 [hooks/README.md](../hooks/README.md) 了解完整的生命周期、测试指南和设计原则。
 

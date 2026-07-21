@@ -14,7 +14,7 @@ The Claude Code Blueprint is a reference architecture for configuring Claude Cod
 - **Beginner accessibility**: Persona table above the fold, Level 1/2/3 progression, "Got This Link from a Colleague?" flow
 - **Framework-agnostic signaling**: Hero subtitle, comparison table, GitHub topics and description updated
 - **Cross-tool guide**: 10 other tools mapped (Copilot, Cursor, Cline, Roo Code, OpenCode, Codex CLI, Gemini CLI, Amazon Q, Windsurf, Aider)
-- **Hook smoke tests**: 43 automated tests in `hooks/test-hooks.sh` (run locally)
+- **Hook smoke tests**: 55 automated tests in `hooks/test-hooks.sh` (run locally)
 - **3 localized READMEs**: Japanese, Korean, Simplified Chinese landing pages (English root + 3 translations = 4 README files total)
 - **Built-in opt-in memory**: Setup.sh prompts to enable persistent session memory; no external repo required
 - **AGENTS.md**: AI-assistant orientation file at repo root
