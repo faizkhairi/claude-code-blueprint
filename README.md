@@ -167,7 +167,7 @@ See [skills/README.md](skills/README.md) for customization and placeholder varia
 | PreToolUse (Bash) | block-git-push.sh | Protect remote repos |
 | PreToolUse (Bash) | pre-commit-secret-scan.sh | Block commits containing secrets |
 | PreToolUse (Write/Edit) | protect-config.sh | Guard linter/build configs |
-| PreToolUse (Write/Edit) | protect-claude-settings.sh | Confirm edits to safety keys in your own settings.json |
+| PreToolUse (Write/Edit) | protect-claude-settings.sh | Confirm edits to safety keys in your own settings.json, and flag no-op allow rules for protected paths |
 | PostToolUse (Write/Edit) | notify-file-changed.sh | Verify reminder |
 | PostToolUse (Write/Edit) | no-dash-check.sh | Warn on a prose-style violation (example: em-dashes) |
 | PostToolUse (Bash) | post-commit-review.sh | Post-commit review |
