@@ -11,7 +11,7 @@
 | PreToolUse (Bash) | Before any bash command | block-git-push.sh | Protect remote repos |
 | PreToolUse (Bash) | Before any bash command | pre-commit-secret-scan.sh | Block commits containing secrets (gitleaks) |
 | PreToolUse (Write/Edit) | Before any file edit | protect-config.sh | Guard linter/build configs |
-| PreToolUse (Write/Edit) | Before any file edit | protect-claude-settings.sh | Confirm edits to safety keys in your own settings.json |
+| PreToolUse (Write/Edit) | Before any file edit | protect-claude-settings.sh | Confirm edits to safety keys in your own settings.json, and flag no-op allow rules for protected paths |
 | PostToolUse (Write/Edit) | After file edits | notify-file-changed.sh | Verify reminder |
 | PostToolUse (Write/Edit) | After file edits | no-dash-check.sh | Warn on a prose-style violation (example: em-dashes) |
 | PostToolUse (Bash) | After bash commands | post-commit-review.sh | Post-commit review |
