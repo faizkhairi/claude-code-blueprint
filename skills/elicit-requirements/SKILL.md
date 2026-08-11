@@ -101,8 +101,8 @@ After elicitation, produce a structured summary:
 - Trigger: [how it starts]
 
 ### Stories (ordered by dependency)
-1. [Story 1 title] — [one-line description]
-2. [Story 2 title] — [one-line description]
+1. [Story 1 title]: [one-line description]
+2. [Story 2 title]: [one-line description]
 
 ### Acceptance Criteria (per story)
 **Story 1:**
