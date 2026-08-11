@@ -30,20 +30,22 @@ Scan only what this PR touches, so pre-existing intentional examples do not mask
 
 ```bash
 git diff --name-only --diff-filter=d -z origin/main...HEAD \
+  | grep -zv '^\.github/PULL_REQUEST_TEMPLATE\.md$' \
   | xargs -0 -r grep -inE '(internal\.example|real-project-name)' /dev/null
 ```
 
 Expected result: **no output**.
 
-The `-r` on `xargs` matters: without it, an empty file list still runs `grep -r`, which then
-recurses the whole repo and reports the intentional examples below as if they were your leak.
-The trailing `/dev/null` keeps filenames in the output when only one file changed.
+Three details that matter:
 
-If a placeholder like `internal.example.com` is genuinely required in a file you added (a
-documented example domain, not a real one), say so in the PR description. Four files already
-carry these strings deliberately, so a whole-repo `grep -riE ... .` returns hits by design and
-is not a useful gate: `.github/PULL_REQUEST_TEMPLATE.md` (this file), `.lycheeignore`,
-`docs/SETTINGS-GUIDE.md`, and `hooks/block-git-push.sh`.
+- `xargs -r` stops an empty file list from running a bare `grep -r`, which would recurse the
+  whole repo and report intentional examples as if they were your leak.
+- This file is filtered out because it defines the search patterns and would always match itself.
+- The trailing `/dev/null` keeps filenames in the output when only one file changed.
+
+A few tracked files carry these placeholder strings on purpose (`.lycheeignore`,
+`docs/SETTINGS-GUIDE.md`, `hooks/block-git-push.sh`), which is why a whole-repo sweep is not a
+useful gate. If your PR genuinely needs a new placeholder domain, say so in the description.
 
 </details>
 
