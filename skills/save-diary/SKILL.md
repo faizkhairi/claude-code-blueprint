@@ -39,7 +39,7 @@ When this skill activates, output: "Dev Diary: documenting today's session."
 - If exists: use it (will append new entry)
 - If not: create new file with header:
 ```
-# YYYY-MM-DD — Session N: Brief Description
+# YYYY-MM-DD, Session N: Brief Description
 ```
 
 ### Step 3: Compose and Append Diary Entry
@@ -47,7 +47,7 @@ When this skill activates, output: "Dev Diary: documenting today's session."
 - Get current date via bash: `date +"%B %d, %Y"` or PowerShell `Get-Date -Format "MMMM dd, yyyy"`
 - Analyze current session for key content
 - Write structured entry using our actual diary format:
-  - **Title**: `# YYYY-MM-DD — Session N: Brief Description`
+  - **Title**: `# YYYY-MM-DD, Session N: Brief Description`
   - **What Happened**: Concise summary of the session context and goals
   - **Fixes Applied / Key Changes**: Specific technical work done (commits, code changes)
   - **Key Insight**: Lessons learned or important observations

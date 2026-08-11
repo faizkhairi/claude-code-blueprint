@@ -27,7 +27,7 @@ Save session state to memory:
 
 5. **Check MEMORY.md**: If new technical learnings or gotchas were discovered, update `{MEMORY_MD_PATH}`. After any edit, count total lines; if over 170, warn that MEMORY.md is approaching the 200-line auto-truncation limit and suggest moving content to topic files.
 
-6. **Check decisions.md**: If a non-obvious architectural or technical decision was made this session (something future-us would ask "why?"), append to `./memory/core/decisions.md` using the existing format: `## YYYY-MM-DD — Title` / `**Context**` / `**Decision**` / `**Rationale**`
+6. **Check decisions.md**: If a non-obvious architectural or technical decision was made this session (something future-us would ask "why?"), append to `./memory/core/decisions.md` using the existing format: `## YYYY-MM-DD: Title` / `**Context**` / `**Decision**` / `**Rationale**`
 
 7. **Diary** (if this was a significant session, e.g., feature shipped, major bug fixed, architecture decision made): Use the `save-diary` skill to create or append an entry to `./memory/diary/current/YYYY-MM-DD.md`
 
