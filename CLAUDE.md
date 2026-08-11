@@ -4,18 +4,21 @@
 
 After finishing any implementation, task, or plan, ALWAYS run a verification step before declaring it done. This is non-negotiable.
 
+*Skip-excuse: "the edit obviously landed." Obvious is the feeling, not the check.*
+
 ### What to verify depends on what was built:
 
 | Work Type | Verification Steps |
 |-----------|-------------------|
-| Code / feature | Run tests, run type check, run build |
-| API / server route | curl or fetch the live endpoint, check the response is real data |
+| Code / feature | Run tests, run type check, run build. **Then also run the `Wiring (new symbol)` row**: green tests prove the code works, not that anything reaches it. |
+| API / server route | curl or fetch the live endpoint, check the response is real data. **Then also run the `Wiring (new symbol)` row**: a route can answer curl while being registered only in a test harness, never in the production router. |
 | Deployment | Hit the production URL, confirm it's not the fallback/empty state |
 | Config change | Confirm the config was actually picked up (e.g. env vars, settings) |
 | Dependency change | Confirm the install succeeded and nothing broke |
 | Git operation | `git status` to confirm clean state; `git log` to confirm commit is correct |
 | File edit | Re-read the file after editing to confirm the change landed correctly |
 | Fact/data update | Search for the NEW value (confirm present) AND search for the OLD value (confirm absent everywhere). Stale copies in other locations are the #1 missed verification. |
+| Wiring (new symbol) | **Always ADDITIONAL to whichever row above matched; never a substitute for it, and never sufficient alone.** Verify **goal-backward**: the symbol EXISTS -> is not a STUB/TODO -> something IMPORTS/REGISTERS/CALLS it -> data FLOWS end-to-end. Zero call sites = dead code: wire it now, or mark it deferred with a tracking item. Same principle as ["An agent you never invoke is dead weight"](agents/README.md), applied to code. |
 
 ### Verification mindset
 - **Don't assume it worked**: run the check. A passing build does not mean correct behavior.
@@ -35,6 +38,8 @@ After finishing any implementation, task, or plan, ALWAYS run a verification ste
 ## Diagnose-First Rule (Before Any Fix)
 
 Before investigating any error or writing any fix plan, always run these four checks first:
+
+*Skip-excuse: "the cause is obvious from the error message." The message names the symptom, not the source.*
 
 ### 1. Check git state
 ```bash
@@ -68,6 +73,8 @@ Only proceed with investigation and planning AFTER these checks pass. Building a
 
 ALWAYS enter plan mode (EnterPlanMode) before making any non-trivial changes. This applies even if the user doesn't explicitly ask for a plan.
 
+*Skip-excuse: "this is only one file." A single file that changes behavior is non-trivial by this rule's own definition.*
+
 **Non-trivial** = any change that modifies more than 1 file, adds new functionality, changes behavior, or touches configuration.
 
 **Trivial** (skip plan mode) = single-line typo fix, adding a console.log, renaming a variable in one file.
@@ -83,6 +90,8 @@ The user prefers human review before execution. Plan -> Review -> Execute.
 ## Verify-Before-Exit-Plan (Before Exiting Plan Mode)
 
 Before calling ExitPlanMode, run these mechanical checks on your own plan. Do NOT skip these: tunnel vision during planning causes the most wasted review cycles.
+
+*Skip-excuse: "I just wrote it, I know what's in it." Authorship is what makes the gaps invisible.*
 
 ### 1. Count check
 If the plan says "N files modified" or "N steps", count them. Do the numbers match?
@@ -107,13 +116,38 @@ For each item in the plan, trace its full lifecycle: creation → wiring → tes
 These checks take 2-3 minutes. Skipping them costs 30+ minutes in external review cycles.
 
 ### 7. Fresh-context review
-After checks 1-6 pass, spawn a `code-reviewer` Task subagent with this prompt structure:
+Confidence formed inside a single context is systematically unreliable: the same attention that built a conclusion cannot see its own blind spots, and "it looks correct" is the feeling that precedes most missed gaps. So before declaring anything correct, complete, or safe on non-trivial work, cross-check it from a **fresh angle**. A fresh angle is any of:
+
+- a cold-spawn subagent that sees only the artifact, not your reasoning
+- a whole-tree grep rather than a look at the one file you were editing
+- the authoritative source (the live endpoint, the file at the target ref) rather than a local proxy
+- an adversarial "try to break it" pass
+
+Treat every self-assessment, subagent summary, and similarity match as a **hypothesis to verify**, never a fact. This is the root cause the other checks are instances of: check 2 is a fresh angle on paths, check 4 on policy text, and Verify-After-Complete is one on your own finished work.
+
+For a plan specifically, after checks 1-6 pass, spawn a `code-reviewer` Task subagent with this prompt structure:
 
 > **Plan text**: [paste the full plan]
 > **Original requirement**: [paste the user's original request]
 > **Your task**: Run the 7-point verification checklist from `.claude/agents/verify-plan.md`. Report findings as a table: Check | Status | Finding. Be mechanical: report facts, not opinions.
 
 The subagent sees the plan cold (different context window = different attention patterns). This catches design blind spots that self-review in the same context cannot. Run this on every plan for consistent output quality.
+
+**Stop condition** (a ceiling on RE-checking, never a licence to skip a first check): counted **per artifact**, where one pass = one full cross-check round. After 2 passes on the same artifact with no NEW substantive finding, STOP and escalate to the user rather than re-spawning. Re-checking an unchanged artifact is stalling, not doubting. This never cancels a mandatory first pass: check 7 fires on EVERY plan, and each new plan or artifact resets the count to zero. And because "no new finding" is itself a self-assessment, on a high-stakes claim treat a 2-pass stop as escalate-to-user, not as self-clearance.
+
+## A prose rule is not a hook
+
+Everything above is prose: guidance a model reads and usually follows. A hook is code the runtime executes whether or not the model agrees. The difference is not strictness of wording, it is enforcement:
+
+| | Prose rule (this file) | Hook (`hooks/`) |
+|---|---|---|
+| Enforcement | Probabilistic. Competes for attention with everything else in context. | Deterministic. Runs every time, and a `PreToolUse` hook can block the call outright. |
+| Good for | Judgement calls, ordering of work, when-to-ask, anything needing context. | Mechanical, decidable checks: a forbidden character, a protected branch, a secret pattern. |
+| Failure mode | Silently skipped under pressure, and nothing records that it was skipped. | Fires on cases you did not intend, so a badly scoped hook gets ignored or disabled. |
+
+**If a check must never be skipped and a script can decide it, promote it to a hook.** Writing "ALWAYS" in bold is not enforcement. This repo follows its own advice: the no-em-dash rule is prose *and* `hooks/no-dash-check.sh`, and the push policy is prose *and* `hooks/block-git-push.sh`.
+
+The *skip-excuse* clauses on the four mandatory rules exist for the residue: checks that need judgement and therefore cannot be hooked. Each one names the rationalization most likely to precede skipping that rule and rebuts it in the same breath, so the excuse arrives pre-answered rather than sounding reasonable in the moment.
 
 ## Stack Rules (customize for your project)
 

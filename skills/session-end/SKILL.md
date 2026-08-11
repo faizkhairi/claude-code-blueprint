@@ -39,7 +39,7 @@ If working on a registered project, update `./memory/projects/active/{project}.m
 
 - **preferences.md**: Were any new preferences, tools, or working patterns observed? Update `./memory/core/preferences.md` if so.
 - **MEMORY.md**: Were any new technical learnings, gotchas, or architectural decisions made? Update `{MEMORY_MD_PATH}` if so. **Size guard**: after editing, count lines; warn if over 170 (200-line truncation limit).
-- **decisions.md**: Was a non-obvious architectural or technical decision made? Append to `./memory/core/decisions.md` using format: `## YYYY-MM-DD — Title` / `**Context**` / `**Decision**` / `**Rationale**`
+- **decisions.md**: Was a non-obvious architectural or technical decision made? Append to `./memory/core/decisions.md` using format: `## YYYY-MM-DD: Title` / `**Context**` / `**Decision**` / `**Rationale**`
 
 ## Step 5: Save Diary Entry (if session was significant)
 
@@ -55,7 +55,7 @@ If significant: append entry to `./memory/diary/current/YYYY-MM-DD.md`
 Run monthly archive check first (move any previous-month files from `current/` to `archived/YYYY-MM/`).
 
 Entry structure (our actual format):
-- **Title**: `# YYYY-MM-DD — Session N: Brief Description`
+- **Title**: `# YYYY-MM-DD, Session N: Brief Description`
 - **What Happened**: Concise summary of the session context and goals
 - **Fixes Applied / Key Changes**: Specific technical work done (commits, code changes)
 - **Key Insight**: Lessons learned or important observations
@@ -70,12 +70,12 @@ Stage all changed files in memory, commit with a descriptive message, and push t
 Output a brief summary:
 ```
 Session saved:
-- session.md — updated
-- reminders.md — [updated / no changes]
-- {project}.md — [updated / N/A]
-- MEMORY.md — [updated with X / no changes]
-- Dev Diary — [entry added / no significant session]
-- memory — committed + pushed
+- session.md: updated
+- reminders.md: [updated / no changes]
+- {project}.md: [updated / N/A]
+- MEMORY.md: [updated with X / no changes]
+- Dev Diary: [entry added / no significant session]
+- memory: committed + pushed
 See you next time.
 ```
 

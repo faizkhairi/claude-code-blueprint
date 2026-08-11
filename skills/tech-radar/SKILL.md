@@ -50,7 +50,7 @@ Checks for latest versions, breaking changes, deprecations, and security advisor
 ## Output Format
 
 ```
-## Tech Radar Report — {date}
+## Tech Radar Report: {date}
 
 ### Upgrades Available
 | Package | Current | Latest | Breaking? | Priority |
