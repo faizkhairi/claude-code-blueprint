@@ -225,7 +225,14 @@ bind SETUP.md               '\+ all [0-9]+ agents, [0-9]+ skills, ([0-9]+) rules
 echo ""
 echo "--- hooks/README.md sum arithmetic ---"
 SUM_LINE=$(grep -oE '^[0-9]+ lifecycle hooks \+ [0-9]+ utility scripts' hooks/README.md)
-if [ -n "$SUM_LINE" ]; then
+N_SUM_LINES=$(printf '%s' "$SUM_LINE" | grep -c .)
+if [ "$N_SUM_LINES" -gt 1 ]; then
+  # Same rule as bind() and card(): more than one match is a document the guard
+  # cannot reason about, so fail rather than pick one. Without this the two
+  # values below hold newline-joined text and bash reports "integer expression
+  # expected", which reads as a broken guard rather than a broken document.
+  fail "hooks/README.md sum line: AMBIGUOUS, anchor matched $N_SUM_LINES lines"
+elif [ -n "$SUM_LINE" ]; then
   a=$(printf '%s' "$SUM_LINE" | grep -oE '^[0-9]+')
   b=$(printf '%s' "$SUM_LINE" | grep -oE '\+ [0-9]+' | grep -oE '[0-9]+')
   if [ "$a" -ne "$N_LIFECYCLE" ]; then
