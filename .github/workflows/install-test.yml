@@ -1,7 +1,12 @@
-# Runs the installer test matrix on any change to setup.sh, the settings template,
-# or the tests themselves. It exercises every preset across fresh / re-run / non-TTY /
-# dry-run / piped scenarios and asserts the installer never crashes and never wires a
-# hook it did not install. Catches the set -e / schema-drift / preset-mismatch bug class.
+# Repository integrity checks.
+#
+# install-matrix  exercises every preset across fresh / re-run / non-TTY / dry-run /
+#                 piped scenarios and asserts the installer never crashes and never
+#                 wires a hook it did not install. Catches the set -e / schema-drift /
+#                 preset-mismatch bug class.
+# hook-tests      smoke-tests every hook script for crashes.
+# count-check     asserts every published component count ("12 agents", the card
+#                 sources, the three translated READMEs) matches the filesystem.
 name: Install Test
 
 on:
@@ -13,6 +18,13 @@ on:
       - "tests/**"
       - "hooks/**"
       - ".github/workflows/install-test.yml"
+      # count-check reads published counts out of the docs and the card sources,
+      # so a direct push touching only those still needs to run it.
+      - "**/*.md"
+      - "assets/**"
+      - "agents/**"
+      - "skills/**"
+      - "rules/**"
   # Runs on every PR (no path filter) so it can be a required status check:
   # a required check that is skipped on some PRs would block their merge forever.
   # The matrix is self-contained (it installs and tests regardless of the diff).
@@ -37,3 +49,11 @@ jobs:
 
       - name: Run hook smoke tests
         run: bash hooks/test-hooks.sh
+
+  count-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify published counts against the filesystem
+        run: bash tests/count-check.sh
