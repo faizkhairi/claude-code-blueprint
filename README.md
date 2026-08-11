@@ -94,7 +94,7 @@ Grow as you need to: start with CLAUDE.md (above), add a few hooks, then add age
 
 ## What Makes This Different
 
-Other repos dump dozens of agents on you. We give you **11**, and explain why each one exists.
+Other repos dump dozens of agents on you. We give you **12**, and explain why each one exists.
 
 | This Blueprint | Generic Config Repos |
 |---------------|---------------------|
