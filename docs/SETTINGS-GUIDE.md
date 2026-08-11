@@ -289,7 +289,7 @@ Replace `YourUser` (Windows) or `youruser` (macOS/Linux) with your actual userna
 
 ## Hooks
 
-The template configures hooks across 8 lifecycle events. For the full lifecycle diagram, see [ARCHITECTURE.md](ARCHITECTURE.md). For battle stories explaining why each hook exists, see [WHY.md](WHY.md).
+The template configures hooks across 9 lifecycle events. For the full lifecycle diagram, see [ARCHITECTURE.md](ARCHITECTURE.md). For battle stories explaining why each hook exists, see [WHY.md](WHY.md).
 
 | Event | Hook | Purpose |
 |-------|------|---------|
