@@ -120,7 +120,7 @@ preset_total() {
         k = keys[i]; s = arrays[k]
         gsub(/^[^(]*\(/, "", s); gsub(/\).*$/, "", s)
         c = split(s, items, /[ \t\n]+/); cnt = 0
-        for (j = 1; j <= c; j++) if (items[j] != "") { cnt++; seen[k, items[j]] = 1; list[k, cnt] = items[j] }
+        for (j = 1; j <= c; j++) if (items[j] != "") { cnt++; list[k, cnt] = items[j] }
         len[k] = cnt
       }
       # Union the cumulative tiers so an item listed twice is counted once.
