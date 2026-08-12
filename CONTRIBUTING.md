@@ -23,10 +23,26 @@ Additions to `docs/WHY.md` that document a real incident: what went wrong, what 
 Shell scripts for `hooks/` that automate lifecycle events (SessionStart, PreToolUse, PostToolUse, Stop, SessionEnd, etc.). Must be general-purpose, not tied to a specific project, company, or environment. Before submitting, run `bash hooks/test-hooks.sh`: every hook must pass the smoke suite (exit 0 on empty, malformed, and missing-field stdin). This suite also runs in CI on every pull request (the `hook-tests` job), so a hook that fails the smoke suite blocks merge.
 
 ### Agent Templates
-New `.md` files for `agents/` that define a specialized subagent role. Should include a clear `description` field (for Claude's tool selection), a well-scoped system prompt, and an appropriate model tier recommendation.
+New `.md` files for `agents/` that define a specialized subagent role. Should include a clear `description` field (for Claude's tool selection), a well-scoped system prompt, and an appropriate model tier recommendation. Adding one changes a published total, so run `bash tests/count-check.sh` before submitting (see [Component Counts](#component-counts) below).
 
 ### Skill Templates
-New skill directories under `skills/` with a `SKILL.md` entry point. Skills should be triggered by natural language, not slash commands, and should solve a problem that recurs across projects.
+New skill directories under `skills/` with a `SKILL.md` entry point. Skills should be triggered by natural language, not slash commands, and should solve a problem that recurs across projects. Adding one changes a published total, so run `bash tests/count-check.sh` before submitting, and add the directory to `SKILL_DIRS` in `setup.sh` so the installer actually ships it.
+
+### Component Counts
+Totals like "12 agents" appear in the README, three translations, `AGENTS.md`, the docs, the HTML card sources, and the `setup.sh` menu. Adding a component makes every one of those copies stale at once.
+
+Before submitting, run:
+
+```bash
+bash tests/count-check.sh
+```
+
+It derives each total from the filesystem and the installer's own arrays, then names every document that disagrees, with a file and line for each. A thirteenth agent produces seventeen failures across thirteen files, which is the checklist to work through. This runs in CI on every pull request (the `count-check` job) and is a required check, so a stale count blocks merge.
+
+Two failure modes are worth knowing:
+
+- `MISSING_ANCHOR` means the guard could not find the text it expected. The document was reworded, so update the binding in `tests/count-check.sh` rather than the count.
+- `AMBIGUOUS` means the anchor matched more than one line. Usually a half-finished edit left two copies of a sentence.
 
 ### Cross-Tool Mappings
 Additions to `CROSS-TOOL-GUIDE.md` mapping a Claude Code concept to its equivalent in Copilot, Cursor, Cline, Roo Code, OpenCode, Codex CLI, Gemini CLI, Amazon Q, Windsurf, Aider, or other AI coding tools.
@@ -156,6 +172,17 @@ skills/
 1. Place the skill directory under `~/.claude/skills/`
 2. In a Claude Code session, use natural language that should trigger the skill
 3. Confirm the skill executes correctly end-to-end
+
+### Automated checks (run these before opening a PR)
+
+The sections above cover manual testing in a live session. These two suites run in CI on every pull request and both are required checks, so a failure blocks merge:
+
+```bash
+bash hooks/test-hooks.sh    # hook smoke suite
+bash tests/count-check.sh   # published component counts
+```
+
+`tests/install-matrix.sh` exercises every installer preset. It is slower and also runs in CI, so run it when you have touched `setup.sh` or a preset array.
 
 ### NDA sweep (mandatory for all contributions)
 

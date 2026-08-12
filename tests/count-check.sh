@@ -50,13 +50,16 @@
 #
 # SCOPE
 #
-# Published counts are only ever read from the .md and .html files named in the
-# bindings below. Ground truth is read separately, by counting files under agents/,
-# skills/, hooks/ and rules/ and by parsing docs/WHY.md and the settings template.
+# Published counts are only ever read from the specific .md, .html and .sh files
+# named in the bindings below. Ground truth is read separately, by counting files
+# under agents/, skills/, hooks/ and rules/, by parsing docs/WHY.md and the settings
+# template, and by unioning the preset arrays in setup.sh.
 #
-# No .sh file is ever scanned for a count, so this script's own text cannot match
-# its own patterns, and the notes above can name forbidden phrasings in plain
-# language without flagging themselves.
+# setup.sh is the one shell script read for published counts, because its menu is
+# the first place most users see them. This file is never scanned, by any binding,
+# so the notes above can quote forbidden phrasings such as "11 reusable agent
+# templates" in plain language without matching themselves. Keep it that way: bind
+# named files, never a glob that could sweep tests/.
 #
 # KNOWN LIMITATION
 #
@@ -96,6 +99,55 @@ N_STORIES=$(grep -c '^### ' docs/WHY.md | tr -d ' ')
 N_EVENTS=$(sed -n '/"hooks"[[:space:]]*:[[:space:]]*{/,/^  }/p' examples/settings-template.json \
   | grep -cE '^    "[A-Za-z]+"[[:space:]]*:' | tr -d ' ')
 
+# Per-preset FILE totals, derived from setup.sh's own arrays.
+#
+# These are the most drift-prone numbers in the repo, because a preset total is a
+# sum over EVERY category: it goes stale when any component is added anywhere, not
+# just when its own category changes. Git history bears that out ("full" churned
+# 48 -> 49 -> 53 -> 55, with its own dedicated fix commit).
+#
+# UNION, NOT SUM. Presets are cumulative and the arrays deliberately overlap:
+# qa-tester.md and security-reviewer.md are in BOTH CORE_AGENTS and FULL_AGENTS so
+# that core installs them without full having to re-list everything. Adding the
+# array lengths gives 57 for full and would fail against the correct 55.
+preset_total() {
+  awk -v want="$1" '
+    /^[A-Z_]+=\(/ { name=$0; sub(/=\(.*/, "", name); collecting=1; buf="" }
+    collecting    { buf = buf " " $0; if (/\)/) { collecting=0; arrays[name]=buf } }
+    END {
+      n = split("MINIMAL_HOOKS STANDARD_HOOKS FULL_HOOKS STANDARD_AGENTS CORE_AGENTS FULL_AGENTS CORE_SKILLS SKILL_DIRS CORE_RULES RULE_FILES", keys, " ")
+      for (i = 1; i <= n; i++) {
+        k = keys[i]; s = arrays[k]
+        gsub(/^[^(]*\(/, "", s); gsub(/\).*$/, "", s)
+        c = split(s, items, /[ \t\n]+/); cnt = 0
+        for (j = 1; j <= c; j++) if (items[j] != "") { cnt++; list[k, cnt] = items[j] }
+        len[k] = cnt
+      }
+      # Union the cumulative tiers so an item listed twice is counted once.
+      for (i = 1; i <= len["MINIMAL_HOOKS"]; i++)   u_h[list["MINIMAL_HOOKS", i]] = 1
+      for (i = 1; i <= len["STANDARD_HOOKS"]; i++)  u_h[list["STANDARD_HOOKS", i]] = 1
+      nh_std = 0; for (x in u_h) nh_std++
+      for (i = 1; i <= len["FULL_HOOKS"]; i++)      u_h[list["FULL_HOOKS", i]] = 1
+      nh_full = 0; for (x in u_h) nh_full++
+      for (i = 1; i <= len["STANDARD_AGENTS"]; i++) u_a[list["STANDARD_AGENTS", i]] = 1
+      na_std = 0; for (x in u_a) na_std++
+      for (i = 1; i <= len["CORE_AGENTS"]; i++)     u_a[list["CORE_AGENTS", i]] = 1
+      na_core = 0; for (x in u_a) na_core++
+      for (i = 1; i <= len["FULL_AGENTS"]; i++)     u_a[list["FULL_AGENTS", i]] = 1
+      na_full = 0; for (x in u_a) na_full++
+      FIXED = 2  # CLAUDE.md + settings.json
+      if (want == "minimal")  print 1 + len["MINIMAL_HOOKS"] + 1
+      if (want == "standard") print FIXED + nh_std + na_std
+      if (want == "core")     print FIXED + nh_std + na_core + len["CORE_SKILLS"] + len["CORE_RULES"]
+      if (want == "full")     print FIXED + nh_full + na_full + len["SKILL_DIRS"] + len["RULE_FILES"]
+    }
+  ' setup.sh
+}
+N_MINIMAL=$(preset_total minimal)
+N_STANDARD=$(preset_total standard)
+N_CORE=$(preset_total core)
+N_FULL=$(preset_total full)
+
 # Model tiers, read from each agent's frontmatter.
 N_OPUS=$(grep -l '^model: opus' agents/*.md 2>/dev/null | wc -l | tr -d ' ')
 N_SONNET=$(grep -l '^model: sonnet' agents/*.md 2>/dev/null | wc -l | tr -d ' ')
@@ -104,6 +156,7 @@ N_HAIKU=$(grep -l '^model: haiku' agents/*.md 2>/dev/null | wc -l | tr -d ' ')
 echo "Ground truth from filesystem:"
 echo "  agents=$N_AGENTS  skills=$N_SKILLS  hooks=$N_HOOKS  rules=$N_RULES"
 echo "  battle stories=$N_STORIES  lifecycle events=$N_EVENTS"
+echo "  preset files: minimal=$N_MINIMAL standard=$N_STANDARD core=$N_CORE full=$N_FULL"
 echo "  model tiers: opus=$N_OPUS sonnet=$N_SONNET haiku=$N_HAIKU"
 echo ""
 
@@ -286,9 +339,8 @@ fi
 # label in sibling <div>s, so bind on the pair rather than on line proximity:
 # slide-5.html has three preset cards on a single line.
 #
-# slide-5.html itself is deliberately NOT bound here. Its cards show per-preset
-# FILE totals (4 / 10 / 20 / 55), which are sums over the installer's arrays and
-# not component counts; tests/install-matrix.sh is what exercises those.
+# slide-5.html's preset cards are bound below, alongside setup.sh's menu, against
+# totals derived from the installer's own arrays.
 # ============================================================================
 echo ""
 echo "--- Asset HTML card counts ---"
@@ -344,6 +396,46 @@ card assets/walkthrough/slide-2.html Hooks            "$N_HOOKS"
 card assets/walkthrough/slide-2.html "Battle Stories" "$N_STORIES"
 
 bind assets/card-architecture.html '<div class="tag">([0-9]+) hooks across' "$N_HOOKS" "card-architecture hook tag"
+
+# ============================================================================
+# Per-preset FILE totals: setup.sh's menu and slide-5.html's cards.
+#
+# Bound against preset_total(), which unions the installer's own arrays, so these
+# expectations follow the installer rather than the docs. slide-5's cards put the
+# tier name BEFORE the count (<div class="tier">Minimal</div><div class="count">4</div>),
+# which is the reverse of the component cards above, so card() cannot be reused.
+# ============================================================================
+echo ""
+echo "--- Per-preset file totals ---"
+bind setup.sh 'minimal +([0-9]+) files'  "$N_MINIMAL"  "setup.sh minimal preset files"
+bind setup.sh 'standard +([0-9]+) files' "$N_STANDARD" "setup.sh standard preset files"
+bind setup.sh 'core +([0-9]+) files'     "$N_CORE"     "setup.sh core preset files"
+bind setup.sh 'full +([0-9]+) files'     "$N_FULL"     "setup.sh full preset files"
+
+preset_card() {
+  local tier="$1" expected="$2" file=assets/walkthrough/slide-5.html
+  local matches n_matches n
+  matches=$(tr '\n' ' ' < "$file" \
+      | grep -oE "<div class=\"tier\">$tier</div><div class=\"count\">[0-9]+</div>" \
+      | grep -oE '[0-9]+</div>$' | grep -oE '^[0-9]+')
+  n_matches=$(printf '%s' "$matches" | grep -c .)
+  if [ "$n_matches" -gt 1 ]; then
+    fail "slide-5.html $tier: AMBIGUOUS, $n_matches cards carry this tier"
+    return
+  fi
+  n=$(printf '%s' "$matches" | head -1)
+  if [ -z "$n" ]; then
+    fail "slide-5.html $tier: MISSING_ANCHOR (markup changed? update tests/count-check.sh)"
+  elif [ "$n" = "$expected" ]; then
+    pass "slide-5.html $tier preset = $n files"
+  else
+    fail "slide-5.html $tier preset = $n files, expected $expected"
+  fi
+}
+preset_card Minimal  "$N_MINIMAL"
+preset_card Standard "$N_STANDARD"
+preset_card Core     "$N_CORE"
+preset_card Full     "$N_FULL"
 
 echo ""
 echo "=== Results ==="

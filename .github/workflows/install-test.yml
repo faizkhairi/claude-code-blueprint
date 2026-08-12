@@ -7,6 +7,8 @@
 # hook-tests      smoke-tests every hook script for crashes.
 # count-check     asserts every published component count ("12 agents", the card
 #                 sources, the three translated READMEs) matches the filesystem.
+# required-checks advisory: warns when a CI job is not a required status check, or
+#                 when a required check names a job that no longer exists.
 name: Install Test
 
 on:
@@ -57,3 +59,19 @@ jobs:
 
       - name: Verify published counts against the filesystem
         run: bash tests/count-check.sh
+
+  # Advisory, and deliberately NOT a required status check.
+  #
+  # Making it required would deadlock: adding it to the ruleset is the act that
+  # makes it pass, so until it is added it fails, and while it fails it blocks the
+  # PR that would add it. It would also fail on every fork, which has no copy of
+  # this repo's branch protection. continue-on-error keeps the signal visible on
+  # the PR without letting it gate anything.
+  required-checks:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Warn if a CI job is not an enforced required check
+        run: bash tests/required-checks.sh
