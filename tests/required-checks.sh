@@ -166,6 +166,82 @@ done <<EOF
 $required
 EOF
 
+# ---------------------------------------------------------------------------
+# 4. The documented policy matches the enforced one.
+# ---------------------------------------------------------------------------
+# docs/ROADMAP.md tells readers which checks gate a merge. That sentence went
+# stale the moment this repo made four checks required: it still said the CI was
+# advisory and "does not gate merges" long after it did, and nothing caught it.
+# tests/count-check.sh could not, because it binds numbers and this claim has no
+# digit in it.
+#
+# The assertion is name-based, not sentence-based. It checks facts the bullet must
+# CONTAIN, never the shape of the prose, so the paragraph can be reworded freely
+# and only a wrong FACT fails. Dropping a job name or calling an advisory job a
+# gate is a wrong fact.
+echo ""
+echo "--- Documented policy matches enforcement ---"
+
+ROADMAP="docs/ROADMAP.md"
+MARKER='\*\*CI gates\*\*'
+
+if [ ! -f "$ROADMAP" ]; then
+  fail "$ROADMAP not found, so the documented policy cannot be checked."
+else
+  # The bullet is one wrapped list item: from the marker to the first blank line.
+  # A CRLF blank line still terminates the range, because [[:space:]] matches CR
+  # (this file carries CRLF endings, so that is load-bearing, not theoretical).
+  bullet=$(awk "/$MARKER/,/^[[:space:]]*\$/" "$ROADMAP")
+  n_markers=$(grep -c 'CI gates' "$ROADMAP")
+
+  if [ "$n_markers" -gt 1 ]; then
+    # Same rule as bind() and card() in count-check.sh: more than one match is a
+    # document the guard cannot reason about, so fail rather than pick one.
+    # Without this the range above splices two bullets into one buffer and every
+    # assertion below silently tests the wrong text.
+    fail "$ROADMAP: AMBIGUOUS, the 'CI gates' marker matched $n_markers lines. The guard cannot tell which bullet states the policy."
+  elif [ -z "$bullet" ]; then
+    # Same rule as count-check.sh: a reworded document must fail loudly rather
+    # than silently check nothing. Safe to fail here, the job is advisory.
+    fail "$ROADMAP: MISSING_ANCHOR, no '**CI gates**' bullet found. If the section was renamed, update MARKER in this script rather than deleting the check."
+  else
+    while IFS= read -r ctx; do
+      [ -n "$ctx" ] || continue
+      if printf '%s' "$bullet" | grep -qF "$ctx"; then
+        pass "$ROADMAP documents the required check $ctx"
+      else
+        fail "$ctx is a required check that gates merges, but $ROADMAP does not mention it. A contributor reading the roadmap will not know it must pass."
+      fi
+    done <<EOF
+$required
+EOF
+
+    while IFS= read -r adv; do
+      [ -n "$adv" ] || continue
+      if printf '%s\n' "$required" | grep -qxF "$adv"; then
+        continue  # Genuinely required now; direction 1 above already reported it.
+      elif printf '%s' "$bullet" | grep -qF "$adv"; then
+        # Named in the bullet while not required. That is correct only if the
+        # bullet describes it as advisory.
+        #
+        # The bracket pattern avoids pairing -i with -F: GNU grep 3.0 as shipped
+        # with Git for Windows aborts (exit 134) on that combination, and an
+        # aborted grep reads as "no match", which would turn a correct document
+        # into a failure.
+        if printf '%s' "$bullet" | grep -q "[Aa]dvisory"; then
+          pass "$ROADMAP names $adv and describes it as advisory"
+        else
+          fail "$ROADMAP names $adv among the gating checks, but it is not required and cannot block a merge. Describe it as advisory."
+        fi
+      else
+        pass "$adv is advisory and $ROADMAP does not claim it gates merges"
+      fi
+    done <<EOF
+$ADVISORY
+EOF
+  fi
+fi
+
 echo ""
 echo "=== Results ==="
 echo "PASS: $PASS"

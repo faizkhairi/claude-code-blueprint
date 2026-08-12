@@ -18,7 +18,7 @@ The Claude Code Blueprint is a reference architecture for configuring Claude Cod
 - **3 localized READMEs**: Japanese, Korean, Simplified Chinese landing pages (English root + 3 translations = 4 README files total)
 - **Built-in opt-in memory**: Setup.sh prompts to enable persistent session memory; no external repo required
 - **AGENTS.md**: AI-assistant orientation file at repo root
-- **Advisory CI**: a link check (lychee) on Markdown and an installer matrix (`tests/install-matrix.sh`) run on push/PR. These are advisory checks that catch broken links and install regressions early; they do not gate merges or imply a "broken build," in keeping with this being a reference-config repo rather than a build target.
+- **CI gates**: five jobs run on push and pull request. Four are required status checks that must pass before a pull request can merge into `main`: `links` (lychee, including `#anchor` fragments), `install-matrix` (`tests/install-matrix.sh`), `hook-tests` (`hooks/test-hooks.sh`), and `count-check` (`tests/count-check.sh`). A fifth, `required-checks` (`tests/required-checks.sh`), is advisory by design: it compares the workflow jobs against the branch ruleset and warns when a job is not enforced, and it cannot itself be required without deadlocking, since adding it to the ruleset is the act that makes it pass. This is still a reference-config repo rather than a build target, so the gates assert that the config installs and that its published totals are accurate, not that a product builds.
 
 ## In Progress
 
