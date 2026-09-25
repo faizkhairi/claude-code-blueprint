@@ -31,7 +31,8 @@ if [ -f "$CHECKPOINT_FILE" ] && [ -f "$SESSION_FILE" ]; then
 fi
 
 # Configure: Describe your workspace layout and critical rules here
-export WORKSPACE_CONTEXT="Active workspace: $(pwd). Always verify after completing work: run tests, check types, hit live endpoints."
+WORKSPACE_CONTEXT="Active workspace: $(pwd). Always verify after completing work: run tests, check types, hit live endpoints."
+export WORKSPACE_CONTEXT
 
 $PYTHON -c "
 import os, json

@@ -52,7 +52,8 @@ BRANCH="${DEFAULT_BRANCH:-main}"
 API="https://api.github.com/repos/${REPO}/rules/branches/${BRANCH}"
 
 # Jobs that are expected not to be required. See ADVISORY JOBS above.
-ADVISORY="required-checks"
+ADVISORY="required-checks
+shellcheck"
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT" || exit 1
@@ -100,6 +101,7 @@ if [ -z "$declared" ]; then
 fi
 
 echo "Jobs declared in .github/workflows:"
+# shellcheck disable=SC2001 # multi-line variable; ${var//} can't anchor per-line prefixes
 echo "$declared" | sed 's/^/  - /'
 echo ""
 
@@ -116,6 +118,7 @@ response=$(curl -sS -f --max-time 20 \
 
 # Pull required_status_checks contexts without needing jq: the payload is a flat
 # array of rule objects, so grep the contexts out of the one rule that has them.
+# shellcheck disable=SC2020 # replacing brace chars (not words) with newlines is intended here
 required=$(printf '%s' "$response" \
   | tr '{}' '\n\n' \
   | grep -oE '"context"[[:space:]]*:[[:space:]]*"[^"]+"' \
@@ -129,6 +132,7 @@ if [ -z "$required" ]; then
 fi
 
 echo "Required status checks on $BRANCH:"
+# shellcheck disable=SC2001 # multi-line variable; ${var//} can't anchor per-line prefixes
 echo "$required" | sed 's/^/  - /'
 echo ""
 

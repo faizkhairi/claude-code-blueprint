@@ -23,7 +23,8 @@ mkdir -p "$METRICS_DIR" 2>/dev/null || {
 # Capture session metadata
 export HOOK_SESSION_ID="${CLAUDE_SESSION_ID:-unknown}"
 export HOOK_MODEL="${CLAUDE_MODEL:-unknown}"
-export HOOK_TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+HOOK_TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+export HOOK_TIMESTAMP
 export HOOK_METRICS_FILE="$METRICS_FILE"
 export HOOK_METRICS_DIR="$METRICS_DIR"
 

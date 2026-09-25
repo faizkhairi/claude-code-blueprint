@@ -13,10 +13,15 @@ if [ -z "$PYTHON" ]; then
 fi
 
 export HOOK_STATE_FILE="$HOME/.claude/precompact-state.json"
-export HOOK_TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-export HOOK_PLAN_FILE=$(ls -t "$HOME/.claude/plans/"*.md 2>/dev/null | head -1)
-export HOOK_BRANCH=$(git branch --show-current 2>/dev/null || echo "unknown")
-export HOOK_CWD=$(pwd)
+HOOK_TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+export HOOK_TIMESTAMP
+# shellcheck disable=SC2012 # plan files are simple names; we need mtime order, which `ls -t` gives directly
+HOOK_PLAN_FILE=$(ls -t "$HOME/.claude/plans/"*.md 2>/dev/null | head -1)
+export HOOK_PLAN_FILE
+HOOK_BRANCH=$(git branch --show-current 2>/dev/null || echo "unknown")
+export HOOK_BRANCH
+HOOK_CWD=$(pwd)
+export HOOK_CWD
 
 $PYTHON -c "
 import os, json
