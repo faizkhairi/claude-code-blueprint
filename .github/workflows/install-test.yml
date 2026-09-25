@@ -9,6 +9,8 @@
 #                 sources, the three translated READMEs) matches the filesystem.
 # required-checks advisory: warns when a CI job is not a required status check, or
 #                 when a required check names a job that no longer exists.
+# shellcheck      advisory: lints hooks/*.sh, setup.sh, and tests/*.sh with
+#                 shellcheck. Not a required status check.
 name: Install Test
 
 on:
@@ -75,3 +77,14 @@ jobs:
 
       - name: Warn if a CI job is not an enforced required check
         run: bash tests/required-checks.sh
+
+  # Advisory, and deliberately NOT a required status check (see tests/required-checks.sh
+  # ADVISORY list and docs/ROADMAP.md's "CI gates" bullet). ubuntu-latest ships
+  # shellcheck preinstalled, so no extra setup step is needed.
+  shellcheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Lint shell scripts
+        run: shellcheck hooks/*.sh setup.sh tests/*.sh

@@ -221,9 +221,13 @@ bind() {
 # AGENTS.md, the repo map an AI assistant reads first
 # ============================================================================
 echo "--- AGENTS.md repo map ---"
+# shellcheck disable=SC2016 # single-quoted regex patterns are intentional: no shell expansion wanted
 bind AGENTS.md '\| `agents/` \| ([0-9]+) reusable agent'  "$N_AGENTS" "agents/ row"
+# shellcheck disable=SC2016 # single-quoted regex patterns are intentional: no shell expansion wanted
 bind AGENTS.md '\| `skills/` \| ([0-9]+) reusable skill'  "$N_SKILLS" "skills/ row"
+# shellcheck disable=SC2016 # single-quoted regex patterns are intentional: no shell expansion wanted
 bind AGENTS.md '\| `hooks/` \| ([0-9]+) hook scripts'     "$N_HOOKS"  "hooks/ row"
+# shellcheck disable=SC2016 # single-quoted regex patterns are intentional: no shell expansion wanted
 bind AGENTS.md '\| `rules/` \| ([0-9]+) example rule'     "$N_RULES"  "rules/ row"
 
 # ============================================================================

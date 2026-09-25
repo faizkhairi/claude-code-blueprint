@@ -51,6 +51,7 @@ EM_LINES=$(grep -nF "$(printf '\342\200\224')" "$FILE" 2>/dev/null | head -5)
 # Prose double-dash: space-dash-dash-space. Exclude obvious code contexts (a CLI
 # flag like --word, or text inside a backtick span). Lightweight filter; a few
 # false positives are acceptable for a warn.
+# shellcheck disable=SC2016 # single-quoted regex is intentional: no shell expansion wanted here
 DD_LINES=$(grep -nE ' -- ' "$FILE" 2>/dev/null | grep -vE '`[^`]*--[^`]*`|--[a-zA-Z]' | head -5)
 
 if [ -z "$EM_LINES" ] && [ -z "$DD_LINES" ]; then

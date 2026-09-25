@@ -135,6 +135,7 @@ normalize_path_for_json() {
   os="$(detect_os)"
   if [[ "$os" == windows-* ]]; then
     # /c/Users/name -> C:/Users/name
+    # shellcheck disable=SC2001 # \U case conversion needs sed; ${var//} can't uppercase
     echo "$path" | sed 's|^/\([a-zA-Z]\)/|\U\1:/|'
   else
     echo "$path"
@@ -147,7 +148,8 @@ backup_file() {
   if [ ! -f "$file" ]; then return 0; fi
   local timestamp
   timestamp="$(date +%Y%m%d-%H%M%S)"
-  local backup_path="${BACKUP_DIR}/$(basename "$file").${timestamp}"
+  local backup_path
+  backup_path="${BACKUP_DIR}/$(basename "$file").${timestamp}"
   mkdir -p "$BACKUP_DIR"
   cp "$file" "$backup_path"
   log_info "Backed up to $backup_path"
