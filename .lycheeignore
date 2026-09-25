@@ -15,3 +15,7 @@ https://gitea.mycompany.com
 
 # GitHub web-relative paths (resolve on github.com, not as local files).
 .*/discussions$
+
+# This repo's own release compare links in CHANGELOG.md. A release PR adds a
+# link to a tag that is only pushed after the PR merges, so it cannot resolve yet.
+^https://github\.com/faizkhairi/claude-code-blueprint/compare/
