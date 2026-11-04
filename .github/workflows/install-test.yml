@@ -8,7 +8,8 @@
 # count-check     asserts every published component count ("12 agents", the card
 #                 sources, the three translated READMEs) matches the filesystem.
 # required-checks advisory: warns when a CI job is not a required status check, or
-#                 when a required check names a job that no longer exists.
+#                 when a required check names a job that no longer exists, or
+#                 when ROADMAP.md or CONTRIBUTING.md misstates what gates a merge.
 # shellcheck      advisory: lints hooks/*.sh, setup.sh, and tests/*.sh with
 #                 shellcheck. Not a required status check.
 name: Install Test
@@ -41,7 +42,7 @@ jobs:
   install-matrix:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Run installer matrix
         run: bash tests/install-matrix.sh
@@ -49,7 +50,7 @@ jobs:
   hook-tests:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Run hook smoke tests
         run: bash hooks/test-hooks.sh
@@ -57,7 +58,7 @@ jobs:
   count-check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Verify published counts against the filesystem
         run: bash tests/count-check.sh
@@ -73,7 +74,7 @@ jobs:
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Warn if a CI job is not an enforced required check
         run: bash tests/required-checks.sh
@@ -84,7 +85,7 @@ jobs:
   shellcheck:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Lint shell scripts
         run: shellcheck hooks/*.sh setup.sh tests/*.sh
