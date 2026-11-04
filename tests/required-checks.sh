@@ -1,6 +1,7 @@
 #!/bin/bash
 # Verifies that every CI job which can block a merge is actually a required status
-# check on the default branch.
+# check on the default branch, and that the docs which tell contributors what gates a
+# merge (docs/ROADMAP.md, CONTRIBUTING.md; sections 4 and 5) agree with it.
 #
 # WHY THIS EXISTS
 #
@@ -23,7 +24,7 @@
 # (The /rulesets/{id} endpoint does need admin, but it is not used here.)
 #
 # Job id vs check name: with no `name:` key, the check name IS the job id, which is
-# the case for all four jobs here. If a job ever gains a `name:`, the check reports
+# the case for every job here. If a job ever gains a `name:`, the check reports
 # under that instead, so this reads `name:` when present and falls back to the id.
 #
 # ADVISORY JOBS
@@ -242,6 +243,116 @@ EOF
       fi
     done <<EOF
 $ADVISORY
+EOF
+  fi
+fi
+
+# ---------------------------------------------------------------------------
+# 5. CONTRIBUTING.md's merge-gate claims match enforcement.
+# ---------------------------------------------------------------------------
+# CONTRIBUTING.md tells contributors which suites block a merge in two places: the
+# count-check paragraph names its job, and "Automated checks" lists the suites as
+# commands. Same name-based rule as section 4: only a wrong FACT fails, and a
+# reworded anchor fails loudly (MISSING_ANCHOR) rather than checking nothing.
+# A command maps to the job whose steps run it, named the way section 1 names it
+# (`name:` when present, else the id).
+echo ""
+echo "--- CONTRIBUTING.md merge-gate claims match enforcement ---"
+
+CONTRIB="CONTRIBUTING.md"
+
+jobs_running() { # <script path>: every job (by check name) with a non-comment line running it
+  local s="${1#./}"
+  for wf in .github/workflows/*.yml .github/workflows/*.yaml; do
+    [ -e "$wf" ] || continue
+    awk -v s="$s" '
+      function flush() { if (job != "" && hit) print (label != "" ? label : job); hit = 0 }
+      { sub(/\r$/, "") }
+      /^jobs:[[:space:]]*$/ { injobs = 1; next }
+      injobs && /^[^[:space:]#]/ { flush(); injobs = 0; job = "" }
+      !injobs || /^[[:space:]]*#/ { next }
+      /^  [A-Za-z0-9_-]+:[[:space:]]*(#.*)?$/ { flush(); job = $1; sub(/:$/, "", job); label = ""; next }
+      job != "" && /^    name:[[:space:]]*/ {
+        label = $0; sub(/^    name:[[:space:]]*/, "", label); gsub(/^["'"'"']|["'"'"']$/, "", label)
+      }
+      job != "" {
+        line = $0; gsub(/\.\//, "", line)
+        if (match(line, "(^|[[:space:]])bash[[:space:]]+" s "([[:space:]\"'"'"';&|]|$)")) hit = 1
+      }
+      END { flush() }
+    ' "$wf"
+  done | sort -u
+}
+
+if [ ! -f "$CONTRIB" ]; then
+  fail "$CONTRIB not found, so its merge-gate claims cannot be checked."
+else
+  # (a) Each clause that calls a named job a required check. The line is cut at ". "
+  # and "; " first, so "`a` is a required check; `b` is advisory" claims only `a`.
+  claims=$(grep -n 'is a required check' "$CONTRIB" | awk -F': ' '{
+    n = $0; sub(/:.*/, "", n); rest = substr($0, length(n) + 2)
+    k = split(rest, part, /[.;] /)
+    for (i = 1; i <= k; i++) if (index(part[i], "is a required check")) print n ":" part[i]
+  }')
+  if [ -z "$claims" ]; then
+    fail "$CONTRIB: MISSING_ANCHOR, no sentence says a job 'is a required check'. If it was reworded, update this section rather than deleting the check."
+  else
+    while IFS= read -r claim; do
+      [ -n "$claim" ] || continue
+      ln="${claim%%:*}"; named=0
+      # shellcheck disable=SC2016 # the backticks are literal Markdown code spans, not expansions
+      for tok in $(printf '%s' "${claim#*:}" | grep -oE '`[A-Za-z0-9_][A-Za-z0-9_-]*`' | tr -d '`'); do
+        printf '%s\n' "$declared" | grep -qxF -- "$tok" || continue
+        named=1
+        if printf '%s\n' "$required" | grep -qxF -- "$tok"; then
+          pass "$CONTRIB:$ln calls $tok a required check, and it is"
+        else
+          fail "$CONTRIB:$ln calls $tok a required check, but it is not required and cannot block a merge."
+        fi
+      done
+      [ "$named" = 1 ] || fail "$CONTRIB:$ln says 'is a required check' but names no workflow job in backticks."
+    done <<EOF
+$claims
+EOF
+  fi
+
+  # (b) The commands in the first fenced block under "### Automated checks", up to
+  # the next heading. Every non-blank, non-comment line must be `bash <script>`.
+  n_heads=$(grep -c '^### Automated checks' "$CONTRIB")
+  block=$(awk '{ sub(/\r$/, "") }
+               /^### Automated checks/ { on = 1; next }
+               on && /^#{1,3} / { exit }
+               on && /^```/ { fences++; if (fences == 2) exit; next }
+               on && fences == 1 { print }' "$CONTRIB")
+  scripts=$(printf '%s\n' "$block" | sed -nE 's/^bash([[:space:]]+-[A-Za-z]+)*[[:space:]]+([^[:space:]-][^[:space:]]*).*/\2/p')
+  if [ "$n_heads" -gt 1 ]; then
+    fail "$CONTRIB: AMBIGUOUS, '### Automated checks' appears $n_heads times. The guard cannot tell which block states the policy."
+  elif [ -z "$scripts" ]; then
+    fail "$CONTRIB: MISSING_ANCHOR, no 'bash <script>' lines in the '### Automated checks' block. If the section moved, update this section rather than deleting the check."
+  else
+    while IFS= read -r l; do
+      case "$l" in ''|'#'*|bash\ *) ;; *) fail "$CONTRIB: '$l' in the Automated checks block is not a 'bash <script>' line, so the guard cannot check it." ;; esac
+    done <<EOF
+$block
+EOF
+    while IFS= read -r s; do
+      [ -n "$s" ] || continue
+      runners=$(jobs_running "$s")
+      req_runner=""
+      while IFS= read -r j; do
+        [ -n "$j" ] && printf '%s\n' "$required" | grep -qxF -- "$j" && { req_runner="$j"; break; }
+      done <<EOF
+$runners
+EOF
+      if [ -z "$runners" ]; then
+        fail "$CONTRIB lists $s as a CI suite that blocks merge, but no workflow job runs it."
+      elif [ -n "$req_runner" ]; then
+        pass "$CONTRIB lists $s; job $req_runner runs it and is a required check"
+      else
+        fail "$CONTRIB lists $s as blocking merge, but no required job runs it (run by: $(printf '%s' "$runners" | tr '\n' ' '))."
+      fi
+    done <<EOF
+$scripts
 EOF
   fi
 fi
