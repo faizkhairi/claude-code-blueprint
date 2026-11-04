@@ -6,11 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and the 
 
 ## [Unreleased]
 
-### Changed
-- CI workflows use `actions/checkout@v7` (was `@v4`). The workflows trigger on `push` and `pull_request` only, so v7's new block on checking out fork code under `pull_request_target` and `workflow_run` does not apply.
-
 ### Added
-- `tests/required-checks.sh` checks the merge-gate claims in `CONTRIBUTING.md`: a job the text calls a required check must be one, and every suite listed under "Automated checks" must be run by a required job.
+- `tests/required-checks.sh` checks the merge-gate claims in `CONTRIBUTING.md`: a job the text calls a required check must be one, and every `bash` command in the "Automated checks" block must be run by a required job.
+
+### Changed
+- CI workflows use `actions/checkout@v7` (was `@v4`). The workflows trigger on `push` and `pull_request` only, so v7's block on checking out fork code under `pull_request_target` and `workflow_run` ([v7.0.0 release notes](https://github.com/actions/checkout/releases/tag/v7.0.0)) does not apply.
 
 ## [1.2.0] - 2026-09-26
 
