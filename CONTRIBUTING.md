@@ -183,7 +183,7 @@ bash tests/count-check.sh   # published component counts
 bash tests/pin-check.sh     # every workflow action pinned by commit SHA
 ```
 
-If you add or change a `uses:` line in a workflow, pin it as `owner/repo@<40-character sha> # v1.2.3`. Resolve the SHA with `git ls-remote https://github.com/<owner>/<repo> 'refs/tags/<tag>*'` and use the `^{}` line when the tag is annotated. Dependabot keeps the pins current.
+If you add or change a `uses:` line in a workflow, pin it as `owner/repo@<40-character sha> # v1.2.3`. Resolve the SHA with `git ls-remote https://github.com/<owner>/<repo> 'refs/tags/<tag>' 'refs/tags/<tag>^{}'`; when a `^{}` line is printed (an annotated tag), its SHA is the commit. Write every `uses:` block style, one per line; the guard fails flow-style forms. Dependabot keeps the workflow pins current.
 
 `tests/install-matrix.sh` exercises every installer preset. It is slower and also runs in CI, so run it when you have touched `setup.sh` or a preset array.
 

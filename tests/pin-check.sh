@@ -98,7 +98,7 @@ while IFS= read -r wf; do
         ;;
       *)
         if ! [[ $ref =~ $RE_SHA_REF ]]; then
-          fail "$where '$ref' is not pinned to a 40-character commit SHA. Resolve it with: git ls-remote https://github.com/<owner>/<repo> 'refs/tags/<tag>*' (use the ^{} line when the tag is annotated), then write uses: <owner>/<repo>@<sha> # <tag>"
+          fail "$where '$ref' is not pinned to a 40-character commit SHA. Resolve it with: git ls-remote https://github.com/<owner>/<repo> 'refs/tags/<tag>' 'refs/tags/<tag>^{}' (the ^{} line, when present, is the commit), then write uses: <owner>/<repo>@<sha> # <tag>"
           continue
         fi
         ;;
@@ -112,6 +112,14 @@ while IFS= read -r wf; do
   done <<EOF
 $(tr -d '\r' < "$wf" | grep -nE '^[[:space:]]*(-[[:space:]]+)?uses:' || true)
 EOF
+  # Flow-style or quoted-key forms the block-style match above cannot parse. Fail them
+  # rather than skip them, so no form of uses: escapes the check.
+  while IFS= read -r line; do
+    [ -z "$line" ] && continue
+    fail "$wf:${line%%:*} uses: in flow style or with a quoted key; write it block style (- uses: owner/repo@<sha> # vX.Y.Z) so it can be checked."
+  done <<EOF2
+$(tr -d '\r' < "$wf" | grep -nE '[{,][[:space:]]*["'"'"']?uses["'"'"']?[[:space:]]*:|^[[:space:]]*(-[[:space:]]+)?["'"'"']uses["'"'"'][[:space:]]*:' || true)
+EOF2
 done <<EOF
 $files
 EOF
