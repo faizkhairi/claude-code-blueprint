@@ -68,8 +68,12 @@ while IFS= read -r wf; do
     text="${hit#*:}"
     scanned=$((scanned + 1))
 
-    # Everything after the first `uses:`, left-trimmed.
-    value="${text#*uses:}"
+    # Everything after the `uses` key and its colon (key quoted or not, spaces allowed
+    # before the colon), left-trimmed.
+    value="${text#*uses}"
+    value="${value#[\"\']}"
+    value="${value#"${value%%[![:space:]]*}"}"
+    value="${value#:}"
     value="${value#"${value%%[![:space:]]*}"}"
 
     # Split `<ref> # <comment>` on the first whitespace-then-hash.
@@ -110,15 +114,16 @@ while IFS= read -r wf; do
       fail "$where '$ref' is pinned but has no trailing version comment (expected '# v1.2.3'). Dependabot and reviewers need it to see what the SHA is."
     fi
   done <<EOF
-$(tr -d '\r' < "$wf" | grep -nE '^[[:space:]]*(-[[:space:]]+)?uses:' || true)
+$(tr -d '\r' < "$wf" | grep -nE '^[[:space:]]*(-[[:space:]]+)?["'"'"']?uses["'"'"']?[[:space:]]*:' || true)
 EOF
-  # Flow-style or quoted-key forms the block-style match above cannot parse. Fail them
-  # rather than skip them, so no form of uses: escapes the check.
+  # Flow-style forms (a step written as { uses: ... } or a [ ... ] list) that the block
+  # match above cannot parse. Fail them rather than skip them. Only a line whose value
+  # opens a flow collection counts, so a comment or a run: script mentioning uses: does not.
   while IFS= read -r line; do
     [ -z "$line" ] && continue
-    fail "$wf:${line%%:*} uses: in flow style or with a quoted key; write it block style (- uses: owner/repo@<sha> # vX.Y.Z) so it can be checked."
+    fail "$wf:${line%%:*} uses: in flow style; write it block style (- uses: owner/repo@<sha> # vX.Y.Z) so it can be checked."
   done <<EOF2
-$(tr -d '\r' < "$wf" | grep -nE '[{,][[:space:]]*["'"'"']?uses["'"'"']?[[:space:]]*:|^[[:space:]]*(-[[:space:]]+)?["'"'"']uses["'"'"'][[:space:]]*:' || true)
+$(tr -d '\r' < "$wf" | grep -nE '^[[:space:]]*(-[[:space:]]+)?([A-Za-z0-9_-]+:[[:space:]]*)?[[{].*["'"'"']?uses["'"'"']?[[:space:]]*:' || true)
 EOF2
 done <<EOF
 $files
