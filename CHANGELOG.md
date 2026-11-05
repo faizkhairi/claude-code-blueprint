@@ -8,9 +8,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and the 
 
 ### Added
 - `tests/required-checks.sh` checks the merge-gate claims in `CONTRIBUTING.md`: a job the text calls a required check must be one, and every `bash` command in the "Automated checks" block must be run by a required job.
+- `tests/pin-check.sh`, run by the required `count-check` job: fails when any `uses:` line in `.github/workflows` or `.github/actions` is not pinned to a full 40-character commit SHA with a trailing version comment.
+- `.github/dependabot.yml`: weekly `github-actions` updates, which bump each pinned SHA and its version comment together.
 
 ### Changed
-- CI workflows use `actions/checkout@v7` (was `@v4`). The workflows trigger on `push` and `pull_request` only, so v7's block on checking out fork code under `pull_request_target` and `workflow_run` ([v7.0.0 release notes](https://github.com/actions/checkout/releases/tag/v7.0.0)) does not apply.
+- Every GitHub Action is now pinned by full commit SHA with the version as a trailing comment (`actions/checkout` v7.0.1, `lycheeverse/lychee-action` v2.9.0), so a moved or compromised tag cannot change what CI runs. `actions/checkout` is on v7 (was `@v4`). The workflows trigger on `push` and `pull_request` only, so v7's block on checking out fork code under `pull_request_target` and `workflow_run` ([v7.0.0 release notes](https://github.com/actions/checkout/releases/tag/v7.0.0)) does not apply.
 
 ## [1.2.0] - 2026-09-26
 

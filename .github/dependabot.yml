@@ -1,0 +1,12 @@
+# Keeps the SHA-pinned GitHub Actions in .github/workflows current.
+# Dependabot rewrites the commit SHA and the trailing version comment together, and
+# opens one pull request per action, which then runs the same required checks as any
+# other PR. tests/pin-check.sh fails the build if a pin is ever replaced by a tag.
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "ci"
