@@ -6,7 +6,9 @@
 #                 preset-mismatch bug class.
 # hook-tests      smoke-tests every hook script for crashes.
 # count-check     asserts every published component count ("12 agents", the card
-#                 sources, the three translated READMEs) matches the filesystem.
+#                 sources, the three translated READMEs) matches the filesystem,
+#                 and that every workflow action is pinned by commit SHA
+#                 (tests/pin-check.sh).
 # required-checks advisory: warns when a CI job is not a required status check, or
 #                 when a required check names a job that no longer exists, or
 #                 when ROADMAP.md or CONTRIBUTING.md misstates what gates a merge.
@@ -22,7 +24,8 @@ on:
       - "examples/settings-template.json"
       - "tests/**"
       - "hooks/**"
-      - ".github/workflows/install-test.yml"
+      # pin-check (in count-check) reads every workflow, not just this one.
+      - ".github/workflows/**"
       # count-check reads published counts out of the docs and the card sources,
       # so a direct push touching only those still needs to run it.
       - "**/*.md"
@@ -42,7 +45,7 @@ jobs:
   install-matrix:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Run installer matrix
         run: bash tests/install-matrix.sh
@@ -50,7 +53,7 @@ jobs:
   hook-tests:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Run hook smoke tests
         run: bash hooks/test-hooks.sh
@@ -58,10 +61,15 @@ jobs:
   count-check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Verify published counts against the filesystem
         run: bash tests/count-check.sh
+
+      # Rides in this job because count-check is a required status check and a new
+      # job would not be one until it is added to the ruleset (see required-checks).
+      - name: Verify every action is pinned by commit SHA
+        run: bash tests/pin-check.sh
 
   # Advisory, and deliberately NOT a required status check.
   #
@@ -74,7 +82,7 @@ jobs:
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Warn if a CI job is not an enforced required check
         run: bash tests/required-checks.sh
@@ -85,7 +93,7 @@ jobs:
   shellcheck:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Lint shell scripts
         run: shellcheck hooks/*.sh setup.sh tests/*.sh
