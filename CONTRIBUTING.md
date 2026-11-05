@@ -175,12 +175,15 @@ skills/
 
 ### Automated checks (run these before opening a PR)
 
-The sections above cover manual testing in a live session. These two suites run in CI on every pull request and both are required checks, so a failure blocks merge:
+The sections above cover manual testing in a live session. These three suites run in CI on every pull request and all are required checks, so a failure blocks merge:
 
 ```bash
 bash hooks/test-hooks.sh    # hook smoke suite
 bash tests/count-check.sh   # published component counts
+bash tests/pin-check.sh     # every workflow action pinned by commit SHA
 ```
+
+If you add or change a `uses:` line in a workflow, pin it as `owner/repo@<40-character sha> # v1.2.3`. Resolve the SHA with `git ls-remote https://github.com/<owner>/<repo> 'refs/tags/<tag>' 'refs/tags/<tag>^{}'`; when a `^{}` line is printed (an annotated tag), its SHA is the commit. Write every `uses:` block style, one per line; the guard fails flow-style forms. Dependabot keeps the workflow pins current.
 
 `tests/install-matrix.sh` exercises every installer preset. It is slower and also runs in CI, so run it when you have touched `setup.sh` or a preset array.
 
