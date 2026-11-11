@@ -7,7 +7,7 @@ set -euo pipefail
 # https://github.com/faizkhairi/claude-code-blueprint
 # ============================================================
 
-VERSION="1.0.0"
+VERSION="1.2.0"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CLAUDE_DIR="${HOME}/.claude"
 BACKUP_DIR="${CLAUDE_DIR}/backup"
@@ -25,7 +25,7 @@ CONFLICTS=0
 
 MINIMAL_HOOKS=(protect-config.sh notify-file-changed.sh)
 
-STANDARD_HOOKS=(block-git-push.sh cost-tracker.sh session-checkpoint.sh post-commit-review.sh)
+STANDARD_HOOKS=(block-git-push.sh cost-tracker.sh session-checkpoint.sh post-commit-review.sh mcp-failure-hint.sh)
 STANDARD_AGENTS=(verify-plan.md code-reviewer.md)
 
 # Core adds two review agents + a curated, broadly-useful skill/rule set on top of Standard.
@@ -69,9 +69,9 @@ print_usage() {
   echo ""
   echo "Presets:"
   echo "  minimal   4 files   CLAUDE.md + 2 hooks + settings.json (60 seconds)"
-  echo "  standard  10 files  + 4 hooks, 2 agents, settings.json (5 minutes)"
-  echo "  core      20 files  + 2 review agents, 6 skills, 2 rules (curated, broadly useful)"
-  echo "  full      55 files  + all agents, skills, rules (30 minutes)"
+  echo "  standard  11 files  + 5 hooks, 2 agents, settings.json (5 minutes)"
+  echo "  core      21 files  + 2 review agents, 6 skills, 2 rules (curated, broadly useful)"
+  echo "  full      56 files  + all agents, skills, rules (30 minutes)"
   echo ""
   echo "Examples:"
   echo "  ./setup.sh                          Interactive preset selection"
@@ -256,7 +256,7 @@ select_preset() {
   echo "  Choose a preset:"
   echo ""
   echo "    1) Minimal   : CLAUDE.md + 2 hooks (config protection, edit verification)"
-  echo "    2) Standard  : + 4 more hooks, 2 agents, settings.json"
+  echo "    2) Standard  : + 5 more hooks, 2 agents, settings.json"
   echo "    3) Core      : + 2 review agents, 6 universal skills, 2 path-scoped rules"
   echo "    4) Full      : + all 12 agents, 19 skills, 6 rules (everything)"
   echo ""

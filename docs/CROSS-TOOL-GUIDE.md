@@ -72,7 +72,7 @@ While this blueprint is built for Claude Code, the **principles are universal**.
 | **Windsurf** | No (parallel Cascade only) | Limited (enterprise) | Yes | Yes (auto-generated) | No | No | Yes (parallel agents) |
 | **Aider** | No | No | No | Partial (chat history replay) | Yes (3-tier: main/weak/editor) | Partial (binary `--yes`) | No |
 
-**Hooks: a growing ecosystem with different surfaces.** Claude Code (SessionStart, PreToolUse matchers, Pre/PostCompact, Stop), Copilot (8 events including SubagentStart/Stop, Preview), Cursor (~11 types including `beforeSubmitPrompt`, `afterAgentResponse`), Cline (8 events including TaskStart, PreToolUse), Amazon Q (5 triggers in custom agents), and OpenCode (20+ plugin events covering tools, sessions, files, LSP, and TUI) all have hooks, but they cover **different events** with different APIs. For **policy that must hold regardless of product**, prefer **git hooks** or **CI**; use each product's hooks where they fit.
+**Hooks: a growing ecosystem with different surfaces.** Claude Code (SessionStart including a `compact` matcher for post-compaction recovery, PreToolUse matchers, PreCompact, Stop), Copilot (8 events including SubagentStart/Stop, Preview), Cursor (~11 types including `beforeSubmitPrompt`, `afterAgentResponse`), Cline (8 events including TaskStart, PreToolUse), Amazon Q (5 triggers in custom agents), and OpenCode (20+ plugin events covering tools, sessions, files, LSP, and TUI) all have hooks, but they cover **different events** with different APIs. For **policy that must hold regardless of product**, prefer **git hooks** or **CI**; use each product's hooks where they fit.
 
 ---
 
@@ -99,7 +99,7 @@ Agent profiles are Markdown files with YAML frontmatter:
 name: security-reviewer
 description: Reviews code for security vulnerabilities
 tools: ["read", "search", "edit"]
-model: claude-opus-4-8
+model: claude-opus-5-5
 ---
 Review the code for OWASP Top 10 vulnerabilities...
 ```
@@ -290,7 +290,7 @@ Claude Code lets you create specialized subagents with their own instructions, m
 
 Hooks are deterministic automation that fires on specific events (before/after file edits, shell commands, session start/end, etc.).
 
-**Claude Code** has a broad hook system: SessionStart, PreToolUse, PostToolUse, PostToolUseFailure, PreCompact, PostCompact, Stop, SessionEnd, with matchers for specific tools.
+**Claude Code** has a broad hook system: SessionStart, PreToolUse, PostToolUse, PostToolUseFailure, PreCompact, PostCompact, Stop, SessionEnd and more (see the [hooks reference](https://code.claude.com/docs/en/hooks)), with matchers for specific tools. After compaction, a `SessionStart` hook with the `compact` matcher can inject recovery context (prompt hooks are not supported on the compaction events).
 
 **Copilot** has 8 hook events (Preview): SessionStart, UserPromptSubmit (blocking), PreToolUse (deny/ask/allow with input modification), PostToolUse, PreCompact, SubagentStart (blocking), SubagentStop, Stop. Configured in `.github/hooks/*.json` (workspace) or `~/.copilot/hooks/` (user-level).
 

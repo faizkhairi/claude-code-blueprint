@@ -100,23 +100,17 @@ Each branch maps to a section below. Ctrl+F the section name if a link does not 
 
 **Causes and fixes:**
 
-1. **`CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` not set.** This is the most common cause. Add to your `settings.json`:
-   ```json
-   "env": {
-     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
-   }
-   ```
-   Then restart Claude Code. See [SETTINGS-GUIDE.md](docs/SETTINGS-GUIDE.md#claude_code_experimental_agent_teams) for details.
+1. **Model not available on your Anthropic plan.** If an agent specifies `model: opus` but your API key doesn't have Opus access, the agent will fail. Check your plan at [console.anthropic.com](https://console.anthropic.com). As a workaround, change the agent's frontmatter to `model: sonnet`.
 
-2. **Model not available on your Anthropic plan.** If an agent specifies `model: opus` but your API key doesn't have Opus access, the agent will fail. Check your plan at [console.anthropic.com](https://console.anthropic.com). As a workaround, change the agent's frontmatter to `model: sonnet`.
+2. **Agent .md file not found.** Custom agents must be in `.claude/agents/` (project-level) or `~/.claude/agents/` (global). Claude Code won't find agents in other locations.
 
-3. **Agent .md file not found.** Custom agents must be in `.claude/agents/` (project-level) or `~/.claude/agents/` (global). Claude Code won't find agents in other locations.
+3. **Agent teams are on.** Subagents need no env flag. If `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` is set, a subagent Claude names launches as a teammate instead. Remove the flag and restart Claude Code. See [SETTINGS-GUIDE.md](docs/SETTINGS-GUIDE.md#claude_code_experimental_agent_teams) for details.
 
 ### "Agent modifies files it shouldn't"
 
 **Symptoms:** An analysis-only agent (like verify-plan or db-analyst) writes to files or runs shell commands.
 
-**Fix:** Check the agent's frontmatter for `permissionMode: plan`. This restricts the agent to read-only tools (Read, Grep, Glob). If the field is missing or set to a different value, the agent has write access. See [agents/README.md](agents/README.md) for the permission mode table.
+**Fix:** Check the agent's frontmatter for `permissionMode: plan`, which is meant to keep the agent read-only. A subagent inherits the main conversation's permission mode: when your session runs in `bypassPermissions`, `acceptEdits`, or `auto` mode, the agent runs in that mode and its own `permissionMode` is ignored. The setting only applies in `default` or `dontAsk` mode. An agent that sets `memory` also gets Read, Write and Edit automatically. See [agents/README.md](agents/README.md) for the permission mode table.
 
 ---
 
@@ -247,7 +241,7 @@ See [SETTINGS-GUIDE.md](docs/SETTINGS-GUIDE.md#defaultmode) for the full explana
 
 2. **Parallel agent spawns.** Skills like `review-full` spawn up to 4 agents simultaneously, each with its own context window and token budget. Modify the skill to spawn fewer agents for lower-risk changes.
 
-3. **Always-thinking + high effort.** `alwaysThinkingEnabled: true` with `effortLevel: "high"` maximizes reasoning depth but also token usage. Switch to `"medium"` effort or disable always-thinking for routine tasks.
+3. **Always-thinking + high effort.** `alwaysThinkingEnabled: true` with a high effort level maximizes reasoning depth but also token usage. Lower the level with `/effort` or disable always-thinking for routine tasks.
 
 4. **Agent teams.** Sessions with active agent teams use ~7x more tokens than standard sessions.
 
@@ -321,16 +315,16 @@ This is separate from the `{...}` placeholder variables (`{CLAUDE_CONFIG_PATH}`,
 
 **Symptoms:** You asked an agent to fix something, but it only analyzes and reports. It never actually edits files or runs commands.
 
-**Cause:** The agent has `permissionMode: plan` in its frontmatter, which restricts it to read-only tools (Read, Grep, Glob).
+**Cause:** The agent has `permissionMode: plan` in its frontmatter, which keeps it read-only when your main session runs in `default` (Manual) or `dontAsk` mode. In `bypassPermissions`, `acceptEdits`, or `auto` mode the agent inherits that mode and can write, and an agent that sets `memory` can always write.
 
-**These agents are read-only by design:**
+**These agents are read-only by intent:**
 - `verify-plan`: plan verification
 - `code-reviewer`: code review
 - `security-reviewer`: security audit
 - `db-analyst`: database schema analysis
 - `devops-engineer`: infrastructure review
 
-**Fix:** If you need code changes, use an agent with write access (e.g., `backend-specialist`, `frontend-specialist`, `qa-tester`). If you want to give a read-only agent write access, change `permissionMode: plan` to remove it in your copy of the agent file, but be aware this removes a safety guardrail.
+**Fix:** If you need code changes, use an agent with write access (e.g., `backend-specialist`, `frontend-specialist`, `qa-tester`). If you want to give a read-only agent write access, change `permissionMode: plan` to remove it in your copy of the agent file, but be aware this removes a safety guardrail. For an enforced guard that does not depend on the session mode, a PreToolUse hook keyed on `agent_type` is the reliable mechanism (a hook-based guard is planned for v1.3.0).
 
 ### "Agent stopped before finishing"
 

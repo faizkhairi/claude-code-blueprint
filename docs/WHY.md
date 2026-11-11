@@ -18,13 +18,13 @@ Every component in this blueprint exists because something went wrong without it
 
 ---
 
-### PostCompact Hook: Why State Serialization
+### Compaction Recovery: Why State Serialization
 
 **What happened:** During long sessions (50+ tool calls), Claude's context window fills up and auto-compaction kicks in. After compaction, Claude lost awareness of the current plan, modified files, and pending verification steps. Prompt-only injection ("remember to check your todo list") wasn't reliable: sometimes Claude would acknowledge the prompt but not actually read the files.
 
 **What we learned:** Context compaction is aggressive. You can't rely on prompt-based reminders surviving it. The only reliable approach is to serialize critical state to disk *before* compaction happens, then read it back *after*.
 
-**What we built:** A `PreCompact` hook that writes a JSON snapshot of working state (active plan, current branch, modified files, cwd) to a temp file. A `PostCompact` prompt hook that instructs Claude to read that file and restore awareness. State survives compaction because it's on disk, not in context.
+**What we built:** A `PreCompact` command hook (`precompact-state.sh`) that writes a JSON snapshot of working state (active plan, current branch, modified files, cwd) to a temp file and prints instructions for the compaction summary on stdout, which Claude Code uses as summary instructions. After compaction, an inline `SessionStart` hook with the `compact` matcher echoes the recovery steps, which Claude reads as context. (Prompt hooks are not supported on PreCompact or PostCompact, so neither event uses one.) State survives compaction because it's on disk, not in context.
 
 ---
 
@@ -131,7 +131,7 @@ This reduced costs significantly while maintaining quality where it matters.
 
 **What we learned:** Code review and architecture review answer different questions. Code review asks "is this file correct?" Architecture review asks "do these files relate correctly?" A reviewer focused on line-level quality has no reason to trace import chains across directories or flag a god file: those are structural properties, invisible at the diff level.
 
-**What we built:** A dedicated `architecture-reviewer` agent (sonnet, `permissionMode: plan`, read-only) that checks the things code review misses: dependency direction (imports should flow inward), circular dependencies, god files, dead exports, and feature-vs-layer modularity. It outputs an architecture health score, not a line-by-line critique. Run it after a significant refactor or when picking up an unfamiliar codebase.
+**What we built:** A dedicated `architecture-reviewer` agent (sonnet, `permissionMode: plan`, read-only by intent) that checks the things code review misses: dependency direction (imports should flow inward), circular dependencies, god files, dead exports, and feature-vs-layer modularity. It outputs an architecture health score, not a line-by-line critique. Run it after a significant refactor or when picking up an unfamiliar codebase.
 
 ---
 
@@ -141,7 +141,9 @@ This reduced costs significantly while maintaining quality where it matters.
 
 **What we learned:** Agents that are meant to analyze should not have write access. The temptation to "fix while analyzing" is strong, and without explicit constraints, agents will act on what they find.
 
-**What we built:** Analysis-only agents (`verify-plan`, `code-reviewer`, `security-reviewer`, `db-analyst`, `devops-engineer`, `architecture-reviewer`) use `permissionMode: plan`, which restricts them to read-only tools. They can Read, Grep, and Glob, but not Write, Edit, or Bash. Their findings go into their response, not into the codebase.
+**What we built:** Analysis-only agents (`verify-plan`, `code-reviewer`, `security-reviewer`, `db-analyst`, `devops-engineer`, `architecture-reviewer`) use `permissionMode: plan`, which is meant to keep them read-only. Their findings go into their response, not into the codebase.
+
+**The caveat:** A subagent inherits the main conversation's permission mode. `permissionMode: plan` keeps an agent read-only only when the main session runs in `default` (Manual) or `dontAsk` mode. In `bypassPermissions`, `acceptEdits`, or `auto` mode the agent runs in the session's mode and its own setting is ignored. An agent that sets `memory` also gets Read, Write and Edit automatically, which `tools:` cannot remove. A PreToolUse hook keyed on `agent_type` is the enforceable guard (a hook-based guard is planned for v1.3.0).
 
 ---
 

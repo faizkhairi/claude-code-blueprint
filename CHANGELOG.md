@@ -13,6 +13,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and the 
 
 ### Changed
 - Every GitHub Action is now pinned by full commit SHA with the version as a trailing comment (`actions/checkout` v7.0.1, `lycheeverse/lychee-action` v2.9.0), so a moved or compromised tag cannot change what CI runs. `actions/checkout` is on v7 (was `@v4`). The workflows trigger on `push` and `pull_request` only, so v7's block on checking out fork code under `pull_request_target` and `workflow_run` ([v7.0.0 release notes](https://github.com/actions/checkout/releases/tag/v7.0.0)) does not apply.
+- The `minimal`, `standard` and `core` presets no longer get PreCompact summary guidance, because `precompact-state.sh` is installed by `full` only. Every preset keeps the `SessionStart` `compact` recovery text.
+
+### Fixed
+- D1: `verify-subagent-findings` now delivers its warning to Claude through `additionalContext`. A synchronous hook's `systemMessage` is shown to the user only.
+- D2: Removed the prompt hooks on PreCompact and PostCompact, which Claude Code does not support (only command, http and mcp_tool handlers run there). Compaction guidance now comes from `precompact-state.sh` stdout, plus an inline `SessionStart` hook with the `compact` matcher for recovery after compaction. The MCP failure guidance moved to the new `hooks/mcp-failure-hint.sh` (Standard preset).
+- D3: Removed the agent-teams flag from the template and corrected the docs. Subagents need no env flag; `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` enables the separate, experimental agent teams feature.
+- D4: Corrected the read-only reviewer claims. `permissionMode: plan` holds only when the main session runs in `default` or `dontAsk` mode, and agents that set `memory` can still write.
+- D5: Removed `effortLevel` from the template. It is ignored for Opus 5.5 and later; use `/effort`.
+- D6: Corrected stale facts: the plugin system, the MCP config path (`~/.claude.json`), the permission modes (six, not four), the model id in the cross-tool guide, the version string in `setup.sh`, and the ROADMAP.
+
+### Upgrading from 1.2
+
+The installer merges into your existing `~/.claude/settings.json` and never removes entries, so remove these by hand:
+
+- The `PreCompact` entry of type `prompt`. Keep the `precompact-state.sh` command entry.
+- The whole `PostCompact` block.
+- The `PostToolUseFailure` prompt entry (and its old `mcp__*` matcher). `mcp-failure-hint.sh` replaces it.
+- `env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS`. Keep it only if you use agent teams.
+- `effortLevel`.
 
 ## [1.2.0] - 2026-09-26
 

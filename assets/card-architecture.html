@@ -97,7 +97,7 @@
   <span class="dim">|--</span> <span class="hl3">PostToolUse</span> (Write) --> <span class="hl2">notify-file-changed.sh</span>
   <span class="dim">|--</span> <span class="hl3">PostToolUse</span> (Bash) --> <span class="hl2">post-commit-review.sh</span>
   <span class="dim">|--</span> <span class="hl3">PreCompact</span>  --> <span class="hl2">precompact-state.sh</span>
-  <span class="dim">|--</span> <span class="hl3">PostCompact</span> --> restore awareness prompt
+  <span class="dim">|--</span> <span class="hl3">SessionStart</span> (compact) --> recovery steps
   <span class="dim">|--</span> <span class="hl3">Stop</span>        --> security check <span class="dim">(sonnet)</span>
   <span class="dim">|               </span> + session-checkpoint + cost-tracker
   <span class="dim">|</span>
@@ -106,7 +106,7 @@
 
   <div class="footer">
     <div class="url">github.com/faizkhairi/claude-code-blueprint</div>
-    <div class="tag">15 hooks across the session lifecycle</div>
+    <div class="tag">16 hooks across the session lifecycle</div>
   </div>
 </div>
 </body>

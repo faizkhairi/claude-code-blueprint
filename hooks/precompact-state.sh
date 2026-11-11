@@ -1,14 +1,24 @@
 #!/bin/bash
-# Hook: PreCompact (sync). State Serialization
-# Writes a JSON snapshot of current working state before compaction.
-# PostCompact hook references this file for context recovery.
+# Hook: PreCompact (sync). State Serialization + compaction instructions
+# Writes a JSON snapshot of current working state before compaction, then prints
+# instructions for the compaction summary on stdout. On PreCompact, a hook's
+# plain-text stdout (exit 0) becomes instructions for the summary Claude Code
+# writes, so this is where "keep the todo list and the active plan" belongs.
+# (A prompt hook is not supported on PreCompact; only command, http and
+# mcp_tool hooks run there.)
 #
 # Requires: python3 or python on PATH
 # Exit code: always 0 (never blocks compaction)
 
+# Instructions for the compaction summary. Plain text (not JSON), kept well under
+# the 10,000 character cap Claude Code applies to PreCompact stdout. Printed even
+# when Python is missing, since only the state snapshot needs Python.
+KEEP_LINE="When writing the compaction summary, preserve: the current todo list with each item's status; every file path modified in this session; verification steps not yet run; key decisions and their rationale; the active plan and which step is in progress; any preference or constraint the user stated in this session."
+
 PYTHON=$(command -v python3 2>/dev/null || command -v python 2>/dev/null)
 if [ -z "$PYTHON" ]; then
   echo "precompact-state: python not found: state not saved" >&2
+  echo "$KEEP_LINE"
   exit 0
 fi
 
@@ -22,6 +32,7 @@ HOOK_BRANCH=$(git branch --show-current 2>/dev/null || echo "unknown")
 export HOOK_BRANCH
 HOOK_CWD=$(pwd)
 export HOOK_CWD
+rm -f "$HOOK_STATE_FILE"
 
 $PYTHON -c "
 import os, json
@@ -40,5 +51,11 @@ if state_file:
         import sys
         print(f'precompact-state: write failed: {e}', file=sys.stderr)
 " 2>/dev/null
+
+echo "$KEEP_LINE"
+# Name the snapshot only if this run wrote it (the old file was removed above).
+if [ -s "$HOOK_STATE_FILE" ]; then
+  echo "A state snapshot (active plan file, branch, working directory) was saved to $HOOK_STATE_FILE. Name that path in the summary so it can be read back after compaction."
+fi
 
 exit 0
