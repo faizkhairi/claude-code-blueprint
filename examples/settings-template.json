@@ -4,7 +4,6 @@
   "cleanupPeriodDays": 60,
 
   "env": {
-    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
     "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "80",
     "CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS": "5000",
     "CLAUDE_CODE_SUBPROCESS_ENV_SCRUB": "1"
@@ -147,6 +146,16 @@
             "command": "bash \"$HOME/.claude/hooks/session-start.sh\""
           }
         ]
+      },
+      {
+        "__compact_note": "Runs after every compaction (auto or manual). SessionStart stdout becomes context Claude reads, so this restores the working habits the summary may have dropped. Inline on purpose: no script, so every preset keeps it.",
+        "matcher": "compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo 'Context was just compacted. 1) Check your todo list and resume the in-progress item. 2) Re-read the active plan file if one exists. 3) Rules from CLAUDE.md still apply; re-read it if you are unsure of one. 4) If ~/.claude/precompact-state.json or ~/.claude/session-checkpoint.txt exists (the full and standard presets write them), read it before continuing.'"
+          }
+        ]
       }
     ],
 
@@ -230,11 +239,11 @@
 
     "PostToolUseFailure": [
       {
-        "matcher": "mcp__*",
+        "matcher": "mcp__.*",
         "hooks": [
           {
-            "type": "prompt",
-            "prompt": "An MCP tool call failed. Common causes: 1) MCP server crashed, so try once more. 2) Docker not running (docker MCP). 3) Browser closed (playwright MCP). If retry fails, fall back to non-MCP alternatives (curl for web, docker CLI for containers)."
+            "type": "command",
+            "command": "bash \"$HOME/.claude/hooks/mcp-failure-hint.sh\""
           }
         ]
       }
@@ -247,21 +256,6 @@
             "type": "command",
             "command": "bash \"$HOME/.claude/hooks/precompact-state.sh\"",
             "async": false
-          },
-          {
-            "type": "prompt",
-            "prompt": "Compaction is imminent. Ensure your current todo items, active file paths, pending verifications, and current plan step are included in the compacted summary. State snapshot saved at ~/.claude/precompact-state.json; read it to restore context about the active plan and working state."
-          }
-        ]
-      }
-    ],
-
-    "PostCompact": [
-      {
-        "hooks": [
-          {
-            "type": "prompt",
-            "prompt": "Context was just compacted. CRITICAL: 1) Check your todo list and resume in-progress tasks. 2) Re-read the active plan file if one exists. 3) Key rules from CLAUDE.md still apply, so re-read it if needed. 4) If you lost track, read the session checkpoint at ~/.claude/session-checkpoint.txt. 5) State snapshot at ~/.claude/precompact-state.json; read it to restore context about the active plan and working state."
           }
         ]
       }
@@ -308,6 +302,5 @@
     "command": "bash \"$HOME/.claude/hooks/status-line.sh\""
   },
 
-  "alwaysThinkingEnabled": true,
-  "effortLevel": "high"
+  "alwaysThinkingEnabled": true
 }

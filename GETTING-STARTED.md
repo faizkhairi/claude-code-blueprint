@@ -191,19 +191,9 @@ Claude Code authenticates one of two ways; you only need one:
 
 Then run `claude` to start. Note: if you have a subscription **and** an `ANTHROPIC_API_KEY` set, the API key takes precedence. Run `unset ANTHROPIC_API_KEY` to use your subscription instead.
 
-### Enable Agent Teams (Required for Agents)
+### Agents Need No Extra Setup
 
-If you plan to use any of the [12 agents](agents/) in this blueprint, you must enable the agent teams feature. Add this to your `~/.claude/settings.json`:
-
-```json
-{
-  "env": {
-    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
-  }
-}
-```
-
-Without this, the Agent tool is unavailable and all multi-agent workflows (parallel reviews, sprint planning, specialist agents) are non-functional. See [SETTINGS-GUIDE.md](docs/SETTINGS-GUIDE.md#claude_code_experimental_agent_teams) for the full explanation.
+The [12 agents](agents/) in this blueprint are ordinary subagents, and subagents work without any env flag. The separate, experimental agent teams feature (one lead session coordinating teammate sessions, at significantly higher token cost) is optional, off by default, and not set by the template. If you turn it on, a subagent Claude names launches as a teammate instead. See [SETTINGS-GUIDE.md](docs/SETTINGS-GUIDE.md#claude_code_experimental_agent_teams) for the full explanation.
 
 ---
 
@@ -445,7 +435,7 @@ After manual edits, restart Claude Code to load the new servers.
 | **User** | `~/.claude.json` | `claude mcp add --scope user` | Available in every project |
 | **Local** | (session state) | `claude mcp add` (default) | Temporary, this session only |
 
-> **Note:** The VS Code extension also reads from `~/.claude/mcp.json`. If you use both CLI and the extension, run [verify-mcp-sync.sh](hooks/verify-mcp-sync.sh) to check they're in sync.
+> **Note:** The CLI and the VS Code extension share the same `~/.claude.json` user scope; there is no separate extension file. If you also use Cursor, run [verify-mcp-sync.sh](hooks/verify-mcp-sync.sh), which compares that user scope with Cursor's MCP file.
 
 Manage your servers anytime:
 
@@ -676,7 +666,7 @@ If you're adopting this blueprint across a team (startup, company, open source p
 | Comfortable with hooks | `"auto"` | AI classifier evaluates safety contextually; hooks catch the rest |
 | CI/CD pipelines | `"dontAsk"` | Predictable allow-list behavior, no classifier overhead |
 
-Start new developers on the default (ask) mode. Graduate to `"auto"` once they've set up and tested the hook guardrails (especially `protect-config.sh` and `block-git-push.sh`). Use `"dontAsk"` only for CI/CD where you want rigid, predictable behavior. See [SETTINGS-GUIDE.md](docs/SETTINGS-GUIDE.md#defaultmode) for full details on all four modes.
+Start new developers on the default (ask) mode. Graduate to `"auto"` once they've set up and tested the hook guardrails (especially `protect-config.sh` and `block-git-push.sh`). Use `"dontAsk"` only for CI/CD where you want rigid, predictable behavior. See [SETTINGS-GUIDE.md](docs/SETTINGS-GUIDE.md#defaultmode) for full details on all six modes.
 
 ### Memory for Teams
 

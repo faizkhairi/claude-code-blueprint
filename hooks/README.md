@@ -1,12 +1,13 @@
 # Hooks
 
-13 lifecycle hooks + 2 utility scripts (plus one companion tool, `check-no-dash-file.py`), covering 9 lifecycle events. Hooks are deterministic (they fire every time) vs CLAUDE.md instructions (followed most of the time, but not guaranteed).
+14 lifecycle hooks + 2 utility scripts (plus one companion tool, `check-no-dash-file.py`), covering 8 lifecycle events. Hooks are deterministic (they fire every time) vs CLAUDE.md instructions (followed most of the time, but not guaranteed).
 
 ## Hook Lifecycle
 
 | Event | When It Fires | Our Hook | Purpose |
 |-------|--------------|----------|---------|
 | SessionStart | New session begins | session-start.sh | Inject workspace context |
+| SessionStart (`compact`) | After any compaction | (inline `echo`) | Restore working habits: todo list, plan file, CLAUDE.md |
 | InstructionsLoaded | CLAUDE.md / rules load into context | instructions-loaded.sh | Log which rules fired and why (observability) |
 | PreToolUse (Bash) | Before any bash command | block-git-push.sh | Protect remote repos |
 | PreToolUse (Bash) | Before any bash command | pre-commit-secret-scan.sh | Block commits containing secrets (gitleaks) |
@@ -16,9 +17,8 @@
 | PostToolUse (Write/Edit) | After file edits | no-dash-check.sh | Warn on a prose-style violation (example: em-dashes) |
 | PostToolUse (Bash) | After bash commands | post-commit-review.sh | Post-commit review |
 | PostToolUse (Agent/Task) | After a subagent finishes | verify-subagent-findings.sh | Treat subagent findings as hypotheses to verify |
-| PostToolUseFailure | When MCP tools fail | (prompt hook) | Fallback guidance |
-| PreCompact | Before context compaction | precompact-state.sh | Serialize state to disk |
-| PostCompact | After compaction | (prompt hook) | Restore awareness |
+| PostToolUseFailure (MCP) | When an MCP tool fails | mcp-failure-hint.sh | Fallback guidance |
+| PreCompact | Before context compaction | precompact-state.sh | Serialize state to disk; its stdout tells the compaction summary what to keep |
 | Stop | After each response | security check + cost-tracker.sh + session-checkpoint.sh | Last defense + metrics + crash recovery |
 | SessionEnd | Session terminates | session-checkpoint.sh | Guaranteed final save |
 | CwdChanged | Working directory changes | *(not used)* | Auto-load project context on directory switch |
@@ -54,7 +54,7 @@ This matches the "exit 0 = allow/no-op" convention every hook here follows, so a
 **For context injection, prefer a path-scoped rule over a hook.** If your goal is to load guidance only when certain files are open (not to block or act on a command), the [rules](../rules/) mechanism already does this natively: a rule's `paths:` frontmatter loads it only when a matching file is in play. Reach for a scoped hook when you need to gate an *action*; reach for a path-scoped rule when you need to inject *context*.
 
 **Utility scripts** (not lifecycle hooks, run manually):
-- `verify-mcp-sync.sh`: Compares MCP server configs across CLI, VS Code extension, and Cursor. Run with `bash ~/.claude/hooks/verify-mcp-sync.sh`
+- `verify-mcp-sync.sh`: Compares the user-scope MCP servers in Claude Code (`~/.claude.json`, shared by the CLI and the VS Code extension) with Cursor (`~/.cursor/mcp.json`). Run with `bash ~/.claude/hooks/verify-mcp-sync.sh`
 - `status-line.sh`: Generates a status line showing project name, branch, and dirty state
 
 **Companion tool** (a helper for the `no-dash-check.sh` hook, not itself a hook or counted in the hook total):
@@ -62,10 +62,22 @@ This matches the "exit 0 = allow/no-op" convention every hook here follows, so a
 
 ## Design Principles
 
-1. **Prompt hooks for guidance, command hooks for action**: PreCompact/PostCompact inject prompts. Stop/SessionEnd run scripts.
+1. **Command hooks for guidance and action; prompt hooks for decisions**: a prompt hook sends its text to an evaluator model that answers `{ok, reason}`, so it fits a yes/no judgement (the Stop security check) and is the wrong tool for delivering advice. Guidance goes through a command hook's output instead (see below). PreCompact and PostCompact do not run prompt hooks at all.
 2. **Async for non-blocking**: Post-commit review and file notifications run async to avoid slowing Claude down.
 3. **Sync for critical**: SessionEnd checkpoint is synchronous to guarantee it completes before exit.
 4. **Exit 0 always**: Hook scripts should never block Claude. Even on errors, exit 0 and log the issue.
+
+## Which output reaches Claude
+
+A hook can run perfectly and still say nothing to Claude. Where its output goes depends on the field and on whether the hook is synchronous:
+
+| Output | Synchronous hook | `async: true` hook |
+|--------|------------------|--------------------|
+| `systemMessage` | Shown to **you** only; Claude never sees it | Delivered to Claude on the next turn (not shown to you) |
+| `hookSpecificOutput.additionalContext` | Added to **Claude's** context (PostToolUse, PostToolUseFailure, SessionStart, UserPromptSubmit, and others) | Delivered to Claude on the next turn |
+| Plain stdout, exit 0 | Context for Claude on SessionStart and UserPromptSubmit; **instructions for the compaction summary** on PreCompact; debug log only on most other events | Not a documented channel; return a JSON field instead |
+
+So a synchronous PostToolUse hook that wants Claude to act must return `additionalContext`. `verify-subagent-findings.sh` returns both: `additionalContext` for Claude, a short `systemMessage` so you can see it fired. `mcp-failure-hint.sh` returns `additionalContext` only. The async hooks that talk to Claude (`notify-file-changed.sh`, `no-dash-check.sh`, `post-commit-review.sh`) use `systemMessage`, which async delivery already routes to Claude. Source: the hooks reference sections on JSON output, "Add context for Claude", and "How async hooks execute".
 
 ## Requirements
 
@@ -75,7 +87,7 @@ All command-type hooks require **Python 3.6+** on your PATH (f-strings are used 
 PYTHON=$(command -v python3 2>/dev/null || command -v python 2>/dev/null)
 ```
 
-If neither `python3` nor `python` is found, the hook prints a warning to stderr and exits cleanly (no blocking). Prompt-type hooks (PostToolUseFailure, PostCompact) have no dependencies.
+If neither `python3` nor `python` is found, the hook prints a warning to stderr and exits cleanly (no blocking). The inline SessionStart `compact` command and the Stop prompt hook have no dependencies.
 
 **Why Python?** Bash cannot safely parse or construct JSON. All hook input/output uses JSON, so Python handles the serialization boundary. This is a deliberate choice: one dependency for correctness, rather than fragile string manipulation.
 

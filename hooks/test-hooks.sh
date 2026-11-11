@@ -94,6 +94,86 @@ for f in "$HOOKS_DIR"/*.sh; do
 done
 echo ""
 
+# 6. Output contract for hooks whose output must reach Claude.
+# A synchronous hook's systemMessage is shown to the user only; Claude sees
+# hookSpecificOutput.additionalContext (PostToolUse, PostToolUseFailure) or plain
+# stdout (SessionStart, and PreCompact, where stdout becomes instructions for the
+# compaction summary). These cases assert the channel, not just the exit code.
+echo "--- Output Contract (what reaches Claude) ---"
+if [ -z "$PYTHON" ]; then
+  skip "output contract checks need Python"
+else
+  # json_field <json> <dotted.path>: prints the value at the path, or nothing.
+  json_field() {
+    printf '%s' "$1" | "$PYTHON" -c "
+import sys, json
+try:
+    d = json.load(sys.stdin)
+    for k in sys.argv[1].split('.'):
+        d = d[k]
+    print(d)
+except Exception:
+    pass
+" "$2" 2>/dev/null
+  }
+
+  # verify-subagent-findings.sh: synchronous, so its warning must travel as additionalContext.
+  out=$(echo '{"tool_name":"Agent","tool_input":{"subagent_type":"code-reviewer"}}' | bash "$HOOKS_DIR/verify-subagent-findings.sh" 2>/dev/null)
+  if [ "$(json_field "$out" hookSpecificOutput.hookEventName)" = "PostToolUse" ] \
+     && [ -n "$(json_field "$out" hookSpecificOutput.additionalContext)" ]; then
+    pass "verify-subagent-findings.sh sends additionalContext to Claude"
+  else
+    fail "verify-subagent-findings.sh sends additionalContext to Claude (got: ${out:-<no output>})"
+  fi
+  if [ -n "$(json_field "$out" systemMessage)" ]; then
+    pass "verify-subagent-findings.sh keeps systemMessage for the user"
+  else
+    fail "verify-subagent-findings.sh keeps systemMessage for the user"
+  fi
+  out=$(echo '{"tool_name":"Agent","tool_input":{"subagent_type":"Explore"}}' | bash "$HOOKS_DIR/verify-subagent-findings.sh" 2>/dev/null)
+  if [ -z "$out" ]; then
+    pass "verify-subagent-findings.sh stays silent for Explore"
+  else
+    fail "verify-subagent-findings.sh stays silent for Explore (got: $out)"
+  fi
+
+  # mcp-failure-hint.sh: PostToolUseFailure on an MCP tool returns fallback guidance.
+  if [ -f "$HOOKS_DIR/mcp-failure-hint.sh" ]; then
+    out=$(echo '{"hook_event_name":"PostToolUseFailure","tool_name":"mcp__playwright__browser_click","error":"server disconnected"}' | bash "$HOOKS_DIR/mcp-failure-hint.sh" 2>/dev/null)
+    if [ "$(json_field "$out" hookSpecificOutput.hookEventName)" = "PostToolUseFailure" ] \
+       && [ -n "$(json_field "$out" hookSpecificOutput.additionalContext)" ]; then
+      pass "mcp-failure-hint.sh sends additionalContext on an MCP failure"
+    else
+      fail "mcp-failure-hint.sh sends additionalContext on an MCP failure (got: ${out:-<no output>})"
+    fi
+    out=$(echo '{"hook_event_name":"PostToolUseFailure","tool_name":"Bash","error":"exit 1"}' | bash "$HOOKS_DIR/mcp-failure-hint.sh" 2>/dev/null)
+    if [ -z "$out" ]; then
+      pass "mcp-failure-hint.sh stays silent for a non-MCP tool"
+    else
+      fail "mcp-failure-hint.sh stays silent for a non-MCP tool (got: $out)"
+    fi
+  else
+    fail "mcp-failure-hint.sh exists"
+  fi
+
+  # precompact-state.sh: plain-text stdout (compaction instructions) plus the state file.
+  TMP_HOME=$(mktemp -d)
+  mkdir -p "$TMP_HOME/.claude"
+  out=$(echo '{"hook_event_name":"PreCompact","trigger":"auto"}' | HOME="$TMP_HOME" bash "$HOOKS_DIR/precompact-state.sh" 2>/dev/null)
+  case "$out" in
+    "") fail "precompact-state.sh prints compaction instructions (got no stdout)" ;;
+    "{"*) fail "precompact-state.sh prints plain text, not JSON (got: $out)" ;;
+    *) pass "precompact-state.sh prints compaction instructions" ;;
+  esac
+  if [ -s "$TMP_HOME/.claude/precompact-state.json" ]; then
+    pass "precompact-state.sh still writes its state file"
+  else
+    fail "precompact-state.sh still writes its state file"
+  fi
+  rm -rf "$TMP_HOME"
+fi
+echo ""
+
 # Summary
 echo "=== Results ==="
 echo "PASS: $PASS"

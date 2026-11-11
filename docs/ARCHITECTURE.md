@@ -21,13 +21,13 @@ Active Session
   │   └─ Bash ──→ post-commit-review.sh (review + risk flags)
   │
   ├─ PostToolUseFailure hooks
-  │   └─ mcp__* ──→ fallback guidance prompt
+  │   └─ mcp__* ──→ mcp-failure-hint.sh (fallback guidance)
   │
   ├─ PermissionDenied hooks (auto mode)
   │   └─ (available) ──→ log or retry after classifier blocks
   │
-  ├─ PreCompact ──→ precompact-state.sh (serialize state to disk)
-  ├─ PostCompact ──→ context recovery prompt (read state file)
+  ├─ PreCompact ──→ precompact-state.sh (snapshot to disk + summary instructions)
+  ├─ SessionStart (compact) ──→ inline recovery steps (read state file)
   │
   └─ Stop hooks
       ├─ Security verification (sonnet model)
@@ -51,11 +51,15 @@ WIRED (ships working): the review-full skill spawns up to 4 agents in parallel:
 
               ┌──────────────────────┐
               │  review-full (skill) │  picks 1-4 agents by what changed:
-              │  ├─ code-reviewer    │  (sonnet, read-only)
-              │  ├─ security-reviewer │  (sonnet, read-only)
+              │  ├─ code-reviewer    │  (sonnet, read-only by intent)
+              │  ├─ security-reviewer │  (sonnet, read-only by intent)
               │  ├─ db-analyst       │  (sonnet, plan mode)
-              │  └─ architecture-reviewer │ (sonnet, read-only, structural changes)
+              │  └─ architecture-reviewer │ (sonnet, read-only by intent, structural changes)
               └──────────────────────┘
+
+   "Read-only by intent": permissionMode: plan holds only when the main session
+   runs in default or dontAsk mode, and agents that set memory can still write.
+   See agents/README.md (Permission Modes).
 
 
 ILLUSTRATIVE (a shape you can wire yourself): a build-to-ship flow:
