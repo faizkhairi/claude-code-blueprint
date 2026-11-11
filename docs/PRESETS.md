@@ -235,7 +235,7 @@ Use the full [`settings-template.json`](../examples/settings-template.json) as y
 Moving from one preset to the next is additive: you never need to redo earlier steps.
 
 ```
-Minimal → Standard:  Add 4 hooks + 2 agents + full settings.json
+Minimal → Standard:  Add 5 hooks + 2 agents + full settings.json
 Standard → Core:     Add 2 review agents + 6 skills + 2 path-scoped rules
 Core → Full:         Add remaining agents, skills, rules, memory
 Any → CI/CD:         Separate concern; CI uses its own settings, not your dev settings

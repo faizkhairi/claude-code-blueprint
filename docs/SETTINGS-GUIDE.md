@@ -14,13 +14,19 @@ These live under the `"env"` key in `settings.json` and control Claude Code's ru
 "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
 ```
 
-**What it does:** Enables multi-agent spawning, the ability for Claude to launch specialized subagents that run in parallel with independent context windows.
+(Optional opt-in example. The template does not set it.)
 
-**Why it matters:** Without this, the entire [agents/](../agents/) directory in this blueprint is non-functional. The Agent tool won't appear, `subagent_type` has no effect, and skills that orchestrate multiple agents (like the review-full skill spawning code-reviewer + security-reviewer + db-analyst + architecture-reviewer in parallel) silently degrade to single-agent mode.
+**What it does:** Enables the separate, experimental [agent teams](https://code.claude.com/docs/en/agent-teams) feature: one lead session coordinates several teammate sessions through a shared task list. It is not needed for subagents.
 
-**Default:** Not set (disabled). You must explicitly enable it.
+**Subagents do not need it:** The Agent tool, `subagent_type`, and everything in the [agents/](../agents/) directory of this blueprint work without any env flag, including skills that fan out to several agents in parallel (like the review-full skill).
 
-**Who needs it:** Anyone using agents from this blueprint. If you're only using CLAUDE.md + hooks, you can skip this.
+**Side effect:** While agent teams are on, a subagent that Claude names launches as a teammate instead of a subagent. If your agents behave differently than documented, check that this flag is not set.
+
+**Cost:** Teams use significantly more tokens than a single session.
+
+**Default:** Not set (disabled), and not set by the template.
+
+**Who needs it:** Only people who want to try agent teams. Everyone else can leave it unset.
 
 ### CLAUDE_AUTOCOMPACT_PCT_OVERRIDE
 
@@ -30,7 +36,7 @@ These live under the `"env"` key in `settings.json` and control Claude Code's ru
 
 **What it does:** Triggers context compaction when the context window is 80% full, instead of Claude's default threshold (higher).
 
-**Why 80%:** Compaction is aggressive: it summarizes and discards earlier context. By triggering it earlier, you give the PreCompact hook more room to serialize working state (active plan, modified files, current branch) to disk before context is lost. See [WHY.md](WHY.md#postcompact-hook-why-state-serialization) for the battle story.
+**Why 80%:** Compaction is aggressive: it summarizes and discards earlier context. By triggering it earlier, you give the PreCompact hook more room to serialize working state (active plan, modified files, current branch) to disk before context is lost. See [WHY.md](WHY.md#compaction-recovery-why-state-serialization) for the battle story.
 
 **Default:** Claude's built-in threshold (not publicly documented, but higher than 80%).
 
@@ -126,15 +132,13 @@ Auto-deletes Claude Code session data older than 60 days. This includes conversa
 
 ### effortLevel
 
-```json
-"effortLevel": "high"
-```
+The template does not set `effortLevel`. A top-level `effortLevel` in user settings is ignored for Opus 5.5 and later (Opus 5.5 starts at `medium`) and still applies to older models. See [model configuration](https://code.claude.com/docs/en/model-config).
 
-**What it does:** Sets Claude's reasoning effort to maximum. Pairs with `alwaysThinkingEnabled` for deepest analysis.
+**How to set effort now:** Run `/effort`, which saves the level per model under the `modelSettings` key. Subagents and skills can also set `effort` in their frontmatter.
 
-**Options:** `"low"`, `"medium"`, `"high"`. Lower effort = faster, cheaper responses. Higher effort = more thorough reasoning.
+**Options:** `low`, `medium`, `high`, `xhigh` (`max` is not accepted in settings). Lower effort = faster, cheaper responses. Higher effort = more thorough reasoning.
 
-**Recommendation:** Start with `"high"` for development work. Switch to `"medium"` or `"low"` for repetitive tasks like bulk file edits or documentation generation.
+**Recommendation:** Raise effort for hard development work. Lower it for repetitive tasks like bulk file edits or documentation generation.
 
 ### disableSkillShellExecution
 
@@ -154,14 +158,18 @@ Auto-deletes Claude Code session data older than 60 days. This includes conversa
 
 ### defaultMode
 
-Claude Code has four permission modes, each balancing safety against productivity:
+Claude Code has six permission modes, each balancing safety against productivity (see [permission modes](https://code.claude.com/docs/en/permission-modes)):
 
 | Mode | Behavior | Best For |
 |------|----------|----------|
-| *(not set)* | Asks permission for every tool use | New users building trust |
+| `"default"` (Manual; `manual` is an alias; also what you get when unset) | Asks permission for every tool use | New users building trust |
+| `"acceptEdits"` | File edits run without asking; other tools still prompt | Iterating on code you will review in the diff |
+| `"plan"` | Claude researches and proposes a plan; no edits until you approve | Exploring a change before committing to it |
 | `"dontAsk"` | Allow-listed tools run silently; unlisted tools are silently **denied** | CI pipelines, locked-down environments |
 | `"auto"` | Allow-listed tools run silently; unlisted tools go through an **AI classifier** that evaluates safety contextually | Power users who want fewer prompts without losing safety |
 | `"bypassPermissions"` | Everything runs without checks | Isolated containers/VMs only, never on a real machine |
+
+`auto` and `bypassPermissions` do not take effect from project or local settings files; set them in user settings.
 
 **`"auto"` mode:**
 
@@ -289,7 +297,7 @@ Replace `YourUser` (Windows) or `youruser` (macOS/Linux) with your actual userna
 
 ## Hooks
 
-The template configures hooks across 9 lifecycle events. For the full lifecycle diagram, see [ARCHITECTURE.md](ARCHITECTURE.md). For battle stories explaining why each hook exists, see [WHY.md](WHY.md).
+The template configures hooks across 8 lifecycle events. For the full lifecycle diagram, see [ARCHITECTURE.md](ARCHITECTURE.md). For battle stories explaining why each hook exists, see [WHY.md](WHY.md).
 
 | Event | Hook | Purpose |
 |-------|------|---------|
@@ -298,9 +306,9 @@ The template configures hooks across 9 lifecycle events. For the full lifecycle 
 | **PreToolUse** (Write/Edit) | `protect-config.sh` | Prevents modifying linter/build configs |
 | **PostToolUse** (Write/Edit) | `notify-file-changed.sh` | Reminds Claude to verify after file changes |
 | **PostToolUse** (Bash) | `post-commit-review.sh` | Auto-reviews commits for risk flags |
-| **PostToolUseFailure** (MCP) | Prompt hook | Guides fallback when MCP tools fail |
-| **PreCompact** | `precompact-state.sh` | Serializes working state before context compaction |
-| **PostCompact** | Prompt hook | Instructs Claude to restore state from disk |
+| **PostToolUseFailure** (MCP) | `mcp-failure-hint.sh` | Guides fallback when MCP tools fail |
+| **PreCompact** | `precompact-state.sh` | Saves a working-state snapshot and prints instructions for the compaction summary |
+| **SessionStart** (`compact` matcher) | Inline command | Recovery steps after compaction |
 | **Stop** | Security prompt (Sonnet) + `session-checkpoint.sh` + `cost-tracker.sh` | Security review, state checkpoint, cost logging |
 | **SessionEnd** | `session-checkpoint.sh` | Final state save before process exit |
 
@@ -326,7 +334,7 @@ The Stop hook uses `"model": "sonnet"` for its security verification prompt. Thi
 
 1. **Stop hook (Sonnet on every response):** Each response triggers a Sonnet security review. In a 50-response session, that's 50 additional Sonnet invocations.
 2. **Parallel agent spawns:** The review-full skill spawns up to 4 agents simultaneously. Each agent has its own context window and token budget.
-3. **Always-thinking + high effort:** Extended thinking generates additional tokens that are billed. `effortLevel: "high"` increases this further.
+3. **Always-thinking + high effort:** Extended thinking generates additional tokens that are billed. A higher effort level (set with `/effort`) increases this further.
 4. **Agent teams:** Sessions with active agent teams use roughly 7x more tokens than standard sessions (per Anthropic's official docs).
 5. **Playwright MCP vs CLI:** The Playwright MCP server streams full DOM accessibility trees into context (~114K tokens per task). Running `npx playwright test` via Bash uses ~27K tokens for the same work, a 76% reduction. Use MCP for interactive browser exploration; use CLI for test execution.
 

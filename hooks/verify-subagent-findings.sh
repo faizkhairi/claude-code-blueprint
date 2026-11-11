@@ -45,6 +45,25 @@ case "$SUBTYPE" in
   Explore|explore) exit 0 ;;
 esac
 
-echo '{"systemMessage": "SUBAGENT REPORT RECEIVED - treat its findings as HYPOTHESES, not facts. Before acting on any [MUST FIX] / defect / \"X is missing/wrong/dead\" claim, verify it against the authoritative source yourself: the actual values (not variable names), a whole-tree grep (not one file), the file at the real ref, and the test suite. Findings from a narrow vantage or sibling-symmetry routinely dissolve under verification. Do NOT edit, fix, or merge on the report alone."}'
+# Delivery channel matters. This hook runs synchronously, and a synchronous
+# hook's systemMessage is shown to the user only: Claude never reads it. Text
+# meant for Claude goes in hookSpecificOutput.additionalContext, which Claude
+# Code adds to Claude's context alongside the tool result. Emit both: the
+# additionalContext for Claude, the systemMessage so the user sees it fired.
+# (An async hook is different: its systemMessage and additionalContext both
+# reach Claude on the next turn. See hooks/README "Which output reaches Claude".)
+$PYTHON -c "
+import json
+msg = ('SUBAGENT REPORT RECEIVED: treat its findings as HYPOTHESES, not facts. '
+       'Before acting on any [MUST FIX], defect, or \'X is missing/wrong/dead\' claim, '
+       'verify it against the authoritative source yourself: the actual values (not variable names), '
+       'a whole-tree grep (not one file), the file at the real ref, and the test suite. '
+       'Findings from a narrow vantage or sibling-symmetry routinely dissolve under verification. '
+       'Do NOT edit, fix, or merge on the report alone.')
+print(json.dumps({
+    'systemMessage': 'Subagent report received: verify its findings before acting on them.',
+    'hookSpecificOutput': {'hookEventName': 'PostToolUse', 'additionalContext': msg},
+}))
+" 2>/dev/null
 
 exit 0

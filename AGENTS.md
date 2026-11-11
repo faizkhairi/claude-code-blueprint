@@ -13,7 +13,7 @@ The user typically does one of three things:
 
 ## What this repo is NOT
 
-- A Claude Code plugin (Claude Code has no plugin system in that sense)
+- A Claude Code plugin (Claude Code does have a plugin system that bundles skills, agents, hooks and MCP servers from marketplaces, but this blueprint is not packaged as one; see [docs/ROADMAP.md](docs/ROADMAP.md))
 - A framework or library to import
 - A working application
 - Software the user runs in this directory (running Claude Code inside this repo causes it to read this blueprint's CLAUDE.md instead of the user's project rules; a common newcomer mistake)
@@ -32,7 +32,7 @@ The user typically does one of three things:
 | `setup.sh` | Interactive installer |
 | `agents/` | 12 reusable agent templates the user can drop into `~/.claude/agents/` |
 | `skills/` | 19 reusable skill templates for `~/.claude/skills/` |
-| `hooks/` | 15 hook scripts for `~/.claude/hooks/` (plus `test-hooks.sh`, the local test harness; not deployed) |
+| `hooks/` | 16 hook scripts for `~/.claude/hooks/` (plus `test-hooks.sh`, the local test harness; not deployed) |
 | `rules/` | 6 example rule files for `~/.claude/rules/` |
 | `examples/` | Reference `settings.json` template (framework-agnostic) |
 | `memory/` | Built-in memory system: enabled via setup.sh (Y/n), git-ignored by default for privacy |
@@ -64,4 +64,4 @@ The user typically does one of three things:
 
 ## Version
 
-Last verified with Claude Code CLI v2.1.150 (May 2026).
+Last verified with Claude Code CLI v2.1.322 (November 2026).

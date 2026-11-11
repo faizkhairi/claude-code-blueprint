@@ -13,7 +13,7 @@
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-compatible-blueviolet)](https://docs.anthropic.com/en/docs/claude-code)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
-**12 agents** · **19 skills** · **15 hooks** · **6 rules**, copy only what you need, or install a preset (minimal / standard / core / full)
+**12 agents** · **19 skills** · **16 hooks** · **6 rules**, copy only what you need, or install a preset (minimal / standard / core / full)
 
 [English](README.md) | [日本語](i18n/README.ja.md) | [한국어](i18n/README.ko.md) | [简体中文](i18n/README.zh.md)
 
@@ -102,7 +102,7 @@ Other repos dump dozens of agents on you. We give you **12**, and explain why ea
 | [4 behavioral rules](CLAUDE.md) that prevent AI coding mistakes | Lists of settings to copy |
 | [Cross-tool guide](docs/CROSS-TOOL-GUIDE.md) for 10 other tools (Copilot, Cursor, Cline, Roo Code, OpenCode, and more) | Single-tool only |
 | [Beginner-friendly](GETTING-STARTED.md) with 6 adoption personas | Assumed expertise |
-| [Smoke-tested hooks](hooks/test-hooks.sh) with 55 automated tests | Untested scripts |
+| [Smoke-tested hooks](hooks/test-hooks.sh) with 66 automated tests | Untested scripts |
 | Safety-first: [config placement guide](GETTING-STARTED.md#where-config-belongs-project-vs-personal), privacy warnings, [graceful degradation](agents/README.md#agents-are-not-infallible) | No safety guidance |
 | [Framework-agnostic](FAQ.md#what-framework-or-language-does-this-work-with): works with any language and stack | Assumes a specific language/framework |
 
@@ -120,17 +120,17 @@ Other repos dump dozens of agents on you. We give you **12**, and explain why ea
 | project-architect | opus | System design, architecture decisions, technology choices |
 | backend-specialist | sonnet | API endpoints, services, database operations, middleware |
 | frontend-specialist | sonnet | UI components, state management, forms, styling |
-| code-reviewer | sonnet | Code quality, patterns, best practices (read-only) |
-| security-reviewer | sonnet | OWASP Top 10, auth flaws, injection attacks (read-only) |
-| db-analyst | sonnet | Schema analysis, query optimization, migration planning (read-only) |
-| devops-engineer | sonnet | Deployment configs, CI/CD, Docker, infrastructure (read-only) |
+| code-reviewer | sonnet | Code quality, patterns, best practices (read-only by intent) |
+| security-reviewer | sonnet | OWASP Top 10, auth flaws, injection attacks (read-only by intent) |
+| db-analyst | sonnet | Schema analysis, query optimization, migration planning (read-only by intent) |
+| devops-engineer | sonnet | Deployment configs, CI/CD, Docker, infrastructure (read-only by intent) |
 | qa-tester | sonnet | Unit tests, integration tests, E2E tests |
-| verify-plan | sonnet | 7-point mechanical plan verification (read-only) |
+| verify-plan | sonnet | 7-point mechanical plan verification (read-only by intent) |
 | docs-writer | haiku | README, API docs, changelogs, architecture docs |
-| architecture-reviewer | sonnet | Dependency direction, god files, dead code, modularity (read-only) |
+| architecture-reviewer | sonnet | Dependency direction, god files, dead code, modularity (read-only by intent) |
 | memory-curator | sonnet | Audits your memory directory for orphans, index drift, broken links, stale entries (report-only) |
 
-See [agents/README.md](agents/README.md) for permission modes, cost estimates, and maxTurns.
+"Read-only by intent" means `permissionMode: plan`, which holds only when your main session runs in default or dontAsk mode; agents that set `memory` can still write. See [agents/README.md](agents/README.md) for permission modes, cost estimates, and maxTurns.
 
 </details>
 
@@ -156,7 +156,7 @@ See [skills/README.md](skills/README.md) for customization and placeholder varia
 </details>
 
 <details>
-<summary><strong>15 Hooks</strong>: Deterministic lifecycle automation (always fire, unlike CLAUDE.md rules which the model can deprioritize)</summary>
+<summary><strong>16 Hooks</strong>: Deterministic lifecycle automation (always fire, unlike CLAUDE.md rules which the model can deprioritize)</summary>
 
 &nbsp;
 
@@ -172,13 +172,14 @@ See [skills/README.md](skills/README.md) for customization and placeholder varia
 | PostToolUse (Write/Edit) | no-dash-check.sh | Warn on a prose-style violation (example: em-dashes) |
 | PostToolUse (Bash) | post-commit-review.sh | Post-commit review |
 | PostToolUse (Agent/Task) | verify-subagent-findings.sh | Treat subagent findings as hypotheses to verify |
-| PreCompact | precompact-state.sh | Serialize state to disk |
+| PostToolUseFailure (MCP) | mcp-failure-hint.sh | Fallback guidance when an MCP tool fails |
+| PreCompact | precompact-state.sh | Serialize state to disk + tell the compaction summary what to keep |
 | Stop | security check + cost-tracker.sh + session-checkpoint.sh | Last defense + metrics |
 | SessionEnd | session-checkpoint.sh | Guaranteed final save |
 
-Plus 2 utility scripts: `verify-mcp-sync.sh` (MCP config checker) and `status-line.sh` (branch/project status), both deployed by the full preset, and a companion tool `check-no-dash-file.py` (a pre-post prose sanitizer for the `no-dash-check.sh` hook). The last file in the folder is `test-hooks.sh`, the local test harness, run via `bash hooks/test-hooks.sh` to verify all hooks. It's the only one not deployed to `~/.claude/hooks/`, and isn't counted in the "15 hooks" total.
+Plus 2 utility scripts: `verify-mcp-sync.sh` (MCP config checker) and `status-line.sh` (branch/project status), both deployed by the full preset, and a companion tool `check-no-dash-file.py` (a pre-post prose sanitizer for the `no-dash-check.sh` hook). The last file in the folder is `test-hooks.sh`, the local test harness, run via `bash hooks/test-hooks.sh` to verify all hooks. It's the only one not deployed to `~/.claude/hooks/`, and isn't counted in the "16 hooks" total.
 
-Run `bash hooks/test-hooks.sh` to verify all hooks pass (55 automated tests).
+Run `bash hooks/test-hooks.sh` to verify all hooks pass (66 automated tests).
 
 See [hooks/README.md](hooks/README.md) for the full lifecycle, testing guide, and design principles.
 
@@ -220,7 +221,7 @@ See [rules/README.md](rules/README.md) for creating custom rules.
 
 3. **Context is currency**: Every token loaded into context is a token not available for your code. Keep MEMORY.md under 100 lines. Extract to topic files. Use path-scoped rules so irrelevant rules don't load.
 
-4. **Hooks are free, context is cheap**: The 15 hook scripts cost zero tokens (they run outside Claude's context). CLAUDE.md adds ~2,300 tokens per session, roughly 1-5% of a typical session. The blueprint saves more tokens than it costs by preventing redo cycles. See [BENCHMARKS.md](docs/BENCHMARKS.md#token-cost-per-component).
+4. **Hooks are free, context is cheap**: The 16 hook scripts cost zero tokens (they run outside Claude's context). CLAUDE.md adds ~2,300 tokens per session, roughly 1-5% of a typical session. The blueprint saves more tokens than it costs by preventing redo cycles. See [BENCHMARKS.md](docs/BENCHMARKS.md#token-cost-per-component).
 
 5. **Battle-tested over theoretical**: Every rule in this repo exists because something went wrong without it. The "WHY" matters more than the "WHAT".
 

@@ -34,9 +34,9 @@ The script will ask you to choose a preset, then install everything to `~/.claud
 | Preset | Files | What You Get |
 |--------|-------|--------------|
 | **Minimal** | 4 | CLAUDE.md + 2 hooks (config protection, edit verification) + settings.json |
-| **Standard** | 10 | + 4 more hooks, 2 agents (verify-plan, code-reviewer), settings.json |
-| **Core** | 20 | + 2 review agents, 6 universal skills, 2 path-scoped rules (curated, broadly useful) |
-| **Full** | 55 | + all 12 agents, 19 skills, 6 rules (everything in the blueprint) |
+| **Standard** | 11 | + 5 more hooks, 2 agents (verify-plan, code-reviewer), settings.json |
+| **Core** | 21 | + 2 review agents, 6 universal skills, 2 path-scoped rules (curated, broadly useful) |
+| **Full** | 56 | + all 12 agents, 19 skills, 6 rules (everything in the blueprint) |
 
 ### Usage examples
 
@@ -116,6 +116,18 @@ cd claude-code-blueprint && bash hooks/test-hooks.sh
 | Memory | `~/.claude/projects/*/memory/` | Auto-generated; never commit |
 
 For the full config placement guide with cross-platform paths, see [GETTING-STARTED.md](GETTING-STARTED.md#where-config-belongs-project-vs-personal).
+
+---
+
+## Upgrading from 1.2
+
+The installer merges into `~/.claude/settings.json` and never removes entries, so remove these by hand (see [CHANGELOG.md](CHANGELOG.md) for why):
+
+- The `PreCompact` entry of type `prompt` (keep the `precompact-state.sh` command entry)
+- The whole `PostCompact` block
+- The `PostToolUseFailure` prompt entry and its old `mcp__*` matcher
+- `env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` (keep it only if you use agent teams)
+- `effortLevel`
 
 ---
 

@@ -14,7 +14,7 @@ The Claude Code Blueprint is a reference architecture for configuring Claude Cod
 - **Beginner accessibility**: Persona table above the fold, Level 1/2/3 progression, "Got This Link from a Colleague?" flow
 - **Framework-agnostic signaling**: Hero subtitle, comparison table, GitHub topics and description updated
 - **Cross-tool guide**: 10 other tools mapped (Copilot, Cursor, Cline, Roo Code, OpenCode, Codex CLI, Gemini CLI, Amazon Q, Windsurf, Aider)
-- **Hook smoke tests**: 55 automated tests in `hooks/test-hooks.sh` (run locally)
+- **Hook smoke tests**: 66 automated tests in `hooks/test-hooks.sh` (run locally)
 - **3 localized READMEs**: Japanese, Korean, Simplified Chinese landing pages (English root + 3 translations = 4 README files total)
 - **Built-in opt-in memory**: Setup.sh prompts to enable persistent session memory; no external repo required
 - **AGENTS.md**: AI-assistant orientation file at repo root
@@ -28,7 +28,7 @@ _Nothing currently in progress. Open a Discussion if you want to drive a specifi
 
 Items we intend to build. No timeline; contributions welcome.
 
-- **Discussion templates**: Q&A and Show & Tell category templates (in flight as part of this cleanup)
+- **Discussion templates**: Q&A and Show & Tell category templates (shipped in `.github/DISCUSSION_TEMPLATE/`)
 - **Community case studies**: Anonymized before/after metrics and workflow improvements from real adopters. Submission template lives at [CASE-STUDIES.md](CASE-STUDIES.md); no case studies yet, be the first
 - **FUNDING.yml**: GitHub Sponsors button config (file shipped; actual Sponsors enrollment is a manual GitHub UI process)
 - **Additional Claude Code product-feature integration**: As new Claude Code features ship (new hooks, agent capabilities, settings), document and integrate them through the same understand-then-adapt lens
