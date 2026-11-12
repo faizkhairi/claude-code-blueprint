@@ -26,7 +26,7 @@
 # hooks, prompt hook configuration). For Stop, that input carries the final message as
 # last_assistant_message (same page, Stop input). The judge may add "impossible": true
 # to a block, which lets the turn end instead of looping (same page, prompt hook
-# response schema); this script scores only "ok". This script builds the same input per fixture. It is an
+# response schema); only "ok" is scored here. This script builds the same input per fixture. It is an
 # approximation: Claude Code adds its own framing around the call, so treat a case that
 # passes here and misfires in real use as a new fixture, not as noise.
 #

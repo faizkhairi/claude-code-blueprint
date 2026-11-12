@@ -149,9 +149,9 @@ WRAPPERS = {"sudo": {"-u", "-g", "-C", "-D", "-h", "-p", "-r", "-t", "-U", "--us
                      "--group", "--chdir"},
             "doas": {"-u", "-C"},
             "env": {"-u", "-C", "-S", "--unset", "--chdir", "--split-string"},
-            "xargs": {"-I", "-i", "-L", "-l", "-n", "-P", "-s", "-d", "-E", "-e", "-a",
-                      "--arg-file", "--delimiter", "--max-args", "--max-procs",
-                      "--replace", "--max-lines"},
+            # -i, -l, -e and their long forms take an attached optional value only.
+            "xargs": {"-I", "-L", "-n", "-P", "-s", "-d", "-E", "-a",
+                      "--arg-file", "--delimiter", "--max-args", "--max-procs"},
             "timeout": {"-s", "-k", "--signal", "--kill-after"},
             "nice": {"-n", "--adjustment"}, "ionice": {"-c", "-n", "-p"},
             "stdbuf": set(), "setsid": set(), "nohup": set(), "command": set(),
@@ -176,8 +176,27 @@ def open_quote(s):
             q = c
     return bool(q)
 
+def strip_comments(cmd):
+    """Drop shell comments: a # that starts a word, outside quotes, to end of line."""
+    out, q, i, n = [], "", 0, len(cmd)
+    while i < n:
+        c = cmd[i]
+        if c == "\\" and q != "\x27" and i + 1 < n:
+            out.append(cmd[i:i + 2]); i += 2; continue
+        if q:
+            if c == q:
+                q = ""
+        elif c in "\"\x27":
+            q = c
+        elif c == "#" and (i == 0 or cmd[i - 1] in " \t\n;&|()"):
+            while i < n and cmd[i] != "\n":
+                i += 1
+            continue
+        out.append(c); i += 1
+    return "".join(out)
+
 def tokens(cmd):
-    cmd = cmd.replace("\r", "").replace("\n", " ; ")
+    cmd = strip_comments(cmd.replace("\r", "")).replace("\n", " ; ")
     lex = shlex.shlex(cmd, posix=False, punctuation_chars=True)
     lex.whitespace_split = True
     lex.commenters = ""           # comments are handled in check_command, per word
@@ -196,7 +215,7 @@ def tokens(cmd):
     return out
 
 def check_git(args):
-    if any(unq(a).startswith("--output") for a in args):
+    if any(unq(a) == "--output" or unq(a).startswith("--output=") for a in args):
         deny("git --output writes a file.")
     i = 0
     while i < len(args):
@@ -229,14 +248,24 @@ def check_git(args):
     if sub == "remote" and (not rest or rest[0] in ("-v", "--verbose", "show", "get-url")):
         return
     if sub == "config":
-        if any(r in ("--get", "--get-all", "--list", "-l", "--get-regexp") for r in rest):
+        if rest[:1] in (["get"], ["list"]) or any(
+                r in ("--get", "--get-all", "--list", "-l", "--get-regexp") for r in rest):
             return
         writes = {"--add", "--unset", "--unset-all", "--replace-all", "--rename-section",
                   "--remove-section", "-e", "--edit", "set", "unset"}
-        if not any(r.split("=")[0] in writes for r in rest) and \
-                len([r for r in rest if not r.startswith("-")]) <= 1:
+        positional, skip = [], False
+        for r in rest:
+            if skip:
+                skip = False
+            elif r in ("-f", "--file", "--blob"):
+                skip = True                 # the value of --file is a path, not a key
+            elif not r.startswith("-"):
+                positional.append(r)
+        if not any(r.split("=")[0] in writes for r in rest) and len(positional) <= 1:
             return                          # git config <key> only reads it
-    if sub in ("worktree", "submodule") and rest[:1] in (["list"], ["status"]):
+    if sub == "worktree" and rest[:1] == ["list"]:
+        return
+    if sub == "submodule" and rest[:1] in ([], ["status"]):
         return
     deny("git %s can change the repository; only read-only git is allowed." % sub)
 
@@ -319,10 +348,6 @@ def check_command(cmd, ps):
         t = toks[i]
         if is_sep(t):
             check_segment(seg, ps); seg = []; i += 1; continue
-        if t.startswith("#"):               # a comment runs to the end of the line
-            while i < len(toks) and not is_sep(toks[i]):
-                i += 1
-            continue
         if t and set(t) <= set("<>&|") and ">" in t:
             nxt = toks[i + 1] if i + 1 < len(toks) else ""
             if t in (">&", "&>") or t.endswith("&"):
