@@ -90,23 +90,23 @@ Pick the model tier based on the task's **cognitive complexity**, not its import
 
 | Task Characteristic | Model | Why | Example |
 |--------------------|-------|-----|---------|
-| Generates text from templates | **Haiku** ($0.80/$4 per 1M tokens) | Fast, cheap, follows patterns well | API docs, changelog, README generation |
-| Implements code from clear specs | **Sonnet** ($3/$15) | Good balance of reasoning and speed | Backend routes, frontend components, tests |
-| Reviews code for subtle issues | **Sonnet** ($3/$15) | Needs reasoning but not creativity | Code review, security audit, DB analysis |
-| Designs architecture or makes tradeoffs | **Opus** ($15/$75)* | Complex reasoning, multi-system thinking | System design, migration planning, tech decisions |
-| Quick lookups or simple transforms | **Haiku** ($0.80/$4) | Overkill to use a larger model | File search, grep analysis, format conversion |
+| Generates text from templates | **Haiku** (cheapest tier) | Fast, cheap, follows patterns well | API docs, changelog, README generation |
+| Implements code from clear specs | **Sonnet** (middle tier) | Good balance of reasoning and speed | Backend routes, frontend components, tests |
+| Reviews code for subtle issues | **Sonnet** (middle tier) | Needs reasoning but not creativity | Code review, security audit, DB analysis |
+| Designs architecture or makes tradeoffs | **Opus** (most expensive tier) | Complex reasoning, multi-system thinking | System design, migration planning, tech decisions |
+| Quick lookups or simple transforms | **Haiku** (cheapest tier) | Overkill to use a larger model | File search, grep analysis, format conversion |
 
-> \* Prices per million tokens, indicative. Verify current pricing at [claude.com/pricing](https://claude.com/pricing).
+> The aliases `opus`, `sonnet` and `haiku` resolve to the newest model in each family on the Anthropic API (currently Opus 5.5, Sonnet 5.5 and Haiku 5.5), so agent files never need a version bump; some cloud providers resolve them to older versions. `fable` (currently Fable 5.2) sits above Opus for the hardest, longest-running tasks; this blueprint assigns it to no agent. Per-token prices change: see the [API pricing page](https://platform.claude.com/docs/en/about-claude/pricing) for token rates and [claude.com/pricing](https://claude.com/pricing) for plans. Source for aliases: [model configuration](https://code.claude.com/docs/en/model-config).
 
 **Rule of thumb:** Start with Sonnet for new agents. Promote to Opus only if the agent consistently makes poor architectural decisions. Demote to Haiku only if the agent's output is templated enough that a smaller model handles it fine.
 
-**Cost impact:** A session using all Opus agents costs roughly 5x more than the same session with Sonnet agents. The tiering in this blueprint keeps Opus to 1 agent (project-architect) while using Haiku for 1 documentation agent, keeping the blended cost close to Sonnet-only pricing.
+**Cost impact:** On the API rates published for the 5.5 generation (checked 2026-11-12), Opus costs about twice as much per token as Sonnet, Haiku about a twentieth of Sonnet for prompts under 100,000 tokens, and Fable about twice Opus. Ratios move between generations, so check the API pricing page before you rely on them. The tiering in this blueprint keeps Opus to 1 agent (project-architect) while using Haiku for 1 documentation agent, keeping the blended cost close to Sonnet-only pricing.
 
 ## Memory Architecture
 
 ```
 Auto-Memory (~/.claude/projects/<project>/memory/)
-  ├─ MEMORY.md (index, <100 lines)
+  ├─ MEMORY.md (index; only the first 200 lines or 25KB load, so keep it lean)
   ├─ Topic files (on-demand: project-conventions.md, frameworks.md, etc.)
   └─ Feedback files (learned behaviors)
 
@@ -117,6 +117,13 @@ Built-in Memory (opt-in via setup.sh, see memory/)
   ├─ core/decisions.md (architectural log)
   └─ diary/ (session narratives)
 ```
+
+**What Claude Code loads on its own** (per the [memory docs](https://code.claude.com/docs/en/memory)):
+
+- **CLAUDE.md files** load in full at every session start; the docs suggest keeping each under 200 lines and moving detail into path-scoped rules or imports.
+- **`@path/to/file` imports** inside a CLAUDE.md expand that file into context alongside it. In a project CLAUDE.md, an import from outside the project asks for a one-time approval.
+- **`AGENTS.md`** is read as the project instructions when the directory has no `CLAUDE.md` or `CLAUDE.local.md` (Claude Code v2.1.277 or later). When both exist, only CLAUDE.md loads unless it imports `@AGENTS.md`, which is the way to share one file with other coding tools.
+- **Auto memory** loads only the first 200 lines or 25KB of `MEMORY.md`, whichever comes first; topic files load on demand. That limit is why this blueprint keeps MEMORY.md as a short index.
 
 ---
 

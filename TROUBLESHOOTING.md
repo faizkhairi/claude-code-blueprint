@@ -100,7 +100,7 @@ Each branch maps to a section below. Ctrl+F the section name if a link does not 
 
 **Causes and fixes:**
 
-1. **Model not available on your Anthropic plan.** If an agent specifies `model: opus` but your API key doesn't have Opus access, the agent will fail. Check your plan at [console.anthropic.com](https://console.anthropic.com). As a workaround, change the agent's frontmatter to `model: sonnet`.
+1. **Model not available to you.** If your organization's `availableModels` allowlist blocks an agent's `model: opus`, Claude Code runs it on the newest Opus the allowlist permits, or on the main conversation's model when none is permitted. On a cloud provider (Amazon Bedrock, Google Cloud's Agent Platform, Microsoft Foundry) the alias can resolve to an older version or fail if that model is not enabled in your account. Fix it by enabling the model, or change the agent's frontmatter to `model: sonnet` or `model: inherit`. See [sub-agents](https://code.claude.com/docs/en/sub-agents) and [model configuration](https://code.claude.com/docs/en/model-config).
 
 2. **Agent .md file not found.** Custom agents must be in `.claude/agents/` (project-level) or `~/.claude/agents/` (global). Claude Code won't find agents in other locations.
 
@@ -243,11 +243,11 @@ See [SETTINGS-GUIDE.md](docs/SETTINGS-GUIDE.md#defaultmode) for the full explana
 
 3. **Always-thinking + high effort.** `alwaysThinkingEnabled: true` with a high effort level maximizes reasoning depth but also token usage. Lower the level with `/effort` or disable always-thinking for routine tasks.
 
-4. **Agent teams.** Sessions with active agent teams use ~7x more tokens than standard sessions.
+4. **Agent teams.** Agent teams use about 7x more tokens than standard sessions when teammates run in plan mode ([costs page](https://code.claude.com/docs/en/costs)).
 
 **How to track:** The [cost-tracker.sh](hooks/cost-tracker.sh) hook logs session costs to `~/.claude/metrics/costs.jsonl`. Review this file to see which sessions cost the most.
 
-See [SETTINGS-GUIDE.md](docs/SETTINGS-GUIDE.md#cost-implications) for the full cost breakdown and model pricing table.
+See [SETTINGS-GUIDE.md](docs/SETTINGS-GUIDE.md#cost-implications) for the cost drivers and model tiers, and the [API pricing page](https://platform.claude.com/docs/en/about-claude/pricing) for current rates. `/usage` shows a session's token usage.
 
 ---
 

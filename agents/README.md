@@ -1,6 +1,6 @@
 # Agents
 
-12 specialized subagents with model tiering, permission modes, and worktree isolation.
+12 specialized subagents with model tiering, permission modes, and persistent memory. Worktree isolation is documented as an option, but no shipped agent uses it.
 
 > **Framework-agnostic by design.** These agents adapt to any stack. Each one reads your `CLAUDE.md` and detects the project from its manifest (`package.json`, `composer.json`, `pom.xml`, `Gemfile`, `*.csproj`, `go.mod`, `Cargo.toml`, `pyproject.toml`, ...), so the same roster serves a Laravel, Spring Boot, Rails, Django, Go, .NET, or Node project. Where an example names a specific tool, it is an example, not a requirement.
 
@@ -26,7 +26,7 @@ Anthropic's own guidance leans skill-heavy for exactly this reason, since skills
 ## The Standard Agent Pattern
 
 Every agent follows this structure:
-1. **Frontmatter**: name, description, model, tools, maxTurns, permissionMode, memory
+1. **Frontmatter**: name, description, model, tools, maxTurns, permissionMode, memory (see [Frontmatter fields](#frontmatter-fields))
 2. **Role statement**: 1-2 sentences establishing expertise
 3. **Context loading**: "Before starting work: read CLAUDE.md, check the project manifest, search patterns"
 4. **Responsibilities**: Specific, numbered, actionable items
@@ -41,6 +41,42 @@ Every agent follows this structure:
 | Implementation/review | sonnet | Balanced quality for iterative code work |
 | Structural review | sonnet | Analyzes architecture without the cost of opus for pattern-matching |
 | Documentation | haiku | Straightforward prose, cost-efficient |
+
+The agent files use the aliases `opus`, `sonnet`, and `haiku`, which resolve to the newest version of each family. Today that is Opus 5.5 (`claude-opus-5-5`), Sonnet 5.5 (`claude-sonnet-5-5`), and Haiku 5.5 (`claude-haiku-5-5`), so the files need no change when a new generation ships. Fable 5.2 (`claude-fable-5-2`, alias `fable`) is an optional top tier for the hardest long-running tasks. Set `model: fable` on an agent if you want it there. No shipped agent does.
+
+## Frontmatter fields
+
+Subagent files are Markdown with YAML frontmatter. Only `name` and `description` are required. Full reference: [Claude Code subagent docs](https://code.claude.com/docs/en/sub-agents).
+
+| Field | What it does |
+|-------|--------------|
+| `name` | Unique identifier (hooks receive it as `agent_type`). |
+| `description` | When Claude should delegate to this subagent. |
+| `tools` | Tools the subagent can use (comma-separated string or YAML list). Inherits all if omitted. |
+| `disallowedTools` | Tools to remove from the inherited or specified list. |
+| `model` | `sonnet`, `opus`, `haiku`, `fable`, a full model ID such as `claude-opus-5-5`, or `inherit`. |
+| `permissionMode` | `default`, `acceptEdits`, `auto`, `dontAsk`, `bypassPermissions`, `plan`, or `manual` (alias for `default`). See [Permission Modes](#permission-modes). |
+| `maxTurns` | Maximum agentic turns before the subagent stops. |
+| `skills` | Skills to preload at startup. The full skill content is injected, not only the description. |
+| `mcpServers` | MCP servers available to this subagent: a configured server name or an inline definition. |
+| `hooks` | Lifecycle hooks scoped to this subagent. |
+| `memory` | Persistent memory scope: `user`, `project`, or `local`. |
+| `background` | `true` keeps the subagent in the background even when Claude asks to wait for it. |
+| `effort` | `low`, `medium`, `high`, `xhigh`, or `max` (available levels depend on the model). Overrides the session effort level, but not the `CLAUDE_CODE_EFFORT_LEVEL` environment variable. |
+| `isolation` | `worktree` runs the subagent in a temporary git worktree. See [Worktree Isolation](#worktree-isolation). |
+| `color` | Display color in the task list and transcript. |
+| `initialPrompt` | Auto-submitted as the first user turn when the agent runs as the main session agent (`--agent` or the `agent` setting). |
+
+### Which model a subagent runs on
+
+Claude Code resolves the model in this order:
+
+1. The per-invocation `model` parameter (an alias, passed on the Agent tool call)
+2. The `model` frontmatter (`inherit` selects the main conversation's model)
+3. The `CLAUDE_CODE_SUBAGENT_MODEL` environment variable
+4. The main conversation's model
+
+`CLAUDE_CODE_SUBAGENT_MODEL` is only a default. To apply one model to every subagent, also set `CLAUDE_CODE_SUBAGENT_MODEL_FORCE` to `1`, which makes Claude Code ignore the `model` field in subagent definitions.
 
 ## Permission Modes
 
@@ -87,17 +123,17 @@ Each agent has a `maxTurns` limit in its frontmatter that caps the number of too
 2. Spawn a new agent of the same type with context: "Continue the previous agent's work. Here is what was done so far: [summary]"
 3. Or continue the work manually in the main session
 
-## Estimated Cost Per Agent Invocation
+## Relative Cost by Model Tier
 
-Costs vary with task complexity and turns used. These are rough estimates for typical usage.
+Cost depends on task complexity, turns used, and the model tier. Relative ordering per token:
 
-| Model Tier | Agents | Approximate Cost Range |
-|-----------|--------|----------------------|
-| Opus | project-architect | ~$0.50 - $2.00 per invocation |
-| Sonnet | backend, frontend, qa-tester, db-analyst, devops, code-reviewer, security-reviewer, architecture-reviewer, verify-plan | ~$0.10 - $0.60 per invocation |
-| Haiku | docs-writer | ~$0.01 - $0.08 per invocation |
+| Model Tier | Agents | Relative cost |
+|-----------|--------|---------------|
+| Opus | project-architect | Most expensive |
+| Sonnet | backend, frontend, qa-tester, db-analyst, devops, code-reviewer, security-reviewer, architecture-reviewer, verify-plan, memory-curator | Mid |
+| Haiku | docs-writer | Cheapest |
 
-Verify current pricing at [Anthropic's pricing page](https://docs.anthropic.com/en/docs/about-claude/pricing). The [cost-tracker.sh](../hooks/cost-tracker.sh) hook logs session costs to `~/.claude/metrics/costs.jsonl` for actual spending data.
+Prices change, so check current rates rather than trusting a figure copied into a README: [claude.com/pricing](https://claude.com/pricing) for plans and [API pricing](https://platform.claude.com/docs/en/about-claude/pricing) for per-token rates. The [cost-tracker.sh](../hooks/cost-tracker.sh) hook logs session costs to `~/.claude/metrics/costs.jsonl` for actual spending data.
 
 ## Agents Are Not Infallible
 

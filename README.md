@@ -130,12 +130,12 @@ Other repos dump dozens of agents on you. We give you **12**, and explain why ea
 | architecture-reviewer | sonnet | Dependency direction, god files, dead code, modularity (read-only by intent) |
 | memory-curator | sonnet | Audits your memory directory for orphans, index drift, broken links, stale entries (report-only) |
 
-"Read-only by intent" means `permissionMode: plan`, which holds only when your main session runs in default or dontAsk mode; agents that set `memory` can still write. See [agents/README.md](agents/README.md) for permission modes, cost estimates, and maxTurns.
+"Read-only by intent" means `permissionMode: plan`, which holds only when your main session runs in default or dontAsk mode; agents that set `memory` can still write. See [agents/README.md](agents/README.md) for permission modes, relative cost tiers, frontmatter fields, and maxTurns. The `opus`, `sonnet` and `haiku` aliases resolve to the newest model in each family (Opus 5.5, Sonnet 5.5 and Haiku 5.5 on the Anthropic API as of November 2026), so agent files need no edit when a new model ships.
 
 </details>
 
 <details>
-<summary><strong>19 Skills</strong>: Natural-language-triggered workflows (no slash commands needed)</summary>
+<summary><strong>19 Skills</strong>: Natural-language-triggered workflows (each also runs as a `/name` command)</summary>
 
 &nbsp;
 

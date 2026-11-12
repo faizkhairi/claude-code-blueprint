@@ -213,7 +213,7 @@ This reduced costs significantly while maintaining quality where it matters.
 
 ### MEMORY.md Under 100 Lines: Why Extract to Topics
 
-**What happened:** MEMORY.md grew organically as the project accumulated gotchas, patterns, and conventions. It reached 200+ lines. Claude Code truncates MEMORY.md after 200 lines, meaning the most recently added (and often most relevant) entries at the bottom were silently dropped.
+**What happened:** MEMORY.md grew organically as the project accumulated gotchas, patterns, and conventions. It reached 200+ lines. Claude Code loads only the first 200 lines or 25KB of MEMORY.md, whichever comes first ([memory docs](https://code.claude.com/docs/en/memory)), meaning the most recently added (and often most relevant) entries at the bottom were silently dropped.
 
 **What we learned:** Context is currency. Every line in MEMORY.md costs a token in every session, whether it's relevant or not. A 200-line MEMORY.md about database gotchas wastes tokens during frontend work.
 
