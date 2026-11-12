@@ -1,6 +1,6 @@
 # Skills
 
-19 domain-specific skills, triggered by natural language and also runnable as `/name`.
+20 domain-specific skills, triggered by natural language and also runnable as `/name`.
 
 ## Skill Categories
 
@@ -9,6 +9,7 @@
 | **Code Quality** | review-full, review-diff | "is this secure?", "scan diff", "check for vulnerabilities" |
 | **PR Review** | pr-review | "review this PR", "review PR #N", "post a PR review" |
 | **Testing** | test-check, e2e-check | "run the tests", "browser test", "are tests passing?" |
+| **Debugging** | diagnose-before-finding | "debug", "root cause", "is this a bug?", "review finding", "must fix" |
 | **Deployment** | deploy-check | "deploy", "push to prod", "ready to ship", "npm audit" |
 | **Planning** | sprint-plan, elicit-requirements, self-audit | "let's build", "new feature", "audit yourself", "did you check everything?" |
 | **Session** | load-session, save-session, session-end, save-diary | Session start/end, "save", "bye", "done" |

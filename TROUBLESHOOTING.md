@@ -110,7 +110,7 @@ Each branch maps to a section below. Ctrl+F the section name if a link does not 
 
 **Symptoms:** An analysis-only agent (like verify-plan or db-analyst) writes to files or runs shell commands.
 
-**Fix:** Check the agent's frontmatter for `permissionMode: plan`, which is meant to keep the agent read-only. A subagent inherits the main conversation's permission mode: when your session runs in `bypassPermissions`, `acceptEdits`, or `auto` mode, the agent runs in that mode and its own `permissionMode` is ignored. The setting only applies in `default` or `dontAsk` mode. An agent that sets `memory` also gets Read, Write and Edit automatically. See [agents/README.md](agents/README.md) for the permission mode table.
+**Fix:** Check the agent's frontmatter for `permissionMode: plan`, which is meant to keep the agent read-only. A subagent inherits the main conversation's permission mode: when your session runs in `bypassPermissions`, `acceptEdits`, or `auto` mode, the agent runs in that mode and its own `permissionMode` is ignored. The setting only applies in `default` or `dontAsk` mode. An agent that sets `memory` also gets Read, Write and Edit automatically. To enforce read-only in every mode, install `hooks/agent-write-guard.sh` (full preset). See [agents/README.md](agents/README.md) for the permission mode table.
 
 ---
 
@@ -324,7 +324,7 @@ This is separate from the `{...}` placeholder variables (`{CLAUDE_CONFIG_PATH}`,
 - `db-analyst`: database schema analysis
 - `devops-engineer`: infrastructure review
 
-**Fix:** If you need code changes, use an agent with write access (e.g., `backend-specialist`, `frontend-specialist`, `qa-tester`). If you want to give a read-only agent write access, change `permissionMode: plan` to remove it in your copy of the agent file, but be aware this removes a safety guardrail. For an enforced guard that does not depend on the session mode, a PreToolUse hook keyed on `agent_type` is the reliable mechanism (a hook-based guard is planned for v1.3.0).
+**Fix:** If you need code changes, use an agent with write access (e.g., `backend-specialist`, `frontend-specialist`, `qa-tester`). If you want to give a read-only agent write access, change `permissionMode: plan` to remove it in your copy of the agent file, but be aware this removes a safety guardrail. For an enforced guard that does not depend on the session mode, install `hooks/agent-write-guard.sh` (full preset): a PreToolUse hook keyed on `agent_type` that denies writes from the read-only agents in every permission mode.
 
 ### "Agent stopped before finishing"
 

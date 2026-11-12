@@ -143,7 +143,7 @@ This reduced costs significantly while maintaining quality where it matters.
 
 **What we built:** Analysis-only agents (`verify-plan`, `code-reviewer`, `security-reviewer`, `db-analyst`, `devops-engineer`, `architecture-reviewer`) use `permissionMode: plan`, which is meant to keep them read-only. Their findings go into their response, not into the codebase.
 
-**The caveat:** A subagent inherits the main conversation's permission mode. `permissionMode: plan` keeps an agent read-only only when the main session runs in `default` (Manual) or `dontAsk` mode. In `bypassPermissions`, `acceptEdits`, or `auto` mode the agent runs in the session's mode and its own setting is ignored. An agent that sets `memory` also gets Read, Write and Edit automatically, which `tools:` cannot remove. A PreToolUse hook keyed on `agent_type` is the enforceable guard (a hook-based guard is planned for v1.3.0).
+**The caveat:** A subagent inherits the main conversation's permission mode. `permissionMode: plan` keeps an agent read-only only when the main session runs in `default` (Manual) or `dontAsk` mode. In `bypassPermissions`, `acceptEdits`, or `auto` mode the agent runs in the session's mode and its own setting is ignored. An agent that sets `memory` also gets Read, Write and Edit automatically, which `tools:` cannot remove. A PreToolUse hook keyed on `agent_type` is the enforceable guard: `hooks/agent-write-guard.sh` (full preset) denies writes from the read-only agents in every permission mode.
 
 ---
 

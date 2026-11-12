@@ -41,7 +41,7 @@ These are the questions we hear most from the community. If yours isn't here, [o
 
 ---
 
-### "12 agents, 19 skills, 16 hooks, 6 rules: I'm overwhelmed. Where do I actually start?"
+### "12 agents, 20 skills, 18 hooks, 6 rules: I'm overwhelmed. Where do I actually start?"
 
 **With one file.** The blueprint is a menu, not a mandatory checklist.
 
@@ -112,7 +112,7 @@ No installation required. No dependencies. No package manager. Just one markdown
 
 **No measurable slowdown. Marginal token cost that pays for itself.**
 
-- **Hooks are free.** All 16 hooks run as shell scripts outside Claude's context: zero tokens consumed.
+- **Hooks are free.** All 18 hooks run as shell scripts outside Claude's context: zero tokens consumed.
 - **CLAUDE.md adds ~2,300 tokens per session**, roughly 1-5% overhead. That's less than a single medium-sized source file.
 - **Net impact is token-negative** for sessions longer than a few turns. One prevented redo cycle (fixing a mistake Claude made because it didn't verify) saves 5,000-20,000 tokens, far more than the blueprint costs.
 - **Agents use model tiering** to control costs: Opus for complex planning (rare), Sonnet for most work, Haiku for docs (cheapest). The blended cost stays close to an all-Sonnet setup; current per-token rates are on the [API pricing page](https://platform.claude.com/docs/en/about-claude/pricing).
