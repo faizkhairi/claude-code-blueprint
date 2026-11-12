@@ -14,6 +14,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and the 
 ### Changed
 - Every GitHub Action is now pinned by full commit SHA with the version as a trailing comment (`actions/checkout` v7.0.1, `lycheeverse/lychee-action` v2.9.0), so a moved or compromised tag cannot change what CI runs. `actions/checkout` is on v7 (was `@v4`). The workflows trigger on `push` and `pull_request` only, so v7's block on checking out fork code under `pull_request_target` and `workflow_run` ([v7.0.0 release notes](https://github.com/actions/checkout/releases/tag/v7.0.0)) does not apply.
 - The `minimal`, `standard` and `core` presets no longer get PreCompact summary guidance, because `precompact-state.sh` is installed by `full` only. Every preset keeps the `SessionStart` `compact` recovery text.
+- Docs modernized for current Claude Code and the 5.5 model family:
+  - Models: Opus 5.5, Sonnet 5.5, Haiku 5.5 and Fable 5.2 named where tiers are discussed, with the aliases (`fable`, `best`, `opusplan`, `inherit`, `[1m]`), the subagent model order and `CLAUDE_CODE_SUBAGENT_MODEL`. Agent tiering is unchanged (1 opus, 10 sonnet, 1 haiku).
+  - Pricing: dollar tables removed from `docs/ARCHITECTURE.md`, `docs/SETTINGS-GUIDE.md`, `docs/BENCHMARKS.md`, `agents/README.md` and `FAQ.md`. They now give relative tiers and link the official pricing and costs pages.
+  - Hooks: `hooks/README.md` lists all 33 hook events with the handler types each accepts, documents the five handler types, `if`, `onFailure` and `timeout`, and says when a prompt hook is the right tool.
+  - Agents and skills: current frontmatter fields documented in `agents/README.md` and `skills/README.md`; skills are described as natural-language triggered and also runnable as `/name`; the worktree claim in `agents/README.md` is corrected.
+  - Settings: the permission section adds the project-file scope limits, subagent mode inheritance, and the `blockWritesOutsideWorkingDirectories`, `denyInsteadOfPrompting` and `sandbox.enabled` keys; auto mode classifier facts updated.
+  - Memory: the auto memory limit is the first 200 lines or 25KB of `MEMORY.md`; `docs/ARCHITECTURE.md` explains `@path` imports and native `AGENTS.md` reading.
+  - `GETTING-STARTED.md` gains Output Styles, Workflows and "Packaging Your Fork as a Plugin" sections; the ROADMAP keeps the plugin marketplace under Not Planned with an updated rationale.
 
 ### Fixed
 - D1: `verify-subagent-findings` now delivers its warning to Claude through `additionalContext`. A synchronous hook's `systemMessage` is shown to the user only.

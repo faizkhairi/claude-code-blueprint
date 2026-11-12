@@ -169,7 +169,17 @@ Claude Code has six permission modes, each balancing safety against productivity
 | `"auto"` | Allow-listed tools run silently; unlisted tools go through an **AI classifier** that evaluates safety contextually | Power users who want fewer prompts without losing safety |
 | `"bypassPermissions"` | Everything runs without checks | Isolated containers/VMs only, never on a real machine |
 
-`auto` and `bypassPermissions` do not take effect from project or local settings files; set them in user settings.
+`auto` and `bypassPermissions` do not take effect from project or local settings files (`.claude/settings.json`, `.claude/settings.local.json`); set them in user settings. The VS Code extension never reads the starting mode from project settings at all. A subagent with no `permissionMode` inherits the main conversation's mode, and a parent in `bypassPermissions`, `acceptEdits` or `auto` overrides the subagent's own value ([sub-agents](https://code.claude.com/docs/en/sub-agents)).
+
+**Hardening keys that work in any mode** (from the [settings reference](https://code.claude.com/docs/en/settings-reference)):
+
+| Key | Effect | Where it can be set |
+|-----|--------|---------------------|
+| `permissions.blockWritesOutsideWorkingDirectories` | `Write`, `Edit` and `NotebookEdit` refuse paths outside the working directories, in every mode including `bypassPermissions` (v2.1.314+). Add a directory with `/add-dir` or `additionalDirectories` to open it | Any settings file |
+| `permissions.denyInsteadOfPrompting` | A tool call that would wait on a permission prompt is denied instead, so an unattended session keeps moving (v2.1.319+) | User or managed settings |
+| `sandbox.enabled` | Runs Bash inside an OS sandbox (macOS, Linux, WSL2): writes limited to the working directory and temp, network only to allowed domains. Off by default; `/sandbox` turns it on. See [sandboxing](https://code.claude.com/docs/en/sandboxing) and [`sandbox.failIfUnavailable`](#sandboxfailifunavailable) below | Any settings file |
+
+The blueprint's template sets none of these, because each changes how a session behaves in ways you should choose deliberately. `blockWritesOutsideWorkingDirectories` pairs well with `auto` or `bypassPermissions`; `denyInsteadOfPrompting` suits headless runs.
 
 **`"auto"` mode:**
 
@@ -177,13 +187,13 @@ Claude Code has six permission modes, each balancing safety against productivity
 "defaultMode": "auto"
 ```
 
-The auto mode classifier (runs on Sonnet) reviews each non-allow-listed action against 26 built-in safety rules (force push, data exfiltration, production deploys, `curl | bash`, etc.). It approves safe actions and blocks risky ones, no manual prompting needed.
+The auto mode classifier (Sonnet 5 by default, configurable with `CLAUDE_CODE_AUTO_MODE_MODEL`) reviews each non-allow-listed action against built-in block rules (force push, data exfiltration, production deploys, `curl | bash`, etc.). It approves safe actions and blocks risky ones, no manual prompting needed.
 
 **Key facts about auto mode:**
 - Allow-listed commands bypass the classifier entirely (saves tokens and latency)
 - Hooks still run regardless of mode: your `block-git-push.sh` and `protect-config.sh` remain active
 - Classifier calls add token cost (small per call, but adds up in long sessions)
-- If the classifier blocks an action 3 times consecutively, it falls back to prompting you
+- If the classifier blocks actions 3 times in a row or 20 times in a session, auto mode pauses and Claude Code prompts you again
 - The `PermissionDenied` hook (v2.1.89+) fires after each classifier denial: return `{retry: true}` to retry, or use it for logging/alerting
 
 **Recommendation:**
@@ -320,34 +330,29 @@ The Stop hook uses `"model": "sonnet"` for its security verification prompt. Thi
 
 ## Cost Implications
 
-**Prices as of March 2026. Verify at [Anthropic's pricing page](https://docs.anthropic.com/en/docs/about-claude/pricing) for current rates.**
+This guide does not reproduce prices, because they change with each model generation. Per-token API rates are on the [API pricing page](https://platform.claude.com/docs/en/about-claude/pricing); subscription plans are on [claude.com/pricing](https://claude.com/pricing).
 
-### Model Pricing Reference
+### Model Tiers
 
-| Model | Input (per 1M tokens) | Output (per 1M tokens) | Used By |
-|-------|----------------------|------------------------|---------|
-| Opus | $15 | $75 | project-architect agent |
-| Sonnet | $3 | $15 | 9 implementation/review agents + Stop hook |
-| Haiku | $0.80 | $4 | docs-writer agent |
+| Tier | Alias (current model) | Relative cost per token | Used By |
+|------|----------------------|-------------------------|---------|
+| Opus | `opus` (Opus 5.5) | Highest of the three | project-architect agent |
+| Sonnet | `sonnet` (Sonnet 5.5) | Middle | 10 implementation/review agents + Stop hook |
+| Haiku | `haiku` (Haiku 5.5) | Lowest | docs-writer agent |
+
+On the 5.5 generation's published API rates (checked 2026-11-12), Opus costs about twice Sonnet per token and Haiku about a twentieth of Sonnet for prompts under 100,000 tokens. `fable` (Fable 5.2) sits above Opus at about twice its rate; no agent here uses it. Aliases resolve to the newest model in each family on the Anthropic API and may resolve to older versions on cloud providers ([model configuration](https://code.claude.com/docs/en/model-config)).
 
 ### What Drives Cost Up
 
 1. **Stop hook (Sonnet on every response):** Each response triggers a Sonnet security review. In a 50-response session, that's 50 additional Sonnet invocations.
 2. **Parallel agent spawns:** The review-full skill spawns up to 4 agents simultaneously. Each agent has its own context window and token budget.
 3. **Always-thinking + high effort:** Extended thinking generates additional tokens that are billed. A higher effort level (set with `/effort`) increases this further.
-4. **Agent teams:** Sessions with active agent teams use roughly 7x more tokens than standard sessions (per Anthropic's official docs).
+4. **Agent teams:** Agent teams use approximately 7x more tokens than standard sessions when teammates run in plan mode (per the [costs page](https://code.claude.com/docs/en/costs)), because each teammate keeps its own context window.
 5. **Playwright MCP vs CLI:** The Playwright MCP server streams full DOM accessibility trees into context (~114K tokens per task). Running `npx playwright test` via Bash uses ~27K tokens for the same work, a 76% reduction. Use MCP for interactive browser exploration; use CLI for test execution.
 
-### Rough Daily Estimates
+### Typical Spend
 
-From [Anthropic's Claude Code documentation](https://docs.anthropic.com/en/docs/claude-code) (verify current URL, since cost docs may move between releases):
-
-| Usage Pattern | Daily Cost (approx) |
-|--------------|-------------------|
-| Light (5-10 responses) | ~$1-3 |
-| Average developer | ~$6/day |
-| Heavy (100+ responses, agents) | ~$12+ |
-| 90th percentile | below $12/day |
+The official [costs page](https://code.claude.com/docs/en/costs) publishes current averages per developer per day and explains how to read your own numbers. Inside a session, `/usage` shows the session's token usage and, on a subscription plan, how much of your plan limit you have used.
 
 ### How to Track Your Actual Costs
 

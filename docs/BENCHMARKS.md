@@ -93,19 +93,19 @@ Subscription plans measure usage in messages/interactions rather than raw tokens
 
 ### API Billing Users
 
-You pay per token, so exact costs matter. Based on [current pricing](https://docs.anthropic.com/en/docs/about-claude/pricing):
+You pay per token, so count tokens and multiply by the current input rate for your model on the [API pricing page](https://platform.claude.com/docs/en/about-claude/pricing). This guide does not copy the rates, because they change with each model generation.
 
-| Blueprint Component | Per-Session Cost (Sonnet) | Per-Session Cost (Opus) |
-|--------------------|--------------------------|------------------------|
-| CLAUDE.md (input) | ~2,300 x $3/MTok = **$0.007** | ~2,300 x $15/MTok = **$0.035** |
-| 1 rule (input) | ~1,000 x $3/MTok = **$0.003** | ~1,000 x $15/MTok = **$0.015** |
-| 1 skill (input) | ~700 x $3/MTok = **$0.002** | ~700 x $15/MTok = **$0.011** |
-| **Typical session overhead** | **~$0.01-0.02** | **~$0.05-0.06** |
+| Blueprint Component | Input tokens per session |
+|--------------------|--------------------------|
+| CLAUDE.md | ~2,300 |
+| 1 rule | ~1,000 |
+| 1 skill | ~700 |
+| **Typical session overhead** | **~2,300-4,000** (CLAUDE.md alone up to all three) |
 
-For API users, the blueprint adds roughly 1-6 cents per session in context loading costs (Sonnet at the low end, Opus at the high end). A single prevented redo cycle saves 10-60 cents. The ROI is immediate.
+The same tokens cost about twice as much on Opus as on Sonnet at the 5.5 generation's rates (checked 2026-11-12), and prompt caching cuts the cost of repeated context further. A single prevented redo cycle saves 5,000-20,000 tokens, which is more than the whole overhead, so the ROI is immediate.
 
 **API optimization tips:**
-1. Model tiering is your biggest lever: Haiku for docs ($0.80/$4 MTok) vs Opus for everything ($15/$75 MTok) saves 80%
+1. Model tiering is your biggest lever: Haiku for templated docs costs a small fraction of Opus per token, and Sonnet about half of Opus (5.5 generation rates)
 2. Path-scoped rules prevent loading unnecessary context
 3. The Playwright CLI-over-MCP pattern saves 76% tokens on browser automation
 4. Use `cost-tracker.sh` to monitor per-session costs in `~/.claude/metrics/costs.jsonl`
@@ -160,28 +160,28 @@ A gradual adoption timeline for budget-conscious users:
 
 The blueprint is designed to scale with you. Start small, add components as you feel the need, and upgrade your plan only when the tools themselves demand more headroom.
 
-*Subscription plan details and pricing change over time. Visit [claude.com/pricing](https://docs.anthropic.com/en/docs/about-claude/pricing) for current plans, pricing, and usage limits.*
+*Subscription plan details and pricing change over time. Visit [claude.com/pricing](https://claude.com/pricing) for current plans and usage limits.*
 
 ---
 
 ## Cost
 
-Based on [Anthropic's pricing](https://docs.anthropic.com/en/docs/about-claude/pricing) as of March 2026.
+Daily spend depends on your model, plan and habits more than on the blueprint, so this page gives relative costs only. For current averages per developer, see the official [costs page](https://code.claude.com/docs/en/costs); for rates, the [API pricing page](https://platform.claude.com/docs/en/about-claude/pricing).
 
-| Usage Pattern | Estimated Daily Cost | Notes |
-|--------------|---------------------|-------|
-| Light (5-10 responses, no agents) | ~$1-3 | CLAUDE.md + hooks only |
-| Standard (20-50 responses, occasional agents) | ~$5-8 | Standard preset |
-| Heavy (100+ responses, parallel agents) | ~$10-15 | Full preset with review-full skill |
-| Stop hook overhead | ~$1-2/day additional | Sonnet security review on every response |
+| Usage Pattern | Relative Cost | Notes |
+|--------------|---------------|-------|
+| Light (5-10 responses, no agents) | Lowest | CLAUDE.md + hooks only |
+| Standard (20-50 responses, occasional agents) | Moderate | Standard preset |
+| Heavy (100+ responses, parallel agents) | Highest | Full preset with review-full skill |
+| Stop hook overhead | One Sonnet call per response | Sonnet security review on every response |
 
 ### Model Tiering Impact
 
 | Configuration | Relative Cost | Description |
 |--------------|---------------|-------------|
-| All Opus agents | 5x baseline | Every agent uses the most expensive model |
-| All Sonnet agents | 1x baseline | Standard pricing |
-| Blueprint tiering (1 Opus + 10 Sonnet + 1 Haiku) | ~1.1x baseline | Minimal premium for architecture quality |
+| All Opus agents | About 2x baseline (5.5 generation rates) | Every agent uses the most expensive of the three tiers |
+| All Sonnet agents | Baseline | Standard pricing |
+| Blueprint tiering (1 Opus + 10 Sonnet + 1 Haiku) | Close to baseline | Minimal premium for architecture quality |
 
 The blueprint's model tiering keeps costs close to all-Sonnet pricing while reserving Opus reasoning for architecture decisions (project-architect agent only).
 

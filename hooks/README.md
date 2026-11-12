@@ -28,6 +28,69 @@
 
 > `CwdChanged`, `FileChanged`, `PermissionDenied`, and `TaskCreated` are available but not used in this blueprint. They're useful for monorepo setups (auto-switching context on `cd`), reactive config reloading, auto-mode denial logging, and background agent governance.
 
+## All hook events
+
+Claude Code currently exposes 33 hook events. The table lists every one, marks the ones this blueprint wires, and shows which handler types each accepts. Source: the [hooks reference](https://code.claude.com/docs/en/hooks), sections "Hook lifecycle" and "Prompt-based hooks"; re-check it when you upgrade, because events are added often.
+
+| Event | Fires | Used here | Handler types |
+|-------|-------|-----------|---------------|
+| `SessionStart` | Session begins or resumes (matcher `compact` after compaction) | Yes | command, mcp_tool |
+| `Setup` | `--init-only`, or `--init` / `--maintenance` in `-p` mode | | command, mcp_tool |
+| `InstructionsLoaded` | A CLAUDE.md or `.claude/rules/*.md` file loads | Yes | command, http, mcp_tool |
+| `UserPromptSubmit` | A prompt is submitted, before Claude sees it | | all five |
+| `UserPromptExpansion` | A typed command expands into a prompt | | all five |
+| `MessageDisplay` | Assistant text is displayed | | command, http, mcp_tool |
+| `PreToolUse` | Before a tool call; can block it | Yes | all five |
+| `PermissionRequest` | A tool call needs a permission decision | | command, http, mcp_tool, prompt |
+| `PermissionDenied` | Auto mode denies a tool call | | all five |
+| `PostToolUse` | After a tool call succeeds | Yes | all five |
+| `PostToolUseFailure` | After a tool call fails | Yes | all five |
+| `PostToolBatch` | After a batch of parallel tool calls resolves | | all five |
+| `Notification` | Claude Code sends a notification | | command, http, mcp_tool |
+| `SubagentStart` | A subagent is spawned | | command, http, mcp_tool |
+| `SubagentStop` | A subagent finishes | | all five |
+| `TaskCreated` | A task is created via `TaskCreate` | | all five |
+| `TaskCompleted` | A task is marked completed | | all five |
+| `Stop` | Claude finishes responding | Yes | all five |
+| `StopFailure` | The turn ends on an API error | | command, http, mcp_tool |
+| `TeammateIdle` | An agent-team teammate is about to go idle | | all five |
+| `ConfigChange` | A configuration file changes mid-session | | command, http, mcp_tool |
+| `CwdChanged` | The working directory changes | | command, http, mcp_tool |
+| `DirectoryAdded` | A directory is added with `/add-dir` | | command, http, mcp_tool |
+| `FileChanged` | A watched file changes on disk | | command, http, mcp_tool |
+| `WorktreeCreate` | A worktree is being created | | command, http, mcp_tool |
+| `WorktreeRemove` | A hook-created worktree is removed | | command, http, mcp_tool |
+| `PreCompact` | Before context compaction | Yes | command, http, mcp_tool |
+| `PostCompact` | After compaction completes | | command, http, mcp_tool |
+| `PreModelSwitch` | Before a requested model switch; can block it | | command, http, mcp_tool |
+| `PostModelSwitch` | After the session's model changes | | command, http, mcp_tool |
+| `Elicitation` | An MCP server asks for user input | | command, http, mcp_tool |
+| `ElicitationResult` | After the user answers an MCP elicitation | | command, http, mcp_tool |
+| `SessionEnd` | Session terminates | Yes | command, http, mcp_tool |
+
+"All five" means `command`, `http`, `mcp_tool`, `prompt` and `agent`.
+
+## Handler types and fields
+
+Each entry in a matcher's `hooks` array is one handler, and `type` picks what runs:
+
+| `type` | What runs | Use it for |
+|--------|-----------|------------|
+| `command` | A shell command; JSON input on stdin, results via exit code and stdout | Everything in this blueprint except the Stop check: deterministic guards, logging, context injection |
+| `http` | A POST of the JSON input to a URL; the response body uses the same JSON output format | Central policy or audit services shared by a team |
+| `mcp_tool` | A tool on a configured MCP server; its text output is read like command stdout | Reusing logic you already expose over MCP |
+| `prompt` | One model call that returns a decision as JSON (`{ok, reason}`) | Yes/no judgements on decision events such as `Stop`, `SubagentStop` and `PreToolUse` |
+| `agent` | A subagent with Read, Grep and Glob that verifies before deciding (experimental) | Decisions that need to look at files; the docs recommend command hooks for production |
+
+Fields worth knowing beyond `type` and `command`:
+
+- **`if`**: one permission rule, such as `"Bash(git *)"` or `"Edit(*.ts)"`, that filters when the handler runs. It is evaluated only on tool events (`PreToolUse`, `PostToolUse`, `PostToolUseFailure`, `PermissionRequest`, `PermissionDenied`); on any other event a handler with `if` never runs. There is no `&&` or list syntax, and matching is best-effort, so enforce hard allow or deny rules with the permission system, not with `if`. A matcher of `Bash` plus `if: "Bash(git commit *)"` would let `pre-commit-secret-scan.sh` skip its Python start-up on every non-commit command.
+- **`onFailure: "block"`** (command and http hooks, Claude Code v2.1.295 or later): by default a hook that fails to start, crashes, times out or prints invalid JSON lets the action proceed. With `"block"`, a failure acts like exit code 2 on that event (a `PreToolUse` failure blocks the tool call). It has no effect on `Stop`, `SubagentStop`, `TaskCompleted`, `TeammateIdle`, or `async` hooks. This blueprint leaves it unset on purpose: every guard here fails open (see "Exit 0 always" below), so a missing Python never locks you out. Set it on a guard you would rather fail closed.
+- **`timeout`**: seconds before the handler is cancelled. Defaults are 600 for command, http and mcp_tool (lower on a few events such as `UserPromptSubmit`), 30 for prompt, 60 for agent.
+- **`async: true`**: run a command hook in the background; see "Which output reaches Claude" below for where its output goes.
+
+**When is a prompt hook the right tool?** Only when you want a model to make a yes/no decision on an event that accepts one (`Stop`, `SubagentStop`, `PreToolUse` and the other "all five" rows above). The evaluator answers `{ok, reason}` and sees only the hook input, not the conversation, so a prompt hook cannot deliver advice and cannot judge anything it is not given. Each one is also a model call every time it fires. For guidance, context or logging, use a command hook.
+
 ## Scoping a hook to specific projects
 
 A hook wired in `~/.claude/settings.json` fires for **every** project you open. If you want a hook (say `protect-config.sh`) active in some projects but not others, you have two options.
@@ -62,7 +125,7 @@ This matches the "exit 0 = allow/no-op" convention every hook here follows, so a
 
 ## Design Principles
 
-1. **Command hooks for guidance and action; prompt hooks for decisions**: a prompt hook sends its text to an evaluator model that answers `{ok, reason}`, so it fits a yes/no judgement (the Stop security check) and is the wrong tool for delivering advice. Guidance goes through a command hook's output instead (see below). PreCompact and PostCompact do not run prompt hooks at all.
+1. **Command hooks for guidance and action; prompt hooks for decisions**: a prompt hook sends its text to an evaluator model that answers `{ok, reason}`, so it fits a yes/no judgement (the Stop security check) and is the wrong tool for delivering advice. Guidance goes through a command hook's output instead (see below). PreCompact and PostCompact do not run prompt hooks at all (see [Handler types and fields](#handler-types-and-fields)).
 2. **Async for non-blocking**: Post-commit review and file notifications run async to avoid slowing Claude down.
 3. **Sync for critical**: SessionEnd checkpoint is synchronous to guarantee it completes before exit.
 4. **Exit 0 always**: Hook scripts should never block Claude. Even on errors, exit 0 and log the issue.
