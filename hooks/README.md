@@ -1,6 +1,6 @@
 # Hooks
 
-14 lifecycle hooks + 2 utility scripts (plus one companion tool, `check-no-dash-file.py`), covering 8 lifecycle events. Hooks are deterministic (they fire every time) vs CLAUDE.md instructions (followed most of the time, but not guaranteed).
+16 lifecycle hooks + 2 utility scripts (plus one companion tool, `check-no-dash-file.py`), covering 8 lifecycle events. Hooks are deterministic (they fire every time) vs CLAUDE.md instructions (followed most of the time, but not guaranteed).
 
 ## Hook Lifecycle
 
@@ -13,13 +13,15 @@
 | PreToolUse (Bash) | Before any bash command | pre-commit-secret-scan.sh | Block commits containing secrets (gitleaks) |
 | PreToolUse (Write/Edit) | Before any file edit | protect-config.sh | Guard linter/build configs |
 | PreToolUse (Write/Edit) | Before any file edit | protect-claude-settings.sh | Confirm edits to safety keys in your own settings.json, and flag no-op allow rules for protected paths |
+| PreToolUse (Write/Edit/Bash) | Before a write or shell call | agent-write-guard.sh | Keep read-only agents read-only in every permission mode (keyed on `agent_type`) |
+| PreToolUse (ExitPlanMode) | Before leaving plan mode | guard-exit-plan.sh | Deny until the plan file carries the self-audit marker `AUDIT CLEAN` |
 | PostToolUse (Write/Edit) | After file edits | notify-file-changed.sh | Verify reminder |
 | PostToolUse (Write/Edit) | After file edits | no-dash-check.sh | Warn on a prose-style violation (example: em-dashes) |
 | PostToolUse (Bash) | After bash commands | post-commit-review.sh | Post-commit review |
 | PostToolUse (Agent/Task) | After a subagent finishes | verify-subagent-findings.sh | Treat subagent findings as hypotheses to verify |
 | PostToolUseFailure (MCP) | When an MCP tool fails | mcp-failure-hint.sh | Fallback guidance |
 | PreCompact | Before context compaction | precompact-state.sh | Serialize state to disk; its stdout tells the compaction summary what to keep |
-| Stop | After each response | security check + cost-tracker.sh + session-checkpoint.sh | Last defense + metrics + crash recovery |
+| Stop | After each response | security and claim-evidence check + cost-tracker.sh + session-checkpoint.sh | Last defense + metrics + crash recovery |
 | SessionEnd | Session terminates | session-checkpoint.sh | Guaranteed final save |
 | CwdChanged | Working directory changes | *(not used)* | Auto-load project context on directory switch |
 | FileChanged | External file modification detected | *(not used)* | React to .env changes, config reloads |
@@ -184,4 +186,12 @@ echo 'not json' | bash hooks/block-git-push.sh
 
 **Expected behavior on bad input:** Every hook exits 0 (allow/no-op). No hook should crash, block, or produce error output on malformed input. This is by design: hooks failing open is safer than hooks failing closed.
 
-**Automated smoke test:** Run `bash hooks/test-hooks.sh` to verify all hooks pass syntax checks and handle empty/malformed/missing-field input gracefully. Run this after making any changes to hook scripts.
+**Automated smoke test:** Run `bash hooks/test-hooks.sh` to verify all hooks pass syntax checks and handle empty/malformed/missing-field input gracefully. Run this after making any changes to hook scripts. It also replays named allow and deny cases through `agent-write-guard.sh` and `guard-exit-plan.sh`, so a guard that stops deciding fails the run.
+
+**The Stop prompt is evaluated separately, by hand.** `test-hooks.sh` cannot see what a prompt hook decides. `tests/judge-eval.sh` replays the labelled messages in `tests/judge-fixtures/` through the Stop prompt in `examples/settings-template.json` and reports how often the judge agreed with each label. It calls the Anthropic API, so it needs `ANTHROPIC_API_KEY`, costs money, and is manual only, never a CI job. Run it after you edit the Stop prompt; `JUDGE_DRY_RUN=1` builds every request without a key or a call.
+
+## Guard notes
+
+- **agent-write-guard.sh** reads `agent_type` from the hook input, which is present only inside a subagent or a `claude --agent <name>` session. The default read-only list is the agents shipped with `permissionMode: plan` except memory-curator; set `AGENT_WRITE_GUARD_AGENTS` (space-separated names, for example in the `env` block of `settings.json`) to replace it. It stops honest mistakes, not a determined bypass: an interpreter that writes a file itself (`python -c`, `node -e`) is not seen.
+- **guard-exit-plan.sh** denies `ExitPlanMode` until the plan text contains `AUDIT CLEAN`, which the `self-audit` skill writes into the plan file, or the line `self-audit: not required (trivial)`. Install both together (full preset).
+- Both fail open: without Python they print a warning on stderr and allow the call, like every other hook here.

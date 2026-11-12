@@ -12,7 +12,7 @@
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-compatible-blueviolet)](https://docs.anthropic.com/en/docs/claude-code)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](../CONTRIBUTING.md)
 
-**12 agents** · **19 skills** · **16 hooks** · **6 rules**、実際のプロジェクトで検証済み
+**12 agents** · **20 skills** · **18 hooks** · **6 rules**、実際のプロジェクトで検証済み
 
 [English](../README.md) | [日本語](README.ja.md) | [한국어](README.ko.md) | [简体中文](README.zh.md)
 
@@ -112,7 +112,7 @@ agents、skills、rules、memory をワークフローの成熟に合わせて�
 | AI コーディングミスを防ぐ[4つの行動ルール](../CLAUDE.md) | コピーする設定リスト |
 | [クロスツールガイド](../docs/CROSS-TOOL-GUIDE.md)：Copilot、Cursor、Cline、Roo Code、OpenCode 他10ツール対応 | 単一ツールのみ |
 | [初心者向け](../GETTING-STARTED.md)：6つの採用ペルソナ | 専門知識を前提 |
-| [スモークテスト済み hook](../hooks/test-hooks.sh)：66個の自動テスト | テストなしのスクリプト |
+| [スモークテスト済み hook](../hooks/test-hooks.sh)：101個の自動テスト | テストなしのスクリプト |
 | 安全性優先：[設定配置ガイド](../GETTING-STARTED.md#where-config-belongs-project-vs-personal)、プライバシー警告、[段階的劣化](../agents/README.md#agents-are-not-infallible) | 安全性ガイダンスなし |
 | [フレームワーク非依存](../FAQ.md#what-framework-or-language-does-this-work-with)：あらゆる言語とスタックで動作 | 特定の言語/フレームワークを前提 |
 
@@ -145,7 +145,7 @@ agents、skills、rules、memory をワークフローの成熟に合わせて�
 </details>
 
 <details>
-<summary><strong>19 Skills</strong>：自然言語トリガーのワークフロー（スラッシュコマンド不要）</summary>
+<summary><strong>20 Skills</strong>：自然言語トリガーのワークフロー（スラッシュコマンド不要）</summary>
 
 &nbsp;
 
@@ -166,7 +166,7 @@ agents、skills、rules、memory をワークフローの成熟に合わせて�
 </details>
 
 <details>
-<summary><strong>16 Hooks</strong>：決定的なライフサイクル自動化（決定的に毎回発火、CLAUDE.md ルールは必ずしも守られない点と異なり）</summary>
+<summary><strong>18 Hooks</strong>：決定的なライフサイクル自動化（決定的に毎回発火、CLAUDE.md ルールは必ずしも守られない点と異なり）</summary>
 
 &nbsp;
 
@@ -183,9 +183,9 @@ agents、skills、rules、memory をワークフローの成熟に合わせて�
 | Stop | security check + cost-tracker.sh + session-checkpoint.sh | 最終防御 + メトリクス |
 | SessionEnd | session-checkpoint.sh | 保証された最終保存 |
 
-プラス2つのユーティリティスクリプト：`verify-mcp-sync.sh`（MCP 設定チェッカー）と`status-line.sh`（ブランチ/プロジェクトステータス）、およびコンパニオンツール `check-no-dash-file.py`（`no-dash-check.sh` 用の投稿前プローズ検査）。ユーティリティは full プリセットでデプロイされます。フォルダ内の最後のファイルは `test-hooks.sh` で、ローカルテストハーネスとして `bash hooks/test-hooks.sh` で実行しすべての hook を検証します。これは `~/.claude/hooks/` にデプロイされない唯一のファイルであり、「16 hooks」の合計には含まれません。
+プラス2つのユーティリティスクリプト：`verify-mcp-sync.sh`（MCP 設定チェッカー）と`status-line.sh`（ブランチ/プロジェクトステータス）、およびコンパニオンツール `check-no-dash-file.py`（`no-dash-check.sh` 用の投稿前プローズ検査）。ユーティリティは full プリセットでデプロイされます。フォルダ内の最後のファイルは `test-hooks.sh` で、ローカルテストハーネスとして `bash hooks/test-hooks.sh` で実行しすべての hook を検証します。これは `~/.claude/hooks/` にデプロイされない唯一のファイルであり、「18 hooks」の合計には含まれません。
 
-すべての hook が動作することを確認するには `bash hooks/test-hooks.sh` を実行してください（66の自動テスト）。
+すべての hook が動作することを確認するには `bash hooks/test-hooks.sh` を実行してください（101の自動テスト）。
 
 詳細は [hooks/README.md](../hooks/README.md) のフルライフサイクル、テストガイド、デザイン原則を参照。
 
@@ -227,7 +227,7 @@ agents、skills、rules、memory をワークフローの成熟に合わせて�
 
 3. **コンテキストは通貨である**：コンテキストに読み込まれるすべてのトークンは、コードに使えないトークンです。MEMORY.md は 100 行以下に保ちましょう。topic ファイルに抽出します。パススコープルールを使って、無関係なルールがロードされないようにします。
 
-4. **Hook は無料、コンテキストは安い**：16 個の hook スクリプトはトークンコストゼロです（Claude のコンテキスト外で実行されます）。CLAUDE.md はセッションあたり約 2,300 トークンを追加します。これは通常セッションの約 1-5% です。ブループリントはリトライサイクルの防止により、コスト以上のトークンを節約します。[BENCHMARKS.md](../docs/BENCHMARKS.md#token-cost-per-component) を参照してください。
+4. **Hook は無料、コンテキストは安い**：18 個の hook スクリプトはトークンコストゼロです（Claude のコンテキスト外で実行されます）。CLAUDE.md はセッションあたり約 2,300 トークンを追加します。これは通常セッションの約 1-5% です。ブループリントはリトライサイクルの防止により、コスト以上のトークンを節約します。[BENCHMARKS.md](../docs/BENCHMARKS.md#token-cost-per-component) を参照してください。
 
 5. **理論より実戦経験**：このリポジトリのすべてのルールは、それがなければ何か問題が起きたから存在します。「WHY」が「WHAT」より重要です。
 

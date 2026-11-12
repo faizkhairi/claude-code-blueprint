@@ -12,7 +12,7 @@
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-compatible-blueviolet)](https://docs.anthropic.com/en/docs/claude-code)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](../CONTRIBUTING.md)
 
-**12 agents** · **19 skills** · **16 hooks** · **6 rules**, 실제 프로젝트에서 검증됨
+**12 agents** · **20 skills** · **18 hooks** · **6 rules**, 실제 프로젝트에서 검증됨
 
 [English](../README.md) | [日本語](README.ja.md) | [한국어](README.ko.md) | [简体中文](README.zh.md)
 
@@ -112,7 +112,7 @@ CLAUDE.md를 프로젝트에 복사하세요. 4개의 행동 규칙. 즉각적�
 | AI 코딩 실수를 방지하는 [4개의 행동 규칙](../CLAUDE.md) | 복사할 설정 목록 |
 | Copilot, Cursor, Cline, Roo Code, OpenCode 등 10개 도구를 위한 [교차 도구 가이드](../docs/CROSS-TOOL-GUIDE.md) | 단일 도구만 |
 | [초보자 친화적](../GETTING-STARTED.md) 6개의 도입 페르소나 | 전문성 가정 |
-| [66개 자동 테스트](../hooks/test-hooks.sh)를 통한 [스모크 테스트 hooks](../hooks/test-hooks.sh) | 테스트되지 않은 스크립트 |
+| [101개 자동 테스트](../hooks/test-hooks.sh)를 통한 [스모크 테스트 hooks](../hooks/test-hooks.sh) | 테스트되지 않은 스크립트 |
 | 안전 우선: [설정 배치 가이드](../GETTING-STARTED.md#where-config-belongs-project-vs-personal), 개인정보 경고, [우아한 성능 저하](../agents/README.md#agents-are-not-infallible) | 안전 지침 없음 |
 | [프레임워크 비의존적](../FAQ.md#what-framework-or-language-does-this-work-with): 모든 언어와 스택에서 동작 | 특정 언어/프레임워크를 가정 |
 
@@ -145,7 +145,7 @@ CLAUDE.md를 프로젝트에 복사하세요. 4개의 행동 규칙. 즉각적�
 </details>
 
 <details>
-<summary><strong>19 Skills</strong>: 자연어 트리거 워크플로우(슬래시 명령 필요 없음)</summary>
+<summary><strong>20 Skills</strong>: 자연어 트리거 워크플로우(슬래시 명령 필요 없음)</summary>
 
 &nbsp;
 
@@ -166,7 +166,7 @@ CLAUDE.md를 프로젝트에 복사하세요. 4개의 행동 규칙. 즉각적�
 </details>
 
 <details>
-<summary><strong>16 Hooks</strong>: 결정적인 라이프사이클 자동화(100% 준수, CLAUDE.md 규칙은 항상 따르지 않는 것과 달리)</summary>
+<summary><strong>18 Hooks</strong>: 결정적인 라이프사이클 자동화(100% 준수, CLAUDE.md 규칙은 항상 따르지 않는 것과 달리)</summary>
 
 &nbsp;
 
@@ -183,9 +183,9 @@ CLAUDE.md를 프로젝트에 복사하세요. 4개의 행동 규칙. 즉각적�
 | Stop | security check + cost-tracker.sh + session-checkpoint.sh | 최후 방어 + 메트릭 |
 | SessionEnd | session-checkpoint.sh | 보장된 최종 저장 |
 
-추가 2개 유틸리티 스크립트: `verify-mcp-sync.sh` (MCP 설정 확인) 및 `status-line.sh` (브랜치/프로젝트 상태), 그리고 컴패니언 도구 `check-no-dash-file.py` (`no-dash-check.sh`용 게시 전 프로즈 검사). 유틸리티는 full 프리셋으로 배포됩니다. 폴더의 마지막 파일은 `test-hooks.sh`이며, 로컬 테스트 하네스로 `bash hooks/test-hooks.sh`로 실행하여 모든 hooks를 검증합니다. 이 파일만 `~/.claude/hooks/`에 배포되지 않으며, "16 hooks" 총합에도 포함되지 않습니다.
+추가 2개 유틸리티 스크립트: `verify-mcp-sync.sh` (MCP 설정 확인) 및 `status-line.sh` (브랜치/프로젝트 상태), 그리고 컴패니언 도구 `check-no-dash-file.py` (`no-dash-check.sh`용 게시 전 프로즈 검사). 유틸리티는 full 프리셋으로 배포됩니다. 폴더의 마지막 파일은 `test-hooks.sh`이며, 로컬 테스트 하네스로 `bash hooks/test-hooks.sh`로 실행하여 모든 hooks를 검증합니다. 이 파일만 `~/.claude/hooks/`에 배포되지 않으며, "18 hooks" 총합에도 포함되지 않습니다.
 
-`bash hooks/test-hooks.sh`를 실행하여 모든 hooks가 통과하는지 확인하세요 (66개 자동 테스트).
+`bash hooks/test-hooks.sh`를 실행하여 모든 hooks가 통과하는지 확인하세요 (101개 자동 테스트).
 
 [hooks/README.md](../hooks/README.md)에서 전체 라이프사이클, 테스트 가이드, 설계 원칙을 참조하세요.
 
@@ -227,7 +227,7 @@ CLAUDE.md를 프로젝트에 복사하세요. 4개의 행동 규칙. 즉각적�
 
 3. **컨텍스트는 통화다**: 컨텍스트에 로드된 모든 토큰은 코드에 사용할 수 없는 토큰입니다. MEMORY.md는 100줄 미만으로 유지하세요. 주제 파일로 추출하세요. 관련 없는 규칙이 로드되지 않도록 경로 범위 규칙을 사용하세요.
 
-4. **Hooks는 무료, 컨텍스트는 저렴**: 16개 hook 스크립트는 토큰 비용 제로입니다 (Claude 컨텍스트 외부에서 실행). CLAUDE.md는 세션당 약 2,300 토큰을 추가합니다. 일반 세션의 약 1-5%입니다. 블루프린트는 재시도 사이클 방지로 비용 이상의 토큰을 절약합니다. [BENCHMARKS.md](../docs/BENCHMARKS.md#token-cost-per-component) 참조.
+4. **Hooks는 무료, 컨텍스트는 저렴**: 18개 hook 스크립트는 토큰 비용 제로입니다 (Claude 컨텍스트 외부에서 실행). CLAUDE.md는 세션당 약 2,300 토큰을 추가합니다. 일반 세션의 약 1-5%입니다. 블루프린트는 재시도 사이클 방지로 비용 이상의 토큰을 절약합니다. [BENCHMARKS.md](../docs/BENCHMARKS.md#token-cost-per-component) 참조.
 
 5. **이론 위의 실전**: 이 저장소의 모든 규칙은 뭔가 잘못되었을 때 존재합니다. "왜"가 "뭐"보다 중요합니다.
 

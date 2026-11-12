@@ -319,12 +319,12 @@ The template configures hooks across 8 lifecycle events. For the full lifecycle 
 | **PostToolUseFailure** (MCP) | `mcp-failure-hint.sh` | Guides fallback when MCP tools fail |
 | **PreCompact** | `precompact-state.sh` | Saves a working-state snapshot and prints instructions for the compaction summary |
 | **SessionStart** (`compact` matcher) | Inline command | Recovery steps after compaction |
-| **Stop** | Security prompt (Sonnet) + `session-checkpoint.sh` + `cost-tracker.sh` | Security review, state checkpoint, cost logging |
+| **Stop** | Security and claim-evidence prompt (Sonnet) + `session-checkpoint.sh` + `cost-tracker.sh` | Security and evidence review, state checkpoint, cost logging |
 | **SessionEnd** | `session-checkpoint.sh` | Final state save before process exit |
 
 ### The Stop Hook's Sonnet Model
 
-The Stop hook uses `"model": "sonnet"` for its security verification prompt. This means every Claude response triggers a Sonnet evaluation for SQL injection, XSS, exposed secrets, and verification gaps. This is the single biggest recurring cost in the blueprint, but it caught a SQL injection that Haiku missed (see [WHY.md](WHY.md#stop-hook-why-sonnet-not-haiku)).
+The Stop hook uses `"model": "sonnet"` for its security verification prompt. This means every Claude response triggers a Sonnet evaluation of the final message: SQL, XSS or command injection in code it contains, a credential written out literally, a reported push that breaks a stated push policy, and a claim of done, fixed or passing that the message does not back with its own evidence (a command and its result, a test count, a file and line). It judges only that final message, so earlier evidence in the turn does not count. Replay `tests/judge-fixtures/` with `tests/judge-eval.sh` (manual, needs an API key) after editing the prompt. This is the single biggest recurring cost in the blueprint, but it caught a SQL injection that Haiku missed (see [WHY.md](WHY.md#stop-hook-why-sonnet-not-haiku)).
 
 ---
 

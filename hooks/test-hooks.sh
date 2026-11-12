@@ -174,6 +174,103 @@ except Exception:
 fi
 echo ""
 
+# 7. Guard decisions: what a PreToolUse guard decides, one named case per edge case.
+# A guard file that does not exist reports MISSING, so every case below fails (red)
+# until the hook is written, including the cases that expect silence.
+echo "--- Guard Decisions (PreToolUse deny or silence) ---"
+if [ -z "$PYTHON" ]; then
+  skip "guard decision checks need Python"
+else
+  # guard_decision <hook> <json> [VAR=value ...]: prints the permissionDecision,
+  # "silent" when the hook prints nothing, or MISSING when the hook does not exist.
+  guard_decision() {
+    local hook="$HOOKS_DIR/$1" json="$2"; shift 2
+    [ -f "$hook" ] || { echo MISSING; return; }
+    local out
+    out=$(printf '%s' "$json" | env "$@" bash "$hook" 2>/dev/null)
+    if [ -z "$out" ]; then echo silent; return; fi
+    json_field "$out" hookSpecificOutput.permissionDecision
+  }
+  expect() {  # expect <name> <expected> <actual>
+    if [ "$2" = "$3" ]; then pass "$1"; else fail "$1 (expected $2, got ${3:-<empty>})"; fi
+  }
+
+  # agent-write-guard.sh. HOME and cwd are fixed strings: the hook only compares paths,
+  # it never touches the filesystem, so no real directory is needed.
+  AWG=agent-write-guard.sh
+  # The memory path is built from HOME exactly as the hook's Python sees it (Git Bash
+  # on Windows hands a Windows Python HOME as C:/...). An empty AGENT_WRITE_GUARD_AGENTS
+  # means the default list, so a list set in your own environment does not leak in.
+  GENV=(AGENT_WRITE_GUARD_AGENTS=)
+  PY_HOME=$("$PYTHON" -c "import os; print((os.environ.get('HOME') or os.path.expanduser('~')).replace(chr(92), '/'))")
+  MEM=$PY_HOME/.claude/agent-memory/code-reviewer
+  expect "agent-write-guard: subagent not in the read-only list may write" silent \
+    "$(guard_decision $AWG '{"agent_type":"backend-specialist","tool_name":"Write","cwd":"/work/proj","tool_input":{"file_path":"/work/proj/src/app.ts","content":"x"}}' "${GENV[@]}")"
+  expect "agent-write-guard: read-only agent writes its own memory dir" silent \
+    "$(guard_decision $AWG '{"agent_type":"code-reviewer","tool_name":"Write","cwd":"/work/proj","tool_input":{"file_path":"'"$MEM"'/MEMORY.md","content":"x"}}' "${GENV[@]}")"
+  expect "agent-write-guard: read-only agent writes its project memory dir" silent \
+    "$(guard_decision $AWG '{"agent_type":"code-reviewer","tool_name":"Edit","cwd":"/work/proj","tool_input":{"file_path":".claude/agent-memory/code-reviewer/notes.md","old_string":"a","new_string":"b"}}' "${GENV[@]}")"
+  expect "agent-write-guard: read-only agent edits source code" deny \
+    "$(guard_decision $AWG '{"agent_type":"code-reviewer","tool_name":"Edit","cwd":"/work/proj","tool_input":{"file_path":"/work/proj/src/app.ts","old_string":"a","new_string":"b"}}' "${GENV[@]}")"
+  expect "agent-write-guard: memory-dir traversal (..) is denied" deny \
+    "$(guard_decision $AWG '{"agent_type":"code-reviewer","tool_name":"Write","cwd":"/work/proj","tool_input":{"file_path":"'"$MEM"'/../../settings.json","content":"x"}}' "${GENV[@]}")"
+  expect "agent-write-guard: another agent's memory dir is denied" deny \
+    "$(guard_decision $AWG '{"agent_type":"code-reviewer","tool_name":"Write","cwd":"/work/proj","tool_input":{"file_path":"'"$PY_HOME"'/.claude/agent-memory/security-reviewer/x.md","content":"x"}}' "${GENV[@]}")"
+  expect "agent-write-guard: read-only agent runs git status" silent \
+    "$(guard_decision $AWG '{"agent_type":"code-reviewer","tool_name":"Bash","cwd":"/work/proj","tool_input":{"command":"git status && git diff --stat"}}' "${GENV[@]}")"
+  expect "agent-write-guard: read-only agent greps with a quoted > and 2>/dev/null" silent \
+    "$(guard_decision $AWG '{"agent_type":"code-reviewer","tool_name":"Bash","cwd":"/work/proj","tool_input":{"command":"grep -rn \"a > b\" src 2>/dev/null | head -5; ls 2>&1"}}' "${GENV[@]}")"
+  expect "agent-write-guard: read-only agent runs cat > file" deny \
+    "$(guard_decision $AWG '{"agent_type":"code-reviewer","tool_name":"Bash","cwd":"/work/proj","tool_input":{"command":"cat > src/app.ts"}}' "${GENV[@]}")"
+  expect "agent-write-guard: read-only agent appends with >>" deny \
+    "$(guard_decision $AWG '{"agent_type":"code-reviewer","tool_name":"Bash","cwd":"/work/proj","tool_input":{"command":"echo x >> notes.txt"}}' "${GENV[@]}")"
+  expect "agent-write-guard: read-only agent runs sed -i" deny \
+    "$(guard_decision $AWG '{"agent_type":"code-reviewer","tool_name":"Bash","cwd":"/work/proj","tool_input":{"command":"sed -i s/a/b/ src/app.ts"}}' "${GENV[@]}")"
+  expect "agent-write-guard: read-only agent pipes into tee" deny \
+    "$(guard_decision $AWG '{"agent_type":"code-reviewer","tool_name":"Bash","cwd":"/work/proj","tool_input":{"command":"echo x | tee out.txt"}}' "${GENV[@]}")"
+  expect "agent-write-guard: read-only agent runs git commit" deny \
+    "$(guard_decision $AWG '{"agent_type":"code-reviewer","tool_name":"Bash","cwd":"/work/proj","tool_input":{"command":"git -C /work/proj commit -m x"}}' "${GENV[@]}")"
+  expect "agent-write-guard: read-only agent hides a write inside bash -c" deny \
+    "$(guard_decision $AWG '{"agent_type":"code-reviewer","tool_name":"Bash","cwd":"/work/proj","tool_input":{"command":"bash -c \"rm -rf build\""}}' "${GENV[@]}")"
+  expect "agent-write-guard: read-only agent redirects into its own memory dir" silent \
+    "$(guard_decision $AWG '{"agent_type":"code-reviewer","tool_name":"Bash","cwd":"/work/proj","tool_input":{"command":"date > '"$MEM"'/last-run.txt"}}' "${GENV[@]}")"
+  expect "agent-write-guard: read-only agent uses a PowerShell write cmdlet" deny \
+    "$(guard_decision $AWG '{"agent_type":"code-reviewer","tool_name":"PowerShell","cwd":"/work/proj","tool_input":{"command":"Set-Content -Path app.ts -Value x"}}' "${GENV[@]}")"
+  expect "agent-write-guard: main thread without agent_type may write" silent \
+    "$(guard_decision $AWG '{"tool_name":"Bash","cwd":"/work/proj","tool_input":{"command":"cat > src/app.ts"}}' "${GENV[@]}")"
+  # Under `claude --agent <name>`, agent_type is set on the main thread too, so the
+  # guard applies to the whole session. Intended: the session IS that agent.
+  expect "agent-write-guard: --agent session with a read-only name is guarded" deny \
+    "$(guard_decision $AWG '{"agent_type":"security-reviewer","tool_name":"Write","cwd":"/work/proj","tool_input":{"file_path":"/work/proj/README.md","content":"x"}}' "${GENV[@]}")"
+  expect "agent-write-guard: the list is configurable (AGENT_WRITE_GUARD_AGENTS)" deny \
+    "$(guard_decision $AWG '{"agent_type":"my-auditor","tool_name":"Write","cwd":"/work/proj","tool_input":{"file_path":"/work/proj/a.md","content":"x"}}' "${GENV[@]}" "AGENT_WRITE_GUARD_AGENTS=my-auditor other")"
+  expect "agent-write-guard: malformed input exits silently" silent \
+    "$(guard_decision $AWG 'not json {{{' "${GENV[@]}")"
+
+  # guard-exit-plan.sh: the plan text arrives in tool_input.plan (injected by Claude Code).
+  GEP=guard-exit-plan.sh
+  expect "guard-exit-plan: no plan text stays silent" silent \
+    "$(guard_decision $GEP '{"tool_name":"ExitPlanMode","tool_input":{}}')"
+  expect "guard-exit-plan: plan without the audit marker is denied" deny \
+    "$(guard_decision $GEP '{"tool_name":"ExitPlanMode","tool_input":{"plan":"## Plan\n1. Edit the file."}}')"
+  expect "guard-exit-plan: plan with AUDIT CLEAN stays silent" silent \
+    "$(guard_decision $GEP '{"tool_name":"ExitPlanMode","tool_input":{"plan":"## Plan\n1. Edit.\n\n| Check | Status |\n\nAUDIT CLEAN: safe to ExitPlanMode"}}')"
+  expect "guard-exit-plan: a trivial plan that says so stays silent" silent \
+    "$(guard_decision $GEP '{"tool_name":"ExitPlanMode","tool_input":{"plan":"Fix one typo.\nself-audit: not required (trivial)"}}')"
+  expect "guard-exit-plan: deny carries a reason" yes \
+    "$([ -f "$HOOKS_DIR/$GEP" ] && printf '%s' '{"tool_name":"ExitPlanMode","tool_input":{"plan":"x"}}' | bash "$HOOKS_DIR/$GEP" 2>/dev/null | grep -q 'self-audit' && echo yes)"
+
+  # Missing Python: both guards warn on stderr and exit 0 without a decision.
+  BASH_BIN=$(command -v bash)
+  for g in $AWG $GEP; do
+    if [ ! -f "$HOOKS_DIR/$g" ]; then fail "$g exists"; continue; fi
+    out=$(printf '%s' '{"agent_type":"code-reviewer","tool_name":"Write","tool_input":{"file_path":"/x","plan":"x"}}' | PATH=/nonexistent "$BASH_BIN" "$HOOKS_DIR/$g" 2>/dev/null)
+    code=$?
+    expect "$g without Python exits 0 with no decision" "0:" "$code:$out"
+  done
+fi
+echo ""
+
 # Summary
 echo "=== Results ==="
 echo "PASS: $PASS"

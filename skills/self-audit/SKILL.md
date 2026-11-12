@@ -33,7 +33,9 @@ Skip only for genuinely trivial plans (a single-line typo fix).
 
 ## Output
 
-A Check | Status | Finding table, then one line: **AUDIT CLEAN: safe to ExitPlanMode**, or **N FINDINGS: fixing plan before exit** (with the fixes applied to the plan file).
+Write the result INTO the plan file (append a `## Self-audit` section), not only into chat: a Check | Status | Finding table, then one line: **AUDIT CLEAN: safe to ExitPlanMode**, or **N FINDINGS: fixing plan before exit** (with the fixes applied to the plan file). Show the same table in chat.
+
+The plan file is what the user approves, and it is what the `guard-exit-plan.sh` hook reads (full preset): it denies `ExitPlanMode` until the plan text contains `AUDIT CLEAN`. Write that marker only when every check passed or each remaining finding is accepted or deferred with its reason in the table. For a genuinely trivial plan that skips the audit, write the line `self-audit: not required (trivial)` in the plan instead.
 
 ## What this does NOT do
 

@@ -13,7 +13,7 @@
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-compatible-blueviolet)](https://docs.anthropic.com/en/docs/claude-code)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
-**12 agents** · **19 skills** · **16 hooks** · **6 rules**, copy only what you need, or install a preset (minimal / standard / core / full)
+**12 agents** · **20 skills** · **18 hooks** · **6 rules**, copy only what you need, or install a preset (minimal / standard / core / full)
 
 [English](README.md) | [日本語](i18n/README.ja.md) | [한국어](i18n/README.ko.md) | [简体中文](i18n/README.zh.md)
 
@@ -102,7 +102,7 @@ Other repos dump dozens of agents on you. We give you **12**, and explain why ea
 | [4 behavioral rules](CLAUDE.md) that prevent AI coding mistakes | Lists of settings to copy |
 | [Cross-tool guide](docs/CROSS-TOOL-GUIDE.md) for 10 other tools (Copilot, Cursor, Cline, Roo Code, OpenCode, and more) | Single-tool only |
 | [Beginner-friendly](GETTING-STARTED.md) with 6 adoption personas | Assumed expertise |
-| [Smoke-tested hooks](hooks/test-hooks.sh) with 66 automated tests | Untested scripts |
+| [Smoke-tested hooks](hooks/test-hooks.sh) with 101 automated tests | Untested scripts |
 | Safety-first: [config placement guide](GETTING-STARTED.md#where-config-belongs-project-vs-personal), privacy warnings, [graceful degradation](agents/README.md#agents-are-not-infallible) | No safety guidance |
 | [Framework-agnostic](FAQ.md#what-framework-or-language-does-this-work-with): works with any language and stack | Assumes a specific language/framework |
 
@@ -135,7 +135,7 @@ Other repos dump dozens of agents on you. We give you **12**, and explain why ea
 </details>
 
 <details>
-<summary><strong>19 Skills</strong>: Natural-language-triggered workflows (each also runs as a `/name` command)</summary>
+<summary><strong>20 Skills</strong>: Natural-language-triggered workflows (each also runs as a `/name` command)</summary>
 
 &nbsp;
 
@@ -149,6 +149,7 @@ Other repos dump dozens of agents on you. We give you **12**, and explain why ea
 | Session | load-session, save-session, session-end, save-diary | Session start/end, "save", "bye", "done" |
 | Project | scaffold-project, register-project, status, changelog | "new project", "status", "changelog" |
 | Database | db-check | "check the schema", "validate models" |
+| Debugging | diagnose-before-finding | "diagnose", "root cause", "is this a bug?", "must fix" |
 | Utilities | tech-radar | "what's new?", "should we upgrade?" |
 
 See [skills/README.md](skills/README.md) for customization and placeholder variable setup.
@@ -156,7 +157,7 @@ See [skills/README.md](skills/README.md) for customization and placeholder varia
 </details>
 
 <details>
-<summary><strong>16 Hooks</strong>: Deterministic lifecycle automation (always fire, unlike CLAUDE.md rules which the model can deprioritize)</summary>
+<summary><strong>18 Hooks</strong>: Deterministic lifecycle automation (always fire, unlike CLAUDE.md rules which the model can deprioritize)</summary>
 
 &nbsp;
 
@@ -168,18 +169,20 @@ See [skills/README.md](skills/README.md) for customization and placeholder varia
 | PreToolUse (Bash) | pre-commit-secret-scan.sh | Block commits containing secrets |
 | PreToolUse (Write/Edit) | protect-config.sh | Guard linter/build configs |
 | PreToolUse (Write/Edit) | protect-claude-settings.sh | Confirm edits to safety keys in your own settings.json, and flag no-op allow rules for protected paths |
+| PreToolUse (Write/Edit/Bash) | agent-write-guard.sh | Keep read-only agents read-only in every permission mode |
+| PreToolUse (ExitPlanMode) | guard-exit-plan.sh | Deny leaving plan mode until the plan carries its self-audit |
 | PostToolUse (Write/Edit) | notify-file-changed.sh | Verify reminder |
 | PostToolUse (Write/Edit) | no-dash-check.sh | Warn on a prose-style violation (example: em-dashes) |
 | PostToolUse (Bash) | post-commit-review.sh | Post-commit review |
 | PostToolUse (Agent/Task) | verify-subagent-findings.sh | Treat subagent findings as hypotheses to verify |
 | PostToolUseFailure (MCP) | mcp-failure-hint.sh | Fallback guidance when an MCP tool fails |
 | PreCompact | precompact-state.sh | Serialize state to disk + tell the compaction summary what to keep |
-| Stop | security check + cost-tracker.sh + session-checkpoint.sh | Last defense + metrics |
+| Stop | security and claim-evidence check + cost-tracker.sh + session-checkpoint.sh | Last defense + metrics |
 | SessionEnd | session-checkpoint.sh | Guaranteed final save |
 
-Plus 2 utility scripts: `verify-mcp-sync.sh` (MCP config checker) and `status-line.sh` (branch/project status), both deployed by the full preset, and a companion tool `check-no-dash-file.py` (a pre-post prose sanitizer for the `no-dash-check.sh` hook). The last file in the folder is `test-hooks.sh`, the local test harness, run via `bash hooks/test-hooks.sh` to verify all hooks. It's the only one not deployed to `~/.claude/hooks/`, and isn't counted in the "16 hooks" total.
+Plus 2 utility scripts: `verify-mcp-sync.sh` (MCP config checker) and `status-line.sh` (branch/project status), both deployed by the full preset, and a companion tool `check-no-dash-file.py` (a pre-post prose sanitizer for the `no-dash-check.sh` hook). The last file in the folder is `test-hooks.sh`, the local test harness, run via `bash hooks/test-hooks.sh` to verify all hooks. It's the only one not deployed to `~/.claude/hooks/`, and isn't counted in the "18 hooks" total.
 
-Run `bash hooks/test-hooks.sh` to verify all hooks pass (66 automated tests).
+Run `bash hooks/test-hooks.sh` to verify all hooks pass (101 automated tests).
 
 See [hooks/README.md](hooks/README.md) for the full lifecycle, testing guide, and design principles.
 
@@ -221,7 +224,7 @@ See [rules/README.md](rules/README.md) for creating custom rules.
 
 3. **Context is currency**: Every token loaded into context is a token not available for your code. Keep MEMORY.md under 100 lines. Extract to topic files. Use path-scoped rules so irrelevant rules don't load.
 
-4. **Hooks are free, context is cheap**: The 16 hook scripts cost zero tokens (they run outside Claude's context). CLAUDE.md adds ~2,300 tokens per session, roughly 1-5% of a typical session. The blueprint saves more tokens than it costs by preventing redo cycles. See [BENCHMARKS.md](docs/BENCHMARKS.md#token-cost-per-component).
+4. **Hooks are free, context is cheap**: The 18 hook scripts cost zero tokens (they run outside Claude's context). CLAUDE.md adds ~2,300 tokens per session, roughly 1-5% of a typical session. The blueprint saves more tokens than it costs by preventing redo cycles. See [BENCHMARKS.md](docs/BENCHMARKS.md#token-cost-per-component).
 
 5. **Battle-tested over theoretical**: Every rule in this repo exists because something went wrong without it. The "WHY" matters more than the "WHAT".
 
