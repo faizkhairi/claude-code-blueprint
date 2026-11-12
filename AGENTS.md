@@ -31,8 +31,8 @@ The user typically does one of three things:
 | `TROUBLESHOOTING.md` | Common errors and fixes |
 | `setup.sh` | Interactive installer |
 | `agents/` | 12 reusable agent templates the user can drop into `~/.claude/agents/` |
-| `skills/` | 19 reusable skill templates for `~/.claude/skills/` |
-| `hooks/` | 16 hook scripts for `~/.claude/hooks/` (plus `test-hooks.sh`, the local test harness; not deployed) |
+| `skills/` | 20 reusable skill templates for `~/.claude/skills/` |
+| `hooks/` | 18 hook scripts for `~/.claude/hooks/` (plus `test-hooks.sh`, the local test harness; not deployed) |
 | `rules/` | 6 example rule files for `~/.claude/rules/` |
 | `examples/` | Reference `settings.json` template (framework-agnostic) |
 | `memory/` | Built-in memory system: enabled via setup.sh (Y/n), git-ignored by default for privacy |

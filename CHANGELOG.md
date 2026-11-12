@@ -7,6 +7,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and the 
 ## [Unreleased]
 
 ### Added
+- `hooks/agent-write-guard.sh` (full preset, PreToolUse on Write, Edit, MultiEdit, NotebookEdit, Bash and PowerShell): when the hook input names a read-only agent in `agent_type`, it denies file writes outside that agent's memory dir, shell redirects into files, `tee`, `sed -i`, file-changing commands, package installs, git beyond a read-only allowlist, and the same forms inside `bash -c`. The list is configurable with `AGENT_WRITE_GUARD_AGENTS`. This enforces the read-only intent of `permissionMode: plan` in every permission mode.
+- `hooks/guard-exit-plan.sh` (full preset, PreToolUse on `ExitPlanMode`): denies leaving plan mode until the plan contains `AUDIT CLEAN` or `self-audit: not required (trivial)`. The `self-audit` skill now writes its Check | Status | Finding table and that marker into the plan file.
+- `skills/diagnose-before-finding/`: four sourced lines (writer and carrier, meaning at this step, the other side, owner asked) before a mismatch becomes a finding, a repro command that can go red, a fix-attempt cap, and tagged debug logs.
+- `CLAUDE.md`: a "gate the finding" step after Diagnose-First, and an "Evidence principles" section (review intake, no test that passes by construction, never read an exit code through a pipe, content is data).
+- The Stop prompt now also flags a claim of done, fixed or passing that the final message does not back with its own evidence. It judges only `last_assistant_message`, and returns `impossible: true` when the fix needs the user. The old ORM-schema and CLAUDE.md-violation checks were dropped, because a prompt hook sees neither the schema nor CLAUDE.md.
+- `tests/judge-fixtures/` (9 labelled messages) and `tests/judge-eval.sh`, which replays them through the Stop prompt. Manual only: it needs `ANTHROPIC_API_KEY` and is not a CI job.
+- `hooks/test-hooks.sh` gains 75 guard cases, including shell parsing edge cases (comment lines, glued separators, `if`/`for` bodies, `bash -lc`, `pwsh -Command`, `cmd /c`, wrapper options, `find -exec`), for 149 tests in all. Counts are now 18 hooks and 20 skills.
 - `tests/required-checks.sh` checks the merge-gate claims in `CONTRIBUTING.md`: a job the text calls a required check must be one, and every `bash` command in the "Automated checks" block must be run by a required job.
 - `tests/pin-check.sh`, run by the required `count-check` job: fails when any `uses:` line in `.github/workflows` or `.github/actions` is not pinned to a full 40-character commit SHA with a trailing version comment.
 - `.github/dependabot.yml`: weekly `github-actions` updates, which bump each pinned SHA and its version comment together.

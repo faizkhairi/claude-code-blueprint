@@ -185,6 +185,26 @@
             "command": "bash \"$HOME/.claude/hooks/protect-claude-settings.sh\""
           }
         ]
+      },
+      {
+        "matcher": "Write|Edit|MultiEdit|NotebookEdit|Bash|PowerShell",
+        "__guard_note": "Full preset. Keeps read-only agents (permissionMode: plan) read-only in every permission mode. Set AGENT_WRITE_GUARD_AGENTS in env to change the list.",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$HOME/.claude/hooks/agent-write-guard.sh\""
+          }
+        ]
+      },
+      {
+        "matcher": "ExitPlanMode",
+        "__guard_note": "Full preset, paired with the self-audit skill. Denies ExitPlanMode until the plan file carries AUDIT CLEAN.",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$HOME/.claude/hooks/guard-exit-plan.sh\""
+          }
+        ]
       }
     ],
 
@@ -263,11 +283,12 @@
 
     "Stop": [
       {
+        "__judge_note": "One Sonnet call per response checks security and that a done/fixed/verified claim carries its own evidence. Labelled cases: tests/judge-fixtures/, replayed by tests/judge-eval.sh (manual, needs an API key).",
         "__cost_note": "This Stop hook runs Sonnet on EVERY response. In a 50-response session, this adds ~50 Sonnet calls (cost impact: see TROUBLESHOOTING.md#cost-is-higher-than-expected). Remove if cost is a concern.",
         "hooks": [
           {
             "type": "prompt",
-            "prompt": "If the last response contained no code, no file edits, no bash commands, and no git operations (just conversation or explanation), respond {\"ok\": true} immediately without further analysis. Otherwise, review the last response for these issues: 1) Security vulnerabilities: SQL injection, XSS, command injection, exposed secrets or hardcoded credentials. 2) ORM models referenced that don't exist in the schema. 3) Project-specific violations from CLAUDE.md (check soft-delete patterns, API conventions, navigation patterns). 4) Unauthorized git push commands (check CLAUDE.md for push policy). 5) Verification gap: if code was written or a feature was implemented but NO verification step was performed (no test run, no endpoint check, no file re-read to confirm changes), this is a violation. Respond with JSON only: {\"ok\": true} or {\"ok\": false, \"reason\": \"concise description of the issue\"}",
+            "prompt": "You judge one message: the assistant's final message of this turn, given as last_assistant_message in the hook input below. You cannot see tool calls, files or earlier turns, so judge only the text of that message. Respond with JSON only: {\"ok\": true} or {\"ok\": false, \"reason\": \"concise description of the issue\"}. If the message is plain conversation or explanation, with no code and no claim that work is done, fixed, passing, deployed or verified, respond {\"ok\": true} immediately. A progress note that names work still running and calls nothing done is plain conversation. Otherwise flag ONLY these, judged from the visible text: 1) Security: code in the message with SQL injection, XSS or command injection, or a credential value (password, token, API key, private key) written out literally. Saying a credential exists is fine. 2) The message reports a git push that breaks a push policy it states or quotes (for example a direct push to a protected main branch). 3) Claim without evidence: the message says work is done, fixed, shipped, passing or verified, but does not itself carry the evidence: no command with its result, no test count or exit code, no URL or endpoint checked with what it returned, no re-read of the changed file. Evidence that appeared earlier in the turn but is not repeated in this message does not count: the final report must carry its own evidence, because it is what the user reads. A claim that a result is verified while the message also says the check is still running or pending is flagged too. Not flagged: a message that states plainly that a check could not be run and why (for example there is no test suite, or the server is unreachable), or that the work is not yet verified. If what you flag cannot be fixed by the assistant at all (it needs the user, or a system the assistant cannot reach), add \"impossible\": true so the turn can end. Anything you cannot see is not a violation; when unsure, respond {\"ok\": true}. Your answer must match your finding: if your reason would say there is no violation, respond {\"ok\": true}.",
             "model": "sonnet"
           },
           {
