@@ -46,7 +46,7 @@ The agent files use the aliases `opus`, `sonnet`, and `haiku`, which resolve to 
 
 ## Frontmatter fields
 
-Subagent files are Markdown with YAML frontmatter. Only `name` and `description` are required. Full reference: [Claude Code subagent docs](https://code.claude.com/docs/en/sub-agents).
+Subagent files are Markdown with YAML frontmatter. Only `name` and `description` are required. The table covers the most useful fields; the [Claude Code subagent docs](https://code.claude.com/docs/en/sub-agents) list the rest (for example `autoCompactWindow` and `omitClaudeMd`).
 
 | Field | What it does |
 |-------|--------------|
@@ -75,6 +75,8 @@ Claude Code resolves the model in this order:
 2. The `model` frontmatter (`inherit` selects the main conversation's model)
 3. The `CLAUDE_CODE_SUBAGENT_MODEL` environment variable
 4. The main conversation's model
+
+One exception to the alias rule: when the main conversation already runs a model of the same family, a family alias such as `model: opus` runs the subagent on that exact model (including any `[1m]` suffix) rather than the newest version.
 
 `CLAUDE_CODE_SUBAGENT_MODEL` is only a default. To apply one model to every subagent, also set `CLAUDE_CODE_SUBAGENT_MODEL_FORCE` to `1`, which makes Claude Code ignore the `model` field in subagent definitions.
 
