@@ -26,7 +26,7 @@ Shell scripts for `hooks/` that automate lifecycle events (SessionStart, PreTool
 New `.md` files for `agents/` that define a specialized subagent role. Should include a clear `description` field (for Claude's tool selection), a well-scoped system prompt, and an appropriate model tier recommendation. Adding one changes a published total, so run `bash tests/count-check.sh` before submitting (see [Component Counts](#component-counts) below).
 
 ### Skill Templates
-New skill directories under `skills/` with a `SKILL.md` entry point. Skills should be triggered by natural language, not slash commands, and should solve a problem that recurs across projects. Adding one changes a published total, so run `bash tests/count-check.sh` before submitting, and add the directory to `SKILL_DIRS` in `setup.sh` so the installer actually ships it.
+New skill directories under `skills/` with a `SKILL.md` entry point. Skills should trigger from natural language through a precise `description` (they are also runnable as `/name`), and should solve a problem that recurs across projects. Adding one changes a published total, so run `bash tests/count-check.sh` before submitting, and add the directory to `SKILL_DIRS` in `setup.sh` so the installer actually ships it.
 
 ### Component Counts
 Totals like "12 agents" appear in the README, three translations, `AGENTS.md`, the docs, the HTML card sources, and the `setup.sh` menu. Adding a component makes every one of those copies stale at once.

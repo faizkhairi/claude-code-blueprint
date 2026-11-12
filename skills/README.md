@@ -1,6 +1,6 @@
 # Skills
 
-19 domain-specific skills triggered by natural language (no slash commands needed).
+19 domain-specific skills, triggered by natural language and also runnable as `/name`.
 
 ## Skill Categories
 
@@ -18,10 +18,29 @@
 
 ## Design Principles
 
-1. **Natural language triggers**: Skills detect intent from conversation, not slash commands
+1. **Natural language triggers**: Skills fire from conversation when your phrasing matches the skill's `description`, and every skill is also runnable as a `/name` command (custom commands have been merged into skills)
 2. **Step-by-step workflows**: Each skill has numbered steps that Claude follows mechanically
 3. **GO/NO-GO verdicts**: Review and deploy skills end with clear pass/fail decisions
 4. **Multi-agent orchestration**: The review-full skill spawns code-reviewer + security-reviewer + db-analyst + architecture-reviewer in parallel
+
+## Skill Frontmatter
+
+Each `SKILL.md` starts with YAML frontmatter. All fields are optional, but `description` is recommended because Claude uses it to decide when to apply the skill. Full reference: [Claude Code skills docs](https://code.claude.com/docs/en/skills).
+
+| Field | What it does |
+|-------|--------------|
+| `name` | Command name shown in the `/` menu. Defaults to the directory name. |
+| `description` | What the skill does and when to use it. Put the key use case first: `description` plus `when_to_use` is truncated at 1,536 characters in the skill listing. |
+| `when_to_use` | Extra trigger phrases or example requests, appended to `description`. |
+| `allowed-tools` | Tools Claude can use without asking permission during the turn that invokes the skill. |
+| `disable-model-invocation` | `true` stops Claude from loading the skill automatically, so it runs only via `/name`. |
+| `user-invocable` | `false` hides the skill from the `/` menu, for background knowledge only Claude should load. |
+| `paths` | Glob patterns that limit automatic activation to when Claude works with matching files. |
+| `context` | `fork` runs the skill in a forked subagent context. |
+| `agent` | Which subagent type to use when `context: fork` is set. |
+| `model` | Model to use while the skill is active, for the rest of the current turn. |
+| `effort` | Effort level for the rest of the current turn. With `context: fork`, it sets the forked subagent's effort. |
+| `hooks` | Hooks registered when the skill is invoked and kept for the rest of the session. |
 
 ## Required: Replace Placeholder Variables
 

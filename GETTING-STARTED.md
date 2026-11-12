@@ -2,7 +2,7 @@
 
 This guide is for anyone who wants to get more out of Claude Code, whether you're a complete beginner or an experienced developer looking to level up your setup. No prior experience required.
 
-> **How to read this:** start with the hands-on path: **[New to Claude Code? Start Here](#new-to-claude-code-start-here)** → **[Prerequisites](#prerequisites)** → **[Your First 30 Minutes](#your-first-30-minutes)**. That gets you a working setup. The deeper topics below (MCP servers, plugins, teams, memory) are optional; read them when you need them. New to the terms (agent, skill, hook, rule)? Jump to **[The Building Blocks (Glossary)](#the-building-blocks-glossary)** any time.
+> **How to read this:** start with the hands-on path: **[New to Claude Code? Start Here](#new-to-claude-code-start-here)** → **[Prerequisites](#prerequisites)** → **[Your First 30 Minutes](#your-first-30-minutes)**. That gets you a working setup. The deeper topics below (MCP servers, plugins, output styles, workflows, teams, memory) are optional; read them when you need them. New to the terms (agent, skill, hook, rule)? Jump to **[The Building Blocks (Glossary)](#the-building-blocks-glossary)** any time.
 
 ---
 
@@ -46,11 +46,12 @@ Claude Code can use different AI models. Here's what to pick:
 
 | If You Are | Recommended Model | Why |
 |------------|-------------------|-----|
-| Just starting out | **Claude Sonnet** | Best balance of speed, quality, and cost. Handles 90% of tasks well. |
-| Building complex features / architecture | **Claude Opus** | Deepest reasoning. Use for system design, hard debugging, multi-file refactors. |
-| Quick edits, docs, simple tasks | **Claude Haiku** | Fastest and cheapest. Great for straightforward work. |
+| Just starting out | **Claude Sonnet 5.5** (`sonnet`) | Best balance of speed, quality, and cost. Handles most tasks well. |
+| Building complex features / architecture | **Claude Opus 5.5** (`opus`) | Deeper reasoning. Use for system design, hard debugging, multi-file refactors. |
+| Quick edits, docs, simple tasks | **Claude Haiku 5.5** (`haiku`) | Fastest and cheapest. Great for straightforward work. |
+| Your hardest, longest-running tasks (optional) | **Claude Fable 5.2** (`fable`) | The most capable tier. Never the default; you select it explicitly, and on some plans it bills to usage credits. |
 
-You don't need to pick one forever; switch anytime by typing `/model` in Claude Code. **Start with Sonnet** and move to Opus only when a task clearly needs deeper reasoning.
+You don't need to pick one forever; switch anytime by typing `/model` in Claude Code, either with an alias (`sonnet`, `opus`, `haiku`, `fable`, `sonnet[1m]`, `opus[1m]`) or a full model ID such as `claude-sonnet-5-5`. `opusplan` uses Opus while planning and Sonnet while executing, and `best` is the same as `opus`. **Start with Sonnet** and move to Opus (or Fable) only when a task clearly needs deeper reasoning. All four current models start at `medium` effort; adjust it per model with `/effort`. Model names and defaults change often, so treat the [model configuration docs](https://code.claude.com/docs/en/model-config) as the source of truth, and see [Claude pricing](https://claude.com/pricing) for current costs.
 
 ### The 1-Minute Setup (Easiest Possible Start)
 
@@ -143,7 +144,7 @@ For perspective: a typical 30-turn coding session uses 50,000-200,000+ tokens. T
 
 **Subscription users (Pro, Max):** Start with CLAUDE.md + hooks (the Minimal preset). Hooks are free. CLAUDE.md is a tiny fraction of your usage. When you want more, the `core` preset is a sensible next step: a curated set of review/test/deploy skills and two path-scoped rules, without the full specialist ecosystem.
 
-**API billing users:** The blueprint adds roughly 1-3 cents per session. Model tiering (Haiku for docs, Sonnet for code) is your biggest savings lever.
+**API billing users:** The blueprint's added cost per session is small; see [Claude pricing](https://claude.com/pricing) for current rates. Model tiering (Haiku for docs, Sonnet for code) is your biggest savings lever.
 
 **Budget-conscious?** Hooks give the most value per token spent (literally free). CLAUDE.md is the second-best ROI. Agents are the most expensive; add them one at a time, starting with `verify-plan`.
 
@@ -488,7 +489,7 @@ For more causes and fixes, see [TROUBLESHOOTING.md: MCP Servers](TROUBLESHOOTING
 
 ### What Are Plugins?
 
-Claude Code supports a plugin marketplace where community-built plugins can add agents, skills, hooks, and rules to your setup. Plugins are convenient but generic.
+Claude Code has a plugin system. A plugin is a directory that bundles skills, agents, hooks, and MCP servers, and Claude Code installs and loads it as one unit, usually from a marketplace (a catalog of plugins you add once, then install from by name with `/plugin`). See the [plugins overview](https://code.claude.com/docs/en/plugins). Plugins are convenient but generic.
 
 ### When to Use Plugins
 
@@ -514,6 +515,39 @@ Advanced:    Full custom setup (agents, skills, hooks, memory)
      ↓
 Power user:  This blueprint, adapted to your workflow
 ```
+
+### Packaging Your Fork as a Plugin
+
+This blueprint is not packaged as a plugin on purpose: it is meant to be read and adapted, not installed as a black box. Once your fork is tuned to your team, you can package it yourself:
+
+- Make a plugin directory with a manifest at `.claude-plugin/plugin.json` (`name` is the only required field). Put `skills/`, `agents/`, and `hooks/hooks.json` at the plugin root, not inside `.claude-plugin/`. MCP servers go in `.mcp.json`.
+- Try it without a marketplace by loading the folder with `--plugin-dir`, and check the manifest with `claude plugin validate`.
+- **What agents lose in a plugin:** plugin subagents ignore the `permissionMode`, `mcpServers`, `hooks`, and `initialPrompt` frontmatter fields. Agents that rely on them (for example the read-only review agents) should stay in `.claude/agents/` or `~/.claude/agents/`, or move that behavior into the plugin's own `hooks/hooks.json` and `.mcp.json`, which apply to the whole session while the plugin is enabled.
+- Plugin skills are namespaced by plugin name, so a skill `review` in a plugin named `my-fork` runs as `/my-fork:review`.
+- A plugin runs with your user privileges, so review any third-party plugin before you install it.
+
+---
+
+## Output Styles
+
+An output style changes Claude's role, tone, and response format for a whole session, so you don't repeat the request in each prompt. Built-in styles are Proactive, Concise, Explanatory, and Learning, plus Default (no style).
+
+- Switch with `/output-style <style>` (for example `/output-style concise`), or set `outputStyle` in a settings file. The settings value is case-sensitive (`Concise`, not `concise`).
+- Custom styles are Markdown files in `~/.claude/output-styles` (personal) or `.claude/output-styles` (project). Set `keep-coding-instructions: true` in the frontmatter if Claude should still code the same way.
+- A style is an instruction Claude follows, not a guarantee. Use CLAUDE.md for project knowledge and hooks for anything that must happen every time.
+- Docs: [output styles](https://code.claude.com/docs/en/output-styles).
+
+---
+
+## Workflows
+
+A dynamic workflow is a JavaScript script that orchestrates many subagents. Claude writes the script for the task you describe, a runtime runs it in the background, and your session stays responsive.
+
+- Use one for work too big for a single conversation, such as a codebase-wide audit, a large migration, or research cross-checked across sources.
+- Claude Code ships `/deep-research <question>` as a bundled workflow; run `/workflows` to watch any run.
+- You can save a run you like (press `s` in `/workflows`) to `.claude/workflows/` for your team, or `~/.claude/workflows/` for yourself, and rerun it as a command.
+- The script holds the plan and the intermediate results, so Claude's context holds only the final answer. Run a small slice first, because large fan-outs spend real tokens.
+- Docs: [workflows](https://code.claude.com/docs/en/workflows).
 
 ---
 

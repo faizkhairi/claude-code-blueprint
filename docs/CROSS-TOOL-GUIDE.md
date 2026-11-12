@@ -290,7 +290,7 @@ Claude Code lets you create specialized subagents with their own instructions, m
 
 Hooks are deterministic automation that fires on specific events (before/after file edits, shell commands, session start/end, etc.).
 
-**Claude Code** has a broad hook system: SessionStart, PreToolUse, PostToolUse, PostToolUseFailure, PreCompact, PostCompact, Stop, SessionEnd and more (see the [hooks reference](https://code.claude.com/docs/en/hooks)), with matchers for specific tools. After compaction, a `SessionStart` hook with the `compact` matcher can inject recovery context (prompt hooks are not supported on the compaction events).
+**Claude Code** has the broadest hook system of these tools: 33 events as of November 2026, including SessionStart, PreToolUse, PostToolUse, PostToolUseFailure, PreCompact, PostCompact, Stop and SessionEnd (see the [hooks reference](https://code.claude.com/docs/en/hooks) and the [event table](../hooks/README.md#all-hook-events)), with matchers for specific tools and five handler types (`command`, `http`, `mcp_tool`, `prompt`, `agent`). After compaction, a `SessionStart` hook with the `compact` matcher can inject recovery context (prompt hooks are not supported on the compaction events).
 
 **Copilot** has 8 hook events (Preview): SessionStart, UserPromptSubmit (blocking), PreToolUse (deny/ask/allow with input modification), PostToolUse, PreCompact, SubagentStart (blocking), SubagentStop, Stop. Configured in `.github/hooks/*.json` (workspace) or `~/.copilot/hooks/` (user-level).
 
@@ -356,7 +356,7 @@ Hooks are deterministic automation that fires on specific events (before/after f
 
 ### 5. Model Tiering (Partially Portable)
 
-Claude Code lets you assign different models to different agents via frontmatter (`model: opus`, `model: sonnet`, `model: haiku`).
+Claude Code lets you assign different models to different agents via frontmatter (`model: opus`, `model: sonnet`, `model: haiku`, `model: fable`, a full ID such as `claude-opus-5-5`, or `inherit`), and set a per-agent `effort` level. The aliases track the newest model in each family (Opus 5.5, Sonnet 5.5, Haiku 5.5 and Fable 5.2 as of November 2026); see [model configuration](https://code.claude.com/docs/en/model-config).
 
 **Copilot** supports per-agent model selection via the `model` field in `.agent.md` frontmatter. Multi-model picker includes OpenAI, Anthropic, and Google models. BYOK (Bring Your Own Key) allows adding custom providers. **Auto mode** selects the best available model automatically.
 

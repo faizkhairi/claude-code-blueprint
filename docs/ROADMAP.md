@@ -49,7 +49,7 @@ Things we've considered and explicitly decided against:
 - **SVG / Mermaid architecture diagrams**: ASCII art in [ARCHITECTURE.md](ARCHITECTURE.md) is intentional. Renders everywhere, needs no tooling, copy-pastes into any editor, survives GitHub re-renders.
 - **npm package**: This is a reference architecture, not a library. Installing it via npm would defeat the purpose of understanding and adapting each component. The `setup.sh` script handles automated installation.
 - **Localized deep-dive docs**: The 3 README translations serve as landing pages. Deep-dive docs (GETTING-STARTED, SETTINGS-GUIDE, AGENTS.md, etc.) remain English-only. Developers who need those docs can read English. If community translators volunteer per the [i18n issues](https://github.com/faizkhairi/claude-code-blueprint/issues?q=label%3Ai18n), we'll reconsider.
-- **Plugin marketplace**: Plugins that inject context or modify CLAUDE.md conflict with the blueprint's design philosophy. MCP server plugins are fine and documented.
+- **Plugin marketplace**: Claude Code now has a plugin system that bundles skills, agents, hooks, and MCP servers, but the blueprint stays a readable reference you copy and adapt, not an installable package. Plugin agents also lose the `permissionMode`, `hooks`, and `mcpServers` frontmatter fields, which the review agents' design relies on (for example `permissionMode: plan` for read-only review). Plugins that inject context or modify CLAUDE.md still conflict with the blueprint's philosophy; MCP server plugins are fine and documented. To package your own fork, see [Packaging Your Fork as a Plugin](../GETTING-STARTED.md#packaging-your-fork-as-a-plugin).
 
 ---
 
