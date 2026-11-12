@@ -3,8 +3,9 @@
 # Verifies: syntax, Python detection, graceful handling of empty/malformed input.
 # Run: bash hooks/test-hooks.sh
 #
-# This script does NOT test hook logic (e.g., whether block-git-push actually blocks).
-# It tests that hooks don't crash, always exit 0, and handle bad input gracefully.
+# Sections 1 to 6 test that hooks don't crash, always exit 0, and handle bad input
+# gracefully. Section 7 also tests decisions: what the two PreToolUse guards
+# (agent-write-guard, guard-exit-plan) deny and allow, one named case per edge case.
 
 PASS=0
 FAIL=0
@@ -246,6 +247,50 @@ else
     "$(guard_decision $AWG '{"agent_type":"my-auditor","tool_name":"Write","cwd":"/work/proj","tool_input":{"file_path":"/work/proj/a.md","content":"x"}}' "${GENV[@]}" "AGENT_WRITE_GUARD_AGENTS=my-auditor other")"
   expect "agent-write-guard: malformed input exits silently" silent \
     "$(guard_decision $AWG 'not json {{{' "${GENV[@]}")"
+
+  # Shell parsing edge cases. cmd_case builds the hook input with json.dumps, so each
+  # command below is the literal text the agent would send (none of it is executed).
+  cmd_case() {  # cmd_case <name> <expected> <tool> <command>
+    local json
+    json=$("$PYTHON" -c 'import json,sys; print(json.dumps({"agent_type":"code-reviewer","tool_name":sys.argv[1],"cwd":"/work/proj","tool_input":{"command":sys.argv[2]}}))' "$3" "$4")
+    expect "agent-write-guard: $1" "$2" "$(guard_decision $AWG "$json" "${GENV[@]}")"
+  }
+  cmd_case "a leading comment line does not hide the next line" deny Bash $'# step 1\nrm -rf build'
+  cmd_case "a # inside a word is not a comment" deny Bash 'echo a#b >out.txt'
+  # The next three commands are literal text on purpose: the $ must reach the hook.
+  # shellcheck disable=SC2016
+  cmd_case "a separator glued to ) still splits (;)" deny Bash 'echo $(date);rm x'
+  # shellcheck disable=SC2016
+  cmd_case "a separator glued to ) still splits (&&)" deny Bash 'ls $(pwd)&&rm x'
+  cmd_case "a write after if/then is seen" deny Bash 'if true; then rm y; fi'
+  # shellcheck disable=SC2016
+  cmd_case "a write inside a for loop is seen" deny Bash 'for f in *.tmp; do rm "$f"; done'
+  cmd_case "a write inside a { } group is seen" deny Bash '{ rm x; }'
+  cmd_case "bash -lc is checked like bash -c" deny Bash 'bash -lc "rm -rf build"'
+  cmd_case "pwsh -Command is checked" deny Bash 'pwsh -Command "Remove-Item x"'
+  cmd_case "cmd /c is checked" deny Bash 'cmd /c del x.txt'
+  cmd_case "an unbalanced quote still sees the redirect" deny Bash $'cat <<EOF >out.txt\nit\'s here\nEOF'
+  cmd_case "xargs -I {} rm is seen" deny Bash 'ls | xargs -I {} rm {}'
+  cmd_case "timeout <duration> rm is seen" deny Bash 'timeout 5 rm x'
+  cmd_case "env -u NAME rm is seen" deny Bash 'env -u FOO rm x'
+  cmd_case "eval of a write is seen" deny Bash 'eval "rm x"'
+  cmd_case "find -delete is denied" deny Bash 'find . -name "*.tmp" -delete'
+  cmd_case "find -exec rm is denied" deny Bash 'find . -name "*.tmp" -exec rm {} \;'
+  cmd_case "command -v rm only looks the name up" silent Bash 'command -v rm'
+  cmd_case "a quoted > after = is not a redirect" silent Bash 'git log --grep="x > y" --oneline'
+  cmd_case "git diff-tree is read-only" silent Bash 'git diff-tree --no-commit-id -r HEAD'
+  cmd_case "git diff --output writes a file" deny Bash 'git diff --output=patch.txt'
+  cmd_case "a redirect to /dev/stderr is allowed" silent Bash 'echo done > /dev/stderr'
+  cmd_case "npm audit fix changes packages" deny Bash 'npm audit fix'
+  cmd_case "a PowerShell redirect into a file is denied" deny PowerShell 'Get-Process > procs.txt'
+  cmd_case "Export-Csv writes a file" deny PowerShell 'Get-Process | Export-Csv procs.csv'
+  cmd_case "a test run with 2>&1 stays allowed" silent Bash 'npm test 2>&1 | tail -20'
+  expect "agent-write-guard: a Windows drive path outside memory is denied" deny \
+    "$(guard_decision $AWG '{"agent_type":"code-reviewer","tool_name":"Edit","cwd":"C:\\work\\proj","tool_input":{"file_path":"C:\\work\\proj\\src\\a.ts","old_string":"a","new_string":"b"}}' "${GENV[@]}")"
+  expect "agent-write-guard: a ~/ path into its own memory dir is allowed" silent \
+    "$(guard_decision $AWG '{"agent_type":"code-reviewer","tool_name":"Write","cwd":"/work/proj","tool_input":{"file_path":"~/.claude/agent-memory/code-reviewer/notes.md","content":"x"}}' "${GENV[@]}")"
+  expect "agent-write-guard: NotebookEdit outside memory is denied" deny \
+    "$(guard_decision $AWG '{"agent_type":"code-reviewer","tool_name":"NotebookEdit","cwd":"/work/proj","tool_input":{"notebook_path":"/work/proj/a.ipynb","new_source":"x"}}' "${GENV[@]}")"
 
   # guard-exit-plan.sh: the plan text arrives in tool_input.plan (injected by Claude Code).
   GEP=guard-exit-plan.sh

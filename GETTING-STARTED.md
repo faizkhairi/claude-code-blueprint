@@ -278,7 +278,7 @@ Read [WHY.md](docs/WHY.md) to understand why each component exists. This is wher
 
 ### 5. Ignoring the Stop Hook
 **Mistake:** Not having a security check on every response.
-**Fix:** Add the Stop hook from [settings-template.json](examples/settings-template.json). It catches SQL injection, exposed secrets, and verification gaps automatically.
+**Fix:** Add the Stop hook from [settings-template.json](examples/settings-template.json). It reads the final message of each turn and flags injection in code it contains, a credential written out literally, and a claim of done or passing that the message does not back with its own evidence.
 
 ### 6. Not Using Agents for Review
 **Mistake:** Asking Claude to review its own code in the same context window.

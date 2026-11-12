@@ -192,6 +192,6 @@ echo 'not json' | bash hooks/block-git-push.sh
 
 ## Guard notes
 
-- **agent-write-guard.sh** reads `agent_type` from the hook input, which is present only inside a subagent or a `claude --agent <name>` session. The default read-only list is the agents shipped with `permissionMode: plan` except memory-curator; set `AGENT_WRITE_GUARD_AGENTS` (space-separated names, for example in the `env` block of `settings.json`) to replace it. It stops honest mistakes, not a determined bypass: an interpreter that writes a file itself (`python -c`, `node -e`) is not seen.
+- **agent-write-guard.sh** reads `agent_type` from the hook input, which is present only inside a subagent or a `claude --agent <name>` session. The default read-only list is the agents shipped with `permissionMode: plan` except memory-curator; set `AGENT_WRITE_GUARD_AGENTS` (space-separated names, for example in the `env` block of `settings.json`) to replace it. It stops honest mistakes, not a determined bypass: an interpreter that writes a file itself (`python -c`, `node -e`), a download tool (`curl -o`, `wget`) or a script file run by name is not seen. `git fetch` is allowed on purpose: it updates remote-tracking refs, never the working tree.
 - **guard-exit-plan.sh** denies `ExitPlanMode` until the plan text contains `AUDIT CLEAN`, which the `self-audit` skill writes into the plan file, or the line `self-audit: not required (trivial)`. Install both together (full preset).
 - Both fail open: without Python they print a warning on stderr and allow the call, like every other hook here.

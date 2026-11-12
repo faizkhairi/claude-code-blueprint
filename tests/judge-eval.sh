@@ -24,7 +24,9 @@
 # A prompt hook sends the prompt with $ARGUMENTS replaced by the hook input JSON, or
 # with the JSON appended when the prompt has no $ARGUMENTS (code.claude.com/docs/en/
 # hooks, prompt hook configuration). For Stop, that input carries the final message as
-# last_assistant_message. This script builds the same input per fixture. It is an
+# last_assistant_message (same page, Stop input). The judge may add "impossible": true
+# to a block, which lets the turn end instead of looping (same page, prompt hook
+# response schema); this script scores only "ok". This script builds the same input per fixture. It is an
 # approximation: Claude Code adds its own framing around the call, so treat a case that
 # passes here and misfires in real use as a new fixture, not as noise.
 #
@@ -43,6 +45,9 @@ SETTINGS="${1:-$ROOT/examples/settings-template.json}"
 FIXTURES="$ROOT/tests/judge-fixtures"
 MODEL="${JUDGE_MODEL:-claude-sonnet-5-5}"
 RUNS="${JUDGE_RUNS:-3}"
+# The Messages API version header, as in the current API reference curl examples
+# (platform.claude.com/docs). Override with JUDGE_API_VERSION if it moves on.
+API_VERSION="${JUDGE_API_VERSION:-2026-10-21}"
 
 PYTHON=$(command -v python3 2>/dev/null || command -v python 2>/dev/null)
 if [ -z "$PYTHON" ]; then echo "judge-eval: Python is required." >&2; exit 2; fi
@@ -122,11 +127,15 @@ for fx in "$FIXTURES"/*.md; do
   agree=0; detail=""
   for n in $(seq 1 "$RUNS"); do
     build "$fx" "$WORK/req.json" || exit 2
-    printf 'header = "x-api-key: %s"\n' "$ANTHROPIC_API_KEY" \
+    rm -f "$WORK/res.json"   # a failed call must not reuse the previous run's answer
+    if printf 'header = "x-api-key: %s"\n' "$ANTHROPIC_API_KEY" \
       | curl -sS -K - https://api.anthropic.com/v1/messages \
-          -H "anthropic-version: 2026-10-21" -H "content-type: application/json" \
-          --data-binary "@$WORK/req.json" -o "$WORK/res.json"
-    v=$(verdict "$WORK/res.json")
+          -H "anthropic-version: $API_VERSION" -H "content-type: application/json" \
+          --data-binary "@$WORK/req.json" -o "$WORK/res.json"; then
+      v=$(verdict "$WORK/res.json")
+    else
+      v="error:curl"
+    fi
     [ "$v" = "$expected" ] && agree=$((agree + 1))
     detail="$detail $n:$v"
   done
