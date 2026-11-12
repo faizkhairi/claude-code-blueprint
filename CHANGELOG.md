@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and the 
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-11-12
+
 ### Added
 - `hooks/agent-write-guard.sh` (full preset, PreToolUse on Write, Edit, MultiEdit, NotebookEdit, Bash and PowerShell): when the hook input names a read-only agent in `agent_type`, it denies file writes outside that agent's memory dir, shell redirects into files, `tee`, `sed -i`, file-changing commands, package installs, git beyond a read-only allowlist, and the same forms inside `bash -c`. The list is configurable with `AGENT_WRITE_GUARD_AGENTS`. This enforces the read-only intent of `permissionMode: plan` in every permission mode.
 - `hooks/guard-exit-plan.sh` (full preset, PreToolUse on `ExitPlanMode`): denies leaving plan mode until the plan contains `AUDIT CLEAN` or `self-audit: not required (trivial)`. The `self-audit` skill now writes its Check | Status | Finding table and that marker into the plan file.
@@ -140,7 +142,8 @@ Initial public release.
 - A beginner guide, cross-tool guide, FAQ, troubleshooting guide, and four framework-specific CLAUDE.md examples.
 - Battle-story documentation (`docs/WHY.md`) explaining the reasoning behind each component.
 
-[Unreleased]: https://github.com/faizkhairi/claude-code-blueprint/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/faizkhairi/claude-code-blueprint/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/faizkhairi/claude-code-blueprint/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/faizkhairi/claude-code-blueprint/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/faizkhairi/claude-code-blueprint/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/faizkhairi/claude-code-blueprint/releases/tag/v1.0.0

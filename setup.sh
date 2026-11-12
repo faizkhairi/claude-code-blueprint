@@ -7,7 +7,7 @@ set -euo pipefail
 # https://github.com/faizkhairi/claude-code-blueprint
 # ============================================================
 
-VERSION="1.2.0"
+VERSION="1.3.0"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CLAUDE_DIR="${HOME}/.claude"
 BACKUP_DIR="${CLAUDE_DIR}/backup"
