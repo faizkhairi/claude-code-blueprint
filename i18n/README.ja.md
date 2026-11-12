@@ -112,7 +112,7 @@ agents、skills、rules、memory をワークフローの成熟に合わせて�
 | AI コーディングミスを防ぐ[4つの行動ルール](../CLAUDE.md) | コピーする設定リスト |
 | [クロスツールガイド](../docs/CROSS-TOOL-GUIDE.md)：Copilot、Cursor、Cline、Roo Code、OpenCode 他10ツール対応 | 単一ツールのみ |
 | [初心者向け](../GETTING-STARTED.md)：6つの採用ペルソナ | 専門知識を前提 |
-| [スモークテスト済み hook](../hooks/test-hooks.sh)：141個の自動テスト | テストなしのスクリプト |
+| [スモークテスト済み hook](../hooks/test-hooks.sh)：149個の自動テスト | テストなしのスクリプト |
 | 安全性優先：[設定配置ガイド](../GETTING-STARTED.md#where-config-belongs-project-vs-personal)、プライバシー警告、[段階的劣化](../agents/README.md#agents-are-not-infallible) | 安全性ガイダンスなし |
 | [フレームワーク非依存](../FAQ.md#what-framework-or-language-does-this-work-with)：あらゆる言語とスタックで動作 | 特定の言語/フレームワークを前提 |
 
@@ -185,7 +185,7 @@ agents、skills、rules、memory をワークフローの成熟に合わせて�
 
 プラス2つのユーティリティスクリプト：`verify-mcp-sync.sh`（MCP 設定チェッカー）と`status-line.sh`（ブランチ/プロジェクトステータス）、およびコンパニオンツール `check-no-dash-file.py`（`no-dash-check.sh` 用の投稿前プローズ検査）。ユーティリティは full プリセットでデプロイされます。フォルダ内の最後のファイルは `test-hooks.sh` で、ローカルテストハーネスとして `bash hooks/test-hooks.sh` で実行しすべての hook を検証します。これは `~/.claude/hooks/` にデプロイされない唯一のファイルであり、「18 hooks」の合計には含まれません。
 
-すべての hook が動作することを確認するには `bash hooks/test-hooks.sh` を実行してください（141の自動テスト）。
+すべての hook が動作することを確認するには `bash hooks/test-hooks.sh` を実行してください（149の自動テスト）。
 
 詳細は [hooks/README.md](../hooks/README.md) のフルライフサイクル、テストガイド、デザイン原則を参照。
 

@@ -35,7 +35,8 @@
 # Limits, stated plainly: this stops honest mistakes, it is not a sandbox. An
 # interpreter that writes a file itself (python -c, node -e), a download tool
 # (curl -o, wget), an archive tool, a git alias, a script file run by name, or text
-# piped into a shell is not seen.
+# piped into a shell is not seen. Comment parsing follows bash; $'...' escapes and
+# PowerShell backtick escapes are not modelled.
 #
 # Fail-open trade-off: without Python, or on input that is not valid JSON, the hook
 # exits 0 with no decision, so the call goes through unchecked. That matches every
@@ -151,7 +152,8 @@ WRAPPERS = {"sudo": {"-u", "-g", "-C", "-D", "-h", "-p", "-r", "-t", "-U", "--us
             "env": {"-u", "-C", "-S", "--unset", "--chdir", "--split-string"},
             # -i, -l, -e and their long forms take an attached optional value only.
             "xargs": {"-I", "-L", "-n", "-P", "-s", "-d", "-E", "-a",
-                      "--arg-file", "--delimiter", "--max-args", "--max-procs"},
+                      "--arg-file", "--delimiter", "--max-args", "--max-procs",
+                      "--max-chars"},
             "timeout": {"-s", "-k", "--signal", "--kill-after"},
             "nice": {"-n", "--adjustment"}, "ionice": {"-c", "-n", "-p"},
             "stdbuf": set(), "setsid": set(), "nohup": set(), "command": set(),
@@ -178,28 +180,33 @@ def open_quote(s):
 
 def strip_comments(cmd):
     """Drop shell comments: a # that starts a word, outside quotes, to end of line."""
-    out, q, i, n = [], "", 0, len(cmd)
+    # prev is the last character bash sees, so an escaped space (a\ #b) or a line
+    # continuation does not count as a word break. ")" is not a break either: after
+    # $(...) a # is part of the word.
+    out, q, i, n, prev = [], "", 0, len(cmd), "\n"
     while i < n:
         c = cmd[i]
         if c == "\\" and q != "\x27" and i + 1 < n:
-            out.append(cmd[i:i + 2]); i += 2; continue
+            if cmd[i + 1] != "\n":           # a line continuation emits nothing
+                out.append(cmd[i:i + 2]); prev = "x"
+            i += 2; continue
         if q:
             if c == q:
                 q = ""
         elif c in "\"\x27":
             q = c
-        elif c == "#" and (i == 0 or cmd[i - 1] in " \t\n;&|()"):
+        elif c == "#" and prev in " \t\n;&|(":
             while i < n and cmd[i] != "\n":
                 i += 1
             continue
-        out.append(c); i += 1
+        out.append(c); prev = c; i += 1
     return "".join(out)
 
 def tokens(cmd):
     cmd = strip_comments(cmd.replace("\r", "")).replace("\n", " ; ")
     lex = shlex.shlex(cmd, posix=False, punctuation_chars=True)
     lex.whitespace_split = True
-    lex.commenters = ""           # comments are handled in check_command, per word
+    lex.commenters = ""           # comments were already removed by strip_comments
     try:
         toks = list(lex)
     except ValueError:            # unbalanced quotes: split on shell punctuation only

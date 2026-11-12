@@ -273,6 +273,18 @@ else
   cmd_case "an unbalanced quote still sees the redirect" deny Bash $'cat <<EOF >out.txt\n\'tis here\nEOF'
   cmd_case "an apostrophe in a comment does not hide the next line" deny Bash $'# don\'t stop\nrm -rf build'
   cmd_case "a ; inside a comment is not a command" silent Bash 'ls # list (all) files; rm is slow'
+  # A # that bash keeps as text must not be stripped as a comment, or the rm after it hides.
+  # shellcheck disable=SC2016
+  cmd_case "\$# is not a comment" deny Bash 'echo $#; rm x'
+  # shellcheck disable=SC2016
+  cmd_case "\${#VAR} is not a comment" deny Bash 'echo ${#PATH}; rm x'
+  cmd_case "a # mid-word is not a comment" deny Bash 'echo a#b; rm x'
+  cmd_case "a # inside quotes is not a comment" deny Bash 'echo "a #b"; rm x'
+  cmd_case "a # after an escaped space is not a comment" deny Bash 'echo a\ #b; rm x'
+  # shellcheck disable=SC2016
+  cmd_case "a # right after \$(...) is not a comment" deny Bash 'echo $(date)#t; rm x'
+  cmd_case "a # after a line continuation is not a comment" deny Bash $'echo foo\\\n#x; rm y'
+  cmd_case "xargs --max-chars <n> rm is seen" deny Bash 'ls | xargs --max-chars 100 rm'
   cmd_case "xargs -i rm (attached optional value) is seen" deny Bash 'ls | xargs -i rm {}'
   cmd_case "git config get reads a key" silent Bash 'git config get user.name'
   cmd_case "git config <key> reads a key" silent Bash 'git config user.name'
