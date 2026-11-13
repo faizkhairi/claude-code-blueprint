@@ -1171,12 +1171,17 @@ FAKEEOF
   spell $PCS_ "control: settings.json.bak stays silent" silent '/home/u/.claude/settings.json.bak' a "$SAFE"
   expect "protect-claude-settings: a subagent with a spelled-differently path is denied" deny \
     "$(guard_decision $PCS_ "$(json_sub '/home/u/.claude//settings.json' "$SAFE")")"
+  # shellcheck disable=SC2016 # a literal $DATA stream name, not an expansion
   spell $PCS_ "an NTFS ::\$DATA stream on settings.json asks" ask 'C:\Users\u\.claude\settings.json::$DATA' a "$SAFE"
+  # shellcheck disable=SC2016 # a literal $DATA stream name, not an expansion
   spell $PCS_ "an NTFS :\$DATA stream on settings.json asks" ask 'C:\Users\u\.claude\settings.json:$DATA' a "$SAFE"
+  # shellcheck disable=SC2016 # a literal $DATA stream name, not an expansion
   spell $PCS_ "a named stream :name:\$DATA on settings.local.json asks" ask '/home/u/.claude/settings.local.json:x:$DATA' a "$SAFE"
   spell $PCS_ "a named stream :name on settings.json asks" ask '/home/u/.claude/settings.json:x' a "$SAFE"
+  # shellcheck disable=SC2016 # a literal $DATA stream name, not an expansion
   spell $PCS_ "a stream on the 8.3 short name asks" ask 'C:\Users\u\.claude\SETTIN~1.JSO::$DATA' a "$SAFE"
   spell $PCS_ "control: the drive-letter colon is kept (C: path still asks)" ask 'C:/Users/u/.claude/settings.json' a "$SAFE"
+  # shellcheck disable=SC2016 # a literal $DATA stream name, not an expansion
   spell $PCS_ "control: a stream on a different file stays silent" silent 'C:\Users\u\.claude\notes.txt::$DATA' a "$SAFE"
   spell $PCS_ "control: a colon in a parent directory is not cut" silent '/home/u/.claude:x/settings.json' a "$SAFE"
   spell $PCF_ "control: the plain tsconfig.json path asks" ask '/w/proj/tsconfig.json'
@@ -1188,9 +1193,13 @@ FAKEEOF
   spell $PCF_ "control: a different case asks" ask '/w/proj/TSCONFIG.JSON'
   spell $PCF_ "the 8.3 short name TSCONF~1.JSO asks" ask 'C:\w\proj\TSCONF~1.JSO'
   spell $PCF_ "a path that resolves away from the config stays silent" silent '/w/proj/tsconfig.json/../app.ts'
+  # shellcheck disable=SC2016 # a literal $DATA stream name, not an expansion
   spell $PCF_ "an NTFS ::\$DATA stream on tsconfig.json asks (the substring match already covered it: control)" ask 'C:\w\proj\tsconfig.json::$DATA'
+  # shellcheck disable=SC2016 # a literal $DATA stream name, not an expansion
   spell $PCF_ "a stream on the 8.3 short name TSCONF~1.JSO::\$DATA asks" ask 'C:\w\proj\TSCONF~1.JSO::$DATA'
+  # shellcheck disable=SC2016 # a literal $DATA stream name, not an expansion
   spell $PCF_ "a named stream on the 8.3 short name asks" ask 'C:\w\proj\TSCONF~1.JSO:s:$DATA'
+  # shellcheck disable=SC2016 # a literal $DATA stream name, not an expansion
   spell $PCF_ "control: a stream on an unrelated file stays silent" silent 'C:\w\proj\app.ts::$DATA'
   expect "protect-config: control, a subagent with a spelled-differently path is denied" deny \
     "$(guard_decision $PCF_ "$(json_sub '/w/proj//tsconfig.json' b)")"
