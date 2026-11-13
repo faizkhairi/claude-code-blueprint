@@ -8,7 +8,8 @@
 # (agent-write-guard, guard-exit-plan) deny and allow, one named case per edge case.
 # Section 8 holds regression cases (Windows Store python3 stub, async subagent launch,
 # cost-tracker fields, log rotation, MCP sync with no Cursor, the two dash checkers, and
-# a subagent's ask turning into a deny). A case labelled "control" passes before and
+# a subagent's ask turning into a deny). Section 9 tests git push guard decisions.
+# A case labelled "control" passes before and
 # after its fix. The dash-checker fixtures contain the pattern they test, on purpose.
 
 PASS=0
@@ -726,6 +727,57 @@ with open(sys.argv[1], 'w') as f:
   done
 
   rm -rf "$T8"
+fi
+echo ""
+
+# 9. block-git-push decisions: exercise the real hook in a disposable repo.
+# No push is ever executed; the hook only inspects origin's configured URL.
+echo "--- Git Push Guard Decisions ---"
+if [ -z "$PYTHON" ] || ! command -v git >/dev/null 2>&1; then
+  skip "git push guard decisions need Python and Git"
+else
+  PUSH_REPO=$(mktemp -d)
+  # Use the hook's configured test domain without embedding it in this file.
+  PROTECTED_DOMAIN=$(sed -n 's/^BLOCKED_DOMAINS="//p' "$HOOKS_DIR/block-git-push.sh" | cut -d '"' -f1)
+  if [ -z "$PROTECTED_DOMAIN" ]; then
+    fail "git push guard protected domain configured"
+  elif [ -z "$PUSH_REPO" ] || [ ! -d "$PUSH_REPO" ]; then
+    fail "git push guard disposable repo created"
+  elif ! git init -q "$PUSH_REPO" || \
+       ! git -C "$PUSH_REPO" remote add origin "https://${PROTECTED_DOMAIN}/team/app.git"; then
+    fail "git push guard disposable repo initialized"
+  else
+    # Capture the hook's exit code, never running the candidate git command.
+    push_guard_code() {
+      (cd "$PUSH_REPO" && printf '%s' "$1" | bash "$HOOKS_DIR/block-git-push.sh" >/dev/null 2>&1)
+      echo "$?"
+    }
+    expect_push_code() {
+      if [ "$2" = "$3" ]; then
+        pass "$1"
+      else
+        fail "$1 (expected exit $2, got $3)"
+      fi
+    }
+
+    expect_push_code "block-git-push: protected remote denied" 2 \
+      "$(push_guard_code '{"tool_input":{"command":"git push origin main"}}')"
+    expect_push_code "block-git-push: protected remote denied with flags" 2 \
+      "$(push_guard_code '{"tool_input":{"command":"git push -u origin main"}}')"
+    expect_push_code "block-git-push: non-push command allowed" 0 \
+      "$(push_guard_code '{"tool_input":{"command":"git status"}}')"
+    expect_push_code "block-git-push: malformed JSON allowed" 0 \
+      "$(push_guard_code 'not json {{{')"
+
+    if git -C "$PUSH_REPO" remote set-url origin https://github.com/team/app.git; then
+      expect_push_code "block-git-push: public remote allowed" 0 \
+        "$(push_guard_code '{"tool_input":{"command":"git push origin main"}}')"
+    else
+      fail "block-git-push: change disposable remote"
+    fi
+  fi
+  # The only removed directory was created by mktemp in this section.
+  [ -n "$PUSH_REPO" ] && [ -d "$PUSH_REPO" ] && rm -r "$PUSH_REPO"
 fi
 echo ""
 
