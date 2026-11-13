@@ -409,9 +409,14 @@ install_settings() {
   log_info "Existing settings.json found. Attempting merge..."
   backup_file "$dst"
 
-  if command -v python3 >/dev/null 2>&1 || command -v python >/dev/null 2>&1; then
-    local py
-    py="$(command -v python3 2>/dev/null || command -v python)"
+  # python3 can be the Windows Store stub (under WindowsApps, exits 49): skip it unless it runs.
+  local py="" _p _c
+  for _p in python3 python py; do
+    _c=$(command -v "$_p" 2>/dev/null) || continue
+    case "$_c" in *[Ww]indows[Aa]pps*) "$_c" -c '' >/dev/null 2>&1 || continue ;; esac
+    py=$_c; break
+  done
+  if [ -n "$py" ]; then
     "$py" - "$dst" "$src" << 'PYMERGE'
 import json, os, sys
 
@@ -507,9 +512,14 @@ PYMERGE
 # (no file) are always kept; user hooks pointing outside <claude>/hooks/ are untouched.
 prune_settings_to_installed_hooks() {
   local settings="$1"
-  command -v python3 >/dev/null 2>&1 || command -v python >/dev/null 2>&1 || return 0
-  local py
-  py="$(command -v python3 2>/dev/null || command -v python)"
+  # python3 can be the Windows Store stub (under WindowsApps, exits 49): skip it unless it runs.
+  local py="" _p _c
+  for _p in python3 python py; do
+    _c=$(command -v "$_p" 2>/dev/null) || continue
+    case "$_c" in *[Ww]indows[Aa]pps*) "$_c" -c '' >/dev/null 2>&1 || continue ;; esac
+    py=$_c; break
+  done
+  [ -n "$py" ] || return 0
   "$py" - "$settings" "${CLAUDE_DIR}/hooks" << 'PYPRUNE'
 import json, os, re, sys
 
@@ -723,8 +733,13 @@ verify_installation() {
 
   # Validate settings.json
   if [ -f "${CLAUDE_DIR}/settings.json" ]; then
-    local py
-    py="$(command -v python3 2>/dev/null || command -v python 2>/dev/null || echo "")"
+    # python3 can be the Windows Store stub (under WindowsApps, exits 49): skip it unless it runs.
+    local py="" _p _c
+    for _p in python3 python py; do
+      _c=$(command -v "$_p" 2>/dev/null) || continue
+      case "$_c" in *[Ww]indows[Aa]pps*) "$_c" -c '' >/dev/null 2>&1 || continue ;; esac
+      py=$_c; break
+    done
     if [ -n "$py" ]; then
       if "$py" -m json.tool "${CLAUDE_DIR}/settings.json" >/dev/null 2>&1; then
         log_ok "settings.json is valid JSON"

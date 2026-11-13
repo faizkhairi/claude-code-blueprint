@@ -7,6 +7,8 @@
 # there is no separate extension file to compare. Project-scope servers live in
 # each project's .mcp.json and local-scope servers sit under that project's
 # entry in ~/.claude.json; neither is compared here.
+# A config file that does not exist means that tool is not installed, which is not
+# drift: the comparison is skipped and says so, instead of reporting OUT OF SYNC.
 # Run manually: bash ~/.claude/hooks/verify-mcp-sync.sh
 
 # Use Windows-style paths for Python compatibility
@@ -14,7 +16,13 @@ USERPROFILE="${USERPROFILE:-$HOME}"
 CLAUDE_CONFIG="$USERPROFILE/.claude.json"
 CURSOR_CONFIG="$USERPROFILE/.cursor/mcp.json"
 
-PYTHON=$(command -v python3 2>/dev/null || command -v python 2>/dev/null)
+# python3 can be the Windows Store stub (under WindowsApps, exits 49): skip it unless it runs.
+PYTHON=""
+for _p in python3 python py; do
+  _c=$(command -v "$_p" 2>/dev/null) || continue
+  case "$_c" in *[Ww]indows[Aa]pps*) "$_c" -c '' >/dev/null 2>&1 || continue ;; esac
+  PYTHON=$_c; break
+done
 if [ -z "$PYTHON" ]; then
   echo "verify-mcp-sync: python not found" >&2
   exit 0
@@ -26,7 +34,7 @@ extract_servers() {
     echo "(file missing)"
     return
   fi
-  HOOK_MCP_FILE="$file" $PYTHON -c "
+  HOOK_MCP_FILE="$file" "$PYTHON" -c "
 import os, json
 try:
     filepath = os.environ.get('HOOK_MCP_FILE', '')
@@ -52,7 +60,11 @@ echo "Claude Code (~/.claude.json, user scope): $CLAUDE_SERVERS"
 echo "Cursor (~/.cursor/mcp.json)             : $CURSOR_SERVERS"
 echo ""
 
-if [ "$CLAUDE_SERVERS" = "$CURSOR_SERVERS" ]; then
+# An absent file is not drift. Say which tool is missing and skip the comparison.
+if [ "$CLAUDE_SERVERS" = "(file missing)" ] || [ "$CURSOR_SERVERS" = "(file missing)" ]; then
+  [ "$CLAUDE_SERVERS" = "(file missing)" ] && echo "Claude Code config not found, comparison skipped"
+  [ "$CURSOR_SERVERS" = "(file missing)" ] && echo "Cursor not installed, comparison skipped"
+elif [ "$CLAUDE_SERVERS" = "$CURSOR_SERVERS" ]; then
   echo "Status: IN SYNC"
 else
   echo "Status: OUT OF SYNC"

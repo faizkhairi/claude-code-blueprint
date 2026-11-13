@@ -596,7 +596,7 @@ Or add a `.gitattributes` file to force LF for hooks:
 |------|---------|-------------------|
 | `python` | All hook scripts (JSON parsing) | `winget install Python.Python.3` or [python.org](https://python.org) |
 
-All hooks auto-detect Python using `command -v python3 || command -v python`. You need either `python3` or `python` on your PATH, not both. If neither is found, hooks print a warning and exit cleanly (no blocking).
+All hooks auto-detect Python by trying `python3`, then `python`, then `py`. A Windows Store stub (a `python3` under `WindowsApps` that exits 49) is skipped when it does not run. You need one working interpreter on your PATH. If none is found, hooks print a warning and exit cleanly (no blocking).
 
 On Windows, `python` is the typical command name. On macOS/Linux, `python3` is standard. The hooks handle both automatically; no aliasing or script editing needed.
 

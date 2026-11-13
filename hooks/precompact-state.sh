@@ -15,7 +15,13 @@
 # when Python is missing, since only the state snapshot needs Python.
 KEEP_LINE="When writing the compaction summary, preserve: the current todo list with each item's status; every file path modified in this session; verification steps not yet run; key decisions and their rationale; the active plan and which step is in progress; any preference or constraint the user stated in this session."
 
-PYTHON=$(command -v python3 2>/dev/null || command -v python 2>/dev/null)
+# python3 can be the Windows Store stub (under WindowsApps, exits 49): skip it unless it runs.
+PYTHON=""
+for _p in python3 python py; do
+  _c=$(command -v "$_p" 2>/dev/null) || continue
+  case "$_c" in *[Ww]indows[Aa]pps*) "$_c" -c '' >/dev/null 2>&1 || continue ;; esac
+  PYTHON=$_c; break
+done
 if [ -z "$PYTHON" ]; then
   echo "precompact-state: python not found: state not saved" >&2
   echo "$KEEP_LINE"
@@ -34,7 +40,7 @@ HOOK_CWD=$(pwd)
 export HOOK_CWD
 rm -f "$HOOK_STATE_FILE"
 
-$PYTHON -c "
+"$PYTHON" -c "
 import os, json
 state = {
     'timestamp': os.environ.get('HOOK_TIMESTAMP', ''),

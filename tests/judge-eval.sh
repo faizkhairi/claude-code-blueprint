@@ -49,7 +49,13 @@ RUNS="${JUDGE_RUNS:-3}"
 # (platform.claude.com/docs). Override with JUDGE_API_VERSION if it moves on.
 API_VERSION="${JUDGE_API_VERSION:-2026-10-21}"
 
-PYTHON=$(command -v python3 2>/dev/null || command -v python 2>/dev/null)
+# python3 can be the Windows Store stub (under WindowsApps, exits 49): skip it unless it runs.
+PYTHON=""
+for _p in python3 python py; do
+  _c=$(command -v "$_p" 2>/dev/null) || continue
+  case "$_c" in *[Ww]indows[Aa]pps*) "$_c" -c '' >/dev/null 2>&1 || continue ;; esac
+  PYTHON=$_c; break
+done
 if [ -z "$PYTHON" ]; then echo "judge-eval: Python is required." >&2; exit 2; fi
 if ! command -v curl >/dev/null 2>&1; then echo "judge-eval: curl is required." >&2; exit 2; fi
 if [ -z "${ANTHROPIC_API_KEY:-}" ] && [ "${JUDGE_DRY_RUN:-}" != 1 ]; then

@@ -3,14 +3,20 @@
 # Only triggers on actual git commit commands, not amend/help/dry-run.
 # Pattern: same stdin JSON parsing as notify-file-changed.sh
 
-PYTHON=$(command -v python3 2>/dev/null || command -v python 2>/dev/null)
+# python3 can be the Windows Store stub (under WindowsApps, exits 49): skip it unless it runs.
+PYTHON=""
+for _p in python3 python py; do
+  _c=$(command -v "$_p" 2>/dev/null) || continue
+  case "$_c" in *[Ww]indows[Aa]pps*) "$_c" -c '' >/dev/null 2>&1 || continue ;; esac
+  PYTHON=$_c; break
+done
 if [ -z "$PYTHON" ]; then
   echo "post-commit-review: python not found: hook cannot parse input" >&2
   exit 0
 fi
 
 INPUT=$(cat)
-COMMAND=$(echo "$INPUT" | $PYTHON -c "
+COMMAND=$(echo "$INPUT" | "$PYTHON" -c "
 import sys, json
 try:
     d = json.load(sys.stdin)
@@ -67,7 +73,7 @@ export HOOK_COMMIT_MSG="$COMMIT_MSG"
 export HOOK_HIGH_RISK="$HIGH_RISK"
 export HOOK_FILE_COUNT="$FILE_COUNT"
 
-$PYTHON -c "
+"$PYTHON" -c "
 import os, json
 file_list = os.environ.get('HOOK_FILE_LIST', '')
 commit_msg = os.environ.get('HOOK_COMMIT_MSG', '')
