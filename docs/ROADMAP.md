@@ -15,6 +15,7 @@ The Claude Code Blueprint is a reference architecture for configuring Claude Cod
 - **Framework-agnostic signaling**: Hero subtitle, comparison table, GitHub topics and description updated
 - **Cross-tool guide**: 10 other tools mapped (Copilot, Cursor, Cline, Roo Code, OpenCode, Codex CLI, Gemini CLI, Amazon Q, Windsurf, Aider)
 - **Hook smoke tests**: 161 automated tests in `hooks/test-hooks.sh` (run locally)
+- **Translation parity check**: `tests/count-check.sh` fails CI when a translated README's hooks or skills table drifts from the English one (added after the translations fell six hook rows behind)
 - **3 localized READMEs**: Japanese, Korean, Simplified Chinese landing pages (English root + 3 translations = 4 README files total)
 - **Built-in opt-in memory**: Setup.sh prompts to enable persistent session memory; no external repo required
 - **AGENTS.md**: AI-assistant orientation file at repo root
@@ -22,12 +23,13 @@ The Claude Code Blueprint is a reference architecture for configuring Claude Cod
 
 ## In Progress
 
-_Nothing currently in progress. Open a Discussion if you want to drive a specific direction._
+- **First case study**: the maintainer's own setup, labelled as not independent, in review in [PR 79](https://github.com/faizkhairi/claude-code-blueprint/pull/79)
 
 ## Planned
 
 Items we intend to build. No timeline; contributions welcome.
 
+- **Rule-drift detection**: flag rules that have not loaded in the last N sessions, as review candidates, never as safe to delete. Design note and a suggested first version in [issue 55](https://github.com/faizkhairi/claude-code-blueprint/issues/55) (help wanted)
 - **Discussion templates**: Q&A and Show & Tell category templates (shipped in `.github/DISCUSSION_TEMPLATE/`)
 - **Community case studies**: Anonymized before/after metrics and workflow improvements from real adopters. Submission template lives at [CASE-STUDIES.md](CASE-STUDIES.md); no case studies yet, be the first
 - **FUNDING.yml**: GitHub Sponsors button config (file shipped; actual Sponsors enrollment is a manual GitHub UI process)
@@ -61,4 +63,5 @@ See [CONTRIBUTING.md](../CONTRIBUTING.md) for how to submit changes. The most im
 2. **Cross-tool mappings**: How blueprint concepts translate to AI coding tools beyond the 10 currently documented in [CROSS-TOOL-GUIDE.md](CROSS-TOOL-GUIDE.md)
 3. **Skill description improvements**: See [issue #4](https://github.com/faizkhairi/claude-code-blueprint/issues/4), add capability statements and dynamic detection to existing skills
 4. **i18n polish**: Native-speaker review of [Japanese](https://github.com/faizkhairi/claude-code-blueprint/issues/6), [Korean](https://github.com/faizkhairi/claude-code-blueprint/issues/7), or [Chinese](https://github.com/faizkhairi/claude-code-blueprint/issues/8) translations
-5. **Case studies**: Submit your before/after experience via [CASE-STUDIES.md](CASE-STUDIES.md)
+5. **Hook decision tests**: two good first issues, [block-git-push.sh](https://github.com/faizkhairi/claude-code-blueprint/issues/75) and [pre-commit-secret-scan.sh](https://github.com/faizkhairi/claude-code-blueprint/issues/76)
+6. **Case studies**: Submit your before/after experience via [CASE-STUDIES.md](CASE-STUDIES.md)
