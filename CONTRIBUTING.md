@@ -39,6 +39,8 @@ bash tests/count-check.sh
 
 It derives each total from the filesystem and the installer's own arrays, then names every document that disagrees, with a file and line for each. A thirteenth agent produces seventeen failures across thirteen files, which is the checklist to work through. This runs in CI on every pull request (the `count-check` job) and is a required check, so a stale count blocks merge.
 
+The same script also has an "i18n table parity" section: the hooks table and the skills table in `i18n/README.ja.md`, `i18n/README.ko.md` and `i18n/README.zh.md` must list the same hook scripts and skill names, in the same order, as the English `README.md`. When you add a hook or skill row to the English tables, add the matching row to all three translations (translate the Purpose or Triggers text, keep the script and skill names verbatim) or the guard names the file and the missing entries.
+
 Two failure modes are worth knowing:
 
 - `MISSING_ANCHOR` means the guard could not find the text it expected. The document was reworded, so update the binding in `tests/count-check.sh` rather than the count.

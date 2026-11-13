@@ -6,13 +6,14 @@
 
 60秒で1ファイルをコピー。プロジェクトが成長したらもっとコピー。あらゆる言語、あらゆるフレームワーク、あらゆるスキルレベルで動作します。
 
+[![Install Test](https://github.com/faizkhairi/claude-code-blueprint/actions/workflows/install-test.yml/badge.svg)](https://github.com/faizkhairi/claude-code-blueprint/actions/workflows/install-test.yml)
 [![Stars](https://img.shields.io/github/stars/faizkhairi/claude-code-blueprint?style=flat)](https://github.com/faizkhairi/claude-code-blueprint)
 [![Forks](https://img.shields.io/github/forks/faizkhairi/claude-code-blueprint?style=flat)](https://github.com/faizkhairi/claude-code-blueprint/network/members)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](../LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-compatible-blueviolet)](https://docs.anthropic.com/en/docs/claude-code)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](../CONTRIBUTING.md)
 
-**12 agents** · **20 skills** · **18 hooks** · **6 rules**、実際のプロジェクトで検証済み
+**12 agents** · **20 skills** · **18 hooks** · **6 rules**、必要なものだけコピーするか、プリセット（minimal / standard / core / full）をインストール
 
 [English](../README.md) | [日本語](README.ja.md) | [한국어](README.ko.md) | [简体中文](README.zh.md)
 
@@ -22,7 +23,7 @@
 
 ---
 
-> **開始前に：** これは参照リポジトリであり、プロジェクトテンプレートではありません。**このリポジトリ内で** Claude Code を**実行しないでください**。ブループリント自体の CLAUDE.md を読み込み、プロジェクトのルールが無視されます。自分のプロジェクトに fork するか、個別のファイルをコピーしてください。完全なセットアップ手順は [GETTING-STARTED.md](../GETTING-STARTED.md) を参照してください。
+> **コピーする前に：** これは参照リポジトリであり、プロジェクトテンプレートではありません。ファイルをここから自分のプロジェクトへコピーして使います。**このリポジトリ内で** Claude Code を**実行しないでください**（自分のプロジェクトの CLAUDE.md ではなく、ブループリント自体の CLAUDE.md が読み込まれます）。完全なセットアップ手順は [GETTING-STARTED.md](../GETTING-STARTED.md) を参照してください。
 >
 > このリポジトリで作業する AI アシスタント向け：オリエンテーションは [AGENTS.md](../AGENTS.md) を参照してください。
 
@@ -30,18 +31,14 @@
 
 ## Quick Start
 
-ファイル1つをコピー。4つの行動ルールを取得。60秒で完了。
+**まずはこれだけ。** ファイル1つをインストールすれば、60秒で完了です：
 
 ```bash
-# プロジェクトルートで
-curl -o CLAUDE.md https://raw.githubusercontent.com/faizkhairi/claude-code-blueprint/main/CLAUDE.md
+# すべてのプロジェクトに対してグローバルにインストール
+mkdir -p ~/.claude && curl -o ~/.claude/CLAUDE.md https://raw.githubusercontent.com/faizkhairi/claude-code-blueprint/main/CLAUDE.md
 ```
 
-このコマンドで Claude Code に4つのルールが追加され、AI コーディングの一般的なミスを防ぎます：
-
-**Verify-After-Complete** · **Diagnose-First** · **Plan-First** · **Verify-Before-Exit-Plan**
-
-もっと知りたいですか？ [採用パス（全体図）](#recommended-adoption-path)または[30分の初心者ガイド](../GETTING-STARTED.md)を参照してください。Claude Code は初めてですか？ [対象者](#who-is-this-for)または [FAQ](../FAQ.md) をご覧ください。
+これで Claude Code に4つの行動ルールが加わり、AI コーディングで最も起こりがちなミスを防ぎます：**Verify-After-Complete** · **Diagnose-First** · **Plan-First** · **Verify-Before-Exit-Plan**。マシン上のすべてのプロジェクトに適用されます。最初のステップはこれだけです。試してみて、また戻ってきてください。プロジェクト固有の規約も使いたい場合は、[設定の置き場所](../GETTING-STARTED.md#where-config-belongs-project-vs-personal)を参照してください。
 
 <details>
 <summary><strong>CLAUDE.md 以上が必要ですか？</strong>（hooks、agents、設定）</summary>
@@ -52,10 +49,12 @@ CLAUDE.md が機能したら、残りを追加しましょう。最も簡単な�
 ./setup.sh --preset=standard
 ```
 
-または Claude に設定を任せましょう。Claude Code セッションに貼り付け: *「Claude Code Blueprint をセットアップしてください。CLAUDE.md をプロジェクトルートにコピーし、hook と設定を ~/.claude/ に設定してください。各ステップを見せてください。」*
+または Claude に設定を任せましょう。Claude Code セッションに貼り付け: *「Claude Code Blueprint をセットアップしてください。CLAUDE.md を ~/.claude/CLAUDE.md にインストールし、hooks と設定を ~/.claude/ に設定してください。各ステップを見せてください。」*
 
 すべてのセットアップオプション（fork / clone / cherry-pick / presets）と検証チェックリストについては **[SETUP.md](../SETUP.md)** をご覧ください。
 </details>
+
+**Claude Code は初めてですか？ ガイド付きで進めたいですか？** **[初心者ガイド](../GETTING-STARTED.md)** が同じ内容をステップごとに案内します。誰のためのものか知りたい方は、下の [対象者](#who-is-this-for) をご覧ください。
 
 ---
 
@@ -78,7 +77,7 @@ CLAUDE.md が機能したら、残りを追加しましょう。最も簡単な�
 
 ## Who Is This For?
 
-あらゆる開発者、あらゆるフレームワーク、あらゆるスキルレベル。
+**あらゆる開発者、あらゆるフレームワーク、あらゆるスキルレベル。** このブループリントは Claude Code の動作を設定するものであり、プロジェクトの言語やフレームワークは問いません。
 
 | あなたは | ここから始める | 価値実現までの時間 |
 |---------|-----------|---------------|
@@ -91,14 +90,7 @@ CLAUDE.md が機能したら、残りを追加しましょう。最も簡単な�
 
 ### Your Progression
 
-**Level 1：CLAUDE.md をコピー（60秒）**
-CLAUDE.md をプロジェクトにコピー。4つの行動ルール。即時効果。
-
-**Level 2：2-3 個の hook を追加（5分）**
-2-3 個の hook を追加。トークンコストゼロ。設定保護と編集検証の自動化。
-
-**Level 3：フルブループリント（継続的）**
-agents、skills、rules、memory をワークフローの成熟に合わせて追加。すぐにコピー可能な設定は [Presets](../docs/PRESETS.md) を参照。
+必要に応じて成長させましょう：まず CLAUDE.md（上記）から始め、いくつかの hook を追加し、ワークフローが成熟したら agents/skills/rules を追加します。`core` プリセットは良い中間ステップです。正確な順序は下の[採用パス](#recommended-adoption-path)を、各段階のすぐにコピー可能な設定は [Presets](../docs/PRESETS.md) を参照してください。
 
 ---
 
@@ -130,22 +122,22 @@ agents、skills、rules、memory をワークフローの成熟に合わせて�
 | project-architect | opus | システム設計、アーキテクチャ決定、技術選択 |
 | backend-specialist | sonnet | API エンドポイント、サービス、データベース操作、ミドルウェア |
 | frontend-specialist | sonnet | UI コンポーネント、状態管理、フォーム、スタイリング |
-| code-reviewer | sonnet | コード品質、パターン、ベストプラクティス（読み取り専用） |
-| security-reviewer | sonnet | OWASP Top 10、認証の脆弱性、インジェクション攻撃（読み取り専用） |
-| db-analyst | sonnet | スキーマ分析、クエリ最適化、マイグレーション計画（読み取り専用） |
-| devops-engineer | sonnet | デプロイ設定、CI/CD、Docker、インフラ（読み取り専用） |
+| code-reviewer | sonnet | コード品質、パターン、ベストプラクティス（意図的に読み取り専用） |
+| security-reviewer | sonnet | OWASP Top 10、認証の脆弱性、インジェクション攻撃（意図的に読み取り専用） |
+| db-analyst | sonnet | スキーマ分析、クエリ最適化、マイグレーション計画（意図的に読み取り専用） |
+| devops-engineer | sonnet | デプロイ設定、CI/CD、Docker、インフラ（意図的に読み取り専用） |
 | qa-tester | sonnet | ユニットテスト、統合テスト、E2E テスト |
-| verify-plan | sonnet | 7点の機械的計画検証（読み取り専用） |
+| verify-plan | sonnet | 7点の機械的計画検証（意図的に読み取り専用） |
 | docs-writer | haiku | README、API ドキュメント、チェンジログ、アーキテクチャドキュメント |
-| architecture-reviewer | sonnet | 依存関係の方向、god ファイル、デッドコード、モジュール性（読み取り専用） |
+| architecture-reviewer | sonnet | 依存関係の方向、god ファイル、デッドコード、モジュール性（意図的に読み取り専用） |
 | memory-curator | sonnet | メモリディレクトリの孤立ファイル、インデックスのドリフト、リンク切れ、古いエントリを監査（レポートのみ） |
 
-詳細は [agents/README.md](../agents/README.md) のパーミッションモード、コスト推定、maxTurns を参照。
+「意図的に読み取り専用」とは `permissionMode: plan` を指し、メインセッションが default または dontAsk モードで動作している場合にのみ有効です。`memory` を設定した agent は書き込みが可能です。パーミッションモード、相対コスト層、frontmatter フィールド、maxTurns については [agents/README.md](../agents/README.md) を参照してください。`opus`、`sonnet`、`haiku` のエイリアスは各ファミリーの最新モデルに解決されるため（2026年11月時点の Anthropic API では Opus 5.5、Sonnet 5.5、Haiku 5.5）、新しいモデルが出ても agent ファイルを編集する必要はありません。
 
 </details>
 
 <details>
-<summary><strong>20 Skills</strong>：自然言語トリガーのワークフロー（スラッシュコマンド不要）</summary>
+<summary><strong>20 Skills</strong>：自然言語トリガーのワークフロー（それぞれ `/name` コマンドとしても実行可能）</summary>
 
 &nbsp;
 
@@ -159,6 +151,7 @@ agents、skills、rules、memory をワークフローの成熟に合わせて�
 | セッション | load-session、save-session、session-end、save-diary | セッション開始/終了、"保存"、"さようなら"、"完了" |
 | プロジェクト | scaffold-project、register-project、status、changelog | "新規プロジェクト"、"ステータス"、"チェンジログ" |
 | データベース | db-check | "スキーマをチェック"、"モデル検証" |
+| デバッグ | diagnose-before-finding | "診断"、"根本原因"、"これはバグ？"、"必須修正" |
 | ユーティリティ | tech-radar | "新機能は？"、"アップグレードすべき？" |
 
 カスタマイズとプレースホルダ変数設定については [skills/README.md](../skills/README.md) を参照。
@@ -177,10 +170,16 @@ agents、skills、rules、memory をワークフローの成熟に合わせて�
 | PreToolUse (Bash) | block-git-push.sh | リモートリポジトリを保護 |
 | PreToolUse (Bash) | pre-commit-secret-scan.sh | シークレットを含むコミットをブロック |
 | PreToolUse (Write/Edit) | protect-config.sh | Linter/ビルド設定をガード |
+| PreToolUse (Write/Edit) | protect-claude-settings.sh | 自分の settings.json の安全性キーの編集を確認し、保護パスに対して効果のない allow ルールを警告 |
+| PreToolUse (Write/Edit/Bash) | agent-write-guard.sh | 読み取り専用 agent を、どのパーミッションモードでも読み取り専用に保つ |
+| PreToolUse (ExitPlanMode) | guard-exit-plan.sh | プランに自己監査が含まれるまで、プランモードの終了を拒否 |
 | PostToolUse (Write/Edit) | notify-file-changed.sh | 検証リマインダー |
+| PostToolUse (Write/Edit) | no-dash-check.sh | 文体違反（例：em-dash）を警告 |
 | PostToolUse (Bash) | post-commit-review.sh | コミット後レビュー |
-| PreCompact | precompact-state.sh | 状態をディスクにシリアライズ |
-| Stop | security check + cost-tracker.sh + session-checkpoint.sh | 最終防御 + メトリクス |
+| PostToolUse (Agent/Task) | verify-subagent-findings.sh | sub-agent の発見を、検証すべき仮説として扱う |
+| PostToolUseFailure (MCP) | mcp-failure-hint.sh | MCP ツールが失敗したときのフォールバックガイダンス |
+| PreCompact | precompact-state.sh | 状態をディスクにシリアライズ + 圧縮サマリーに何を残すかを伝える |
+| Stop | security and claim-evidence check + cost-tracker.sh + session-checkpoint.sh | 最終防御 + メトリクス |
 | SessionEnd | session-checkpoint.sh | 保証された最終保存 |
 
 プラス2つのユーティリティスクリプト：`verify-mcp-sync.sh`（MCP 設定チェッカー）と`status-line.sh`（ブランチ/プロジェクトステータス）、およびコンパニオンツール `check-no-dash-file.py`（`no-dash-check.sh` 用の投稿前プローズ検査）。ユーティリティは full プリセットでデプロイされます。フォルダ内の最後のファイルは `test-hooks.sh` で、ローカルテストハーネスとして `bash hooks/test-hooks.sh` で実行しすべての hook を検証します。これは `~/.claude/hooks/` にデプロイされない唯一のファイルであり、「18 hooks」の合計には含まれません。
@@ -235,6 +234,10 @@ agents、skills、rules、memory をワークフローの成熟に合わせて�
 
 ## Getting Started
 
+上の [Quick Start](#quick-start) が最短ルートです。`CLAUDE.md` をコピーすれば60秒で始められます。次のステップは、自分に合ったドキュメントを選んでください：**Claude Code が初めてなら** **[GETTING-STARTED.md](../GETTING-STARTED.md)**（コンセプト + ガイド付きウォークスルー）を。**インストールコマンドとプリセットだけ知りたいなら** **[SETUP.md](../SETUP.md)**（すべてのオプション + 検証チェックリスト）へ直接どうぞ。
+
+残りは次の順序で段階的に取り入れましょう：
+
 ### Recommended adoption path
 
 1. **[CLAUDE.md](../CLAUDE.md) から始める**：動作ルールのテンプレート。セットアップなしで最大の効果。
@@ -256,7 +259,7 @@ agents、skills、rules、memory をワークフローの成熟に合わせて�
 | **[FAQ](../FAQ.md)** | **[Getting Started](../GETTING-STARTED.md)** | **[Troubleshooting](../TROUBLESHOOTING.md)** |
 | コミュニティからのよくある質問 | ゼロから生産的に 30 分で | 一般的な問題と解決策 |
 | **[Setup Guide](../SETUP.md)** | **[Case Studies](../docs/CASE-STUDIES.md)** | **[Roadmap](../docs/ROADMAP.md)** |
-| 自動インストーラー + 検証チェックリスト | 採用者のストーリーと before/after メトリクス | プロジェクトの方向性と今後の予定 |
+| 自動インストーラー + 検証チェックリスト | 採用者のストーリーと before/after メトリクス（投稿ベース、最初の一人になりましょう） | プロジェクトの方向性と今後の予定 |
 | **[Self-Monitoring](../docs/SELF-MONITORING.md)** | | |
 | オプションのパターン：gitleaks pre-commit + memory-curator agent | | |
 

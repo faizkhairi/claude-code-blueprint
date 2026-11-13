@@ -6,13 +6,14 @@
 
 60 秒复制一个文件。随项目成长复制更多。适用于任何语言、任何框架、任何技能水平。
 
+[![Install Test](https://github.com/faizkhairi/claude-code-blueprint/actions/workflows/install-test.yml/badge.svg)](https://github.com/faizkhairi/claude-code-blueprint/actions/workflows/install-test.yml)
 [![Stars](https://img.shields.io/github/stars/faizkhairi/claude-code-blueprint?style=flat)](https://github.com/faizkhairi/claude-code-blueprint)
 [![Forks](https://img.shields.io/github/forks/faizkhairi/claude-code-blueprint?style=flat)](https://github.com/faizkhairi/claude-code-blueprint/network/members)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](../LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-compatible-blueviolet)](https://docs.anthropic.com/en/docs/claude-code)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](../CONTRIBUTING.md)
 
-**12 agents** · **20 skills** · **18 hooks** · **6 rules**，在真实项目中验证
+**12 agents** · **20 skills** · **18 hooks** · **6 rules**，只复制你需要的，或安装预设（minimal / standard / core / full）
 
 [English](../README.md) | [日本語](README.ja.md) | [한국어](README.ko.md) | [简体中文](README.zh.md)
 
@@ -22,7 +23,7 @@
 
 ---
 
-> **开始前须知：** 这是一份参考存储库，而非项目模板。请**不要**在此存储库内运行 Claude Code，它会读取蓝图自身的 CLAUDE.md，而忽略你项目的规则。请 fork 或将单个文件复制到你自己的项目。完整设置步骤请参见 [GETTING-STARTED.md](../GETTING-STARTED.md)。
+> **复制前须知：** 这是一份参考存储库，而非项目模板。你需要把文件从这里复制到你自己的项目中。请**不要**在此存储库内运行 Claude Code，它会读取蓝图自身的 CLAUDE.md，而不是你项目的 CLAUDE.md。完整设置步骤请参见 [GETTING-STARTED.md](../GETTING-STARTED.md)。
 >
 > 协助使用此仓库的 AI 助手：请参见 [AGENTS.md](../AGENTS.md) 获取指引。
 
@@ -30,18 +31,14 @@
 
 ## Quick Start
 
-复制一个文件，获得四条行为规则。60 秒完成。
+**请先做这一步。** 只需安装一个文件，60 秒即可完成：
 
 ```bash
-# 在项目根目录运行
-curl -o CLAUDE.md https://raw.githubusercontent.com/faizkhairi/claude-code-blueprint/main/CLAUDE.md
+# 为所有项目全局安装
+mkdir -p ~/.claude && curl -o ~/.claude/CLAUDE.md https://raw.githubusercontent.com/faizkhairi/claude-code-blueprint/main/CLAUDE.md
 ```
 
-这给 Claude Code 四条规则，防止最常见的 AI 编码错误：
-
-**Verify-After-Complete** · **Diagnose-First** · **Plan-First** · **Verify-Before-Exit-Plan**
-
-准备好深入了解？查看[完整采用路径](#recommended-adoption-path)或[30 分钟初学者指南](../GETTING-STARTED.md)。Claude Code 新手？查看[适用对象](#who-is-this-for)或 [FAQ](../FAQ.md)。
+这会给 Claude Code 添加四条行为规则，防止最常见的 AI 编码错误：**Verify-After-Complete** · **Diagnose-First** · **Plan-First** · **Verify-Before-Exit-Plan**，适用于你机器上的每个项目。这就是完整的第一步：先试用，需要更多时再回来。如果你还想要项目专属的约定，请参见[配置应该放在哪里](../GETTING-STARTED.md#where-config-belongs-project-vs-personal)。
 
 <details>
 <summary><strong>需要比 CLAUDE.md 更多？</strong>（hooks、agents、设置）</summary>
@@ -52,10 +49,12 @@ CLAUDE.md 生效后，再添加其余部分。最简单的方法是从克隆或 
 ./setup.sh --preset=standard
 ```
 
-或者让 Claude 来设置，粘贴到 Claude Code 会话中：*"设置 Claude Code Blueprint。将 CLAUDE.md 复制到我的项目根目录，在 ~/.claude/ 中设置 hooks 和设置。每一步都展示给我看。"*
+或者让 Claude 来设置，粘贴到 Claude Code 会话中：*"设置 Claude Code Blueprint。将 CLAUDE.md 安装到 ~/.claude/CLAUDE.md，在 ~/.claude/ 中设置 hooks 和设置。每一步都展示给我看。"*
 
 所有安装选项（fork / clone / cherry-pick / presets）以及验证清单，请参见 **[SETUP.md](../SETUP.md)**。
 </details>
+
+**刚接触 Claude Code，或想要手把手的版本？** **[初学者指南](../GETTING-STARTED.md)**会一步步带你完成同样的事情。想知道这适合谁？请参见下方的[适用对象](#who-is-this-for)。
 
 ---
 
@@ -78,7 +77,7 @@ CLAUDE.md 生效后，再添加其余部分。最简单的方法是从克隆或 
 
 ## Who Is This For?
 
-任何开发者、任何框架、任何技能水平。
+**任何开发者、任何框架、任何技能水平。** 蓝图配置的是 Claude Code 的行为，不关心你的项目使用什么语言或框架。
 
 | 你的身份 | 从这里开始 | 价值实现时间 |
 |---------|----------|------------|
@@ -91,14 +90,7 @@ CLAUDE.md 生效后，再添加其余部分。最简单的方法是从克隆或 
 
 ### Your Progression
 
-**Level 1：从这里开始（60 秒）**
-将 CLAUDE.md 复制到你的项目。四条行为规则。立竿见影。
-
-**Level 2：添加安全网（5 分钟）**
-添加 2-3 个 hooks。零 token 成本。自动配置保护和编辑验证。
-
-**Level 3：随成长定制（持续进行）**
-随着工作流成熟，添加 agents、skills、rules 和内存系统。参见 [Presets](../docs/PRESETS.md) 获取即用配置。
+按需成长：先从 CLAUDE.md（见上）开始，添加几个 hooks，随着工作流成熟再添加 agents/skills/rules。`core` 预设是一个不错的中间步骤。确切顺序见下方的[推荐采用路径](#recommended-adoption-path)，每一档的即用配置见 [Presets](../docs/PRESETS.md)。
 
 ---
 
@@ -130,22 +122,22 @@ CLAUDE.md 生效后，再添加其余部分。最简单的方法是从克隆或 
 | project-architect | opus | 系统设计、架构决策、技术选择 |
 | backend-specialist | sonnet | API 端点、服务、数据库操作、中间件 |
 | frontend-specialist | sonnet | UI 组件、状态管理、表单、样式 |
-| code-reviewer | sonnet | 代码质量、模式、最佳实践（只读） |
-| security-reviewer | sonnet | OWASP Top 10、认证漏洞、注入攻击（只读） |
-| db-analyst | sonnet | 架构分析、查询优化、迁移规划（只读） |
-| devops-engineer | sonnet | 部署配置、CI/CD、Docker、基础设施（只读） |
+| code-reviewer | sonnet | 代码质量、模式、最佳实践（按设计只读） |
+| security-reviewer | sonnet | OWASP Top 10、认证漏洞、注入攻击（按设计只读） |
+| db-analyst | sonnet | 架构分析、查询优化、迁移规划（按设计只读） |
+| devops-engineer | sonnet | 部署配置、CI/CD、Docker、基础设施（按设计只读） |
 | qa-tester | sonnet | 单元测试、集成测试、E2E 测试 |
-| verify-plan | sonnet | 7 点机械化计划验证（只读） |
+| verify-plan | sonnet | 7 点机械化计划验证（按设计只读） |
 | docs-writer | haiku | README、API 文档、更新日志、架构文档 |
-| architecture-reviewer | sonnet | 依赖方向、god 文件、死代码、模块化（只读） |
+| architecture-reviewer | sonnet | 依赖方向、god 文件、死代码、模块化（按设计只读） |
 | memory-curator | sonnet | 审计内存目录的孤立文件、索引漂移、失效链接、过时条目（仅报告） |
 
-参见 [agents/README.md](../agents/README.md) 了解权限模式、成本估计和 maxTurns。
+“按设计只读”指 `permissionMode: plan`，仅当你的主会话以 default 或 dontAsk 模式运行时才成立；设置了 `memory` 的 agent 仍可写入。权限模式、相对成本层级、frontmatter 字段和 maxTurns 请参见 [agents/README.md](../agents/README.md)。`opus`、`sonnet` 和 `haiku` 别名会解析为各系列最新的模型（截至 2026 年 11 月，Anthropic API 上为 Opus 5.5、Sonnet 5.5 和 Haiku 5.5），因此新模型发布时无需修改 agent 文件。
 
 </details>
 
 <details>
-<summary><strong>20 个 Skills</strong>：自然语言触发的工作流（无需斜杠命令）</summary>
+<summary><strong>20 个 Skills</strong>：自然语言触发的工作流（每个也可作为 `/name` 命令运行）</summary>
 
 &nbsp;
 
@@ -159,6 +151,7 @@ CLAUDE.md 生效后，再添加其余部分。最简单的方法是从克隆或 
 | Session | load-session, save-session, session-end, save-diary | Session start/end, "save", "bye", "done" |
 | Project | scaffold-project, register-project, status, changelog | "new project", "status", "changelog" |
 | Database | db-check | "check the schema", "validate models" |
+| Debugging | diagnose-before-finding | "diagnose", "root cause", "is this a bug?", "must fix" |
 | Utilities | tech-radar | "what's new?", "should we upgrade?" |
 
 参见 [skills/README.md](../skills/README.md) 了解自定义和占位符变量设置。
@@ -177,10 +170,16 @@ CLAUDE.md 生效后，再添加其余部分。最简单的方法是从克隆或 
 | PreToolUse (Bash) | block-git-push.sh | 保护远程仓库 |
 | PreToolUse (Bash) | pre-commit-secret-scan.sh | 阻止包含密钥的提交 |
 | PreToolUse (Write/Edit) | protect-config.sh | 守护 linter/build 配置 |
+| PreToolUse (Write/Edit) | protect-claude-settings.sh | 编辑你自己 settings.json 中的安全键时要求确认，并标记针对受保护路径的无效 allow 规则 |
+| PreToolUse (Write/Edit/Bash) | agent-write-guard.sh | 让只读 agent 在任何权限模式下都保持只读 |
+| PreToolUse (ExitPlanMode) | guard-exit-plan.sh | 在计划包含自我审计之前，拒绝退出计划模式 |
 | PostToolUse (Write/Edit) | notify-file-changed.sh | 验证提醒 |
+| PostToolUse (Write/Edit) | no-dash-check.sh | 对文风违规（例如 em-dash）发出警告 |
 | PostToolUse (Bash) | post-commit-review.sh | 提交后审查 |
-| PreCompact | precompact-state.sh | 将状态序列化到磁盘 |
-| Stop | security check + cost-tracker.sh + session-checkpoint.sh | 最后防线 + 指标 |
+| PostToolUse (Agent/Task) | verify-subagent-findings.sh | 将 subagent 的发现视为待验证的假设 |
+| PostToolUseFailure (MCP) | mcp-failure-hint.sh | MCP 工具失败时给出备用指引 |
+| PreCompact | precompact-state.sh | 将状态序列化到磁盘 + 告诉压缩摘要需要保留什么 |
+| Stop | security and claim-evidence check + cost-tracker.sh + session-checkpoint.sh | 最后防线 + 指标 |
 | SessionEnd | session-checkpoint.sh | 保证最终保存 |
 
 另外 2 个实用脚本：`verify-mcp-sync.sh`（MCP 配置检查器）和 `status-line.sh`（分支/项目状态），以及配套工具 `check-no-dash-file.py`（用于 `no-dash-check.sh` 的发布前文本检查）。实用脚本均由 full 预设部署。文件夹中的最后一个文件是 `test-hooks.sh`，作为本地测试工具，通过 `bash hooks/test-hooks.sh` 运行以验证所有 hooks。它是唯一不会部署到 `~/.claude/hooks/` 的文件，也不计入“18 hooks”的总数。
@@ -235,6 +234,10 @@ CLAUDE.md 生效后，再添加其余部分。最简单的方法是从克隆或 
 
 ## Getting Started
 
+上面的 [Quick Start](#quick-start) 是最快的路径：复制 `CLAUDE.md`，60 秒即可上手。下一步请选择适合你的文档：**刚接触 Claude Code？** 请阅读 **[GETTING-STARTED.md](../GETTING-STARTED.md)**（概念 + 手把手演练）。**只想要安装命令和预设？** 直接前往 **[SETUP.md](../SETUP.md)**（所有选项 + 验证清单）。
+
+然后按以下顺序逐步扩展：
+
 ### Recommended adoption path
 
 1. **从 [CLAUDE.md](../CLAUDE.md) 开始**：行为规则模板。最大影响，零设置。
@@ -256,7 +259,7 @@ CLAUDE.md 生效后，再添加其余部分。最简单的方法是从克隆或 
 | **[FAQ](../FAQ.md)** | **[Getting Started](../GETTING-STARTED.md)** | **[Troubleshooting](../TROUBLESHOOTING.md)** |
 | 社区常见问题解答 | 从零到高效 30 分钟 | 常见问题与解决方案 |
 | **[Setup Guide](../SETUP.md)** | **[Case Studies](../docs/CASE-STUDIES.md)** | **[Roadmap](../docs/ROADMAP.md)** |
-| 自动安装程序 + 验证清单 | 采用者故事和前后对比指标 | 项目方向和后续计划 |
+| 自动安装程序 + 验证清单 | 采用者故事和前后对比指标（基于投稿，成为第一个吧） | 项目方向和后续计划 |
 | **[Self-Monitoring](../docs/SELF-MONITORING.md)** | | |
 | 可选模式：gitleaks pre-commit + memory-curator agent | | |
 
