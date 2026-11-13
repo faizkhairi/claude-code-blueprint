@@ -16,6 +16,7 @@ The Claude Code Blueprint is a reference architecture for configuring Claude Cod
 - **Cross-tool guide**: 10 other tools mapped (Copilot, Cursor, Cline, Roo Code, OpenCode, Codex CLI, Gemini CLI, Amazon Q, Windsurf, Aider)
 - **Hook smoke tests**: 161 automated tests in `hooks/test-hooks.sh` (run locally)
 - **Translation parity check**: `tests/count-check.sh` fails CI when a translated README's hooks or skills table drifts from the English one (added after the translations fell six hook rows behind)
+- **First case study**: the maintainer's own setup in [CASE-STUDIES.md](CASE-STUDIES.md), labelled as not independent
 - **3 localized READMEs**: Japanese, Korean, Simplified Chinese landing pages (English root + 3 translations = 4 README files total)
 - **Built-in opt-in memory**: Setup.sh prompts to enable persistent session memory; no external repo required
 - **AGENTS.md**: AI-assistant orientation file at repo root
@@ -23,7 +24,7 @@ The Claude Code Blueprint is a reference architecture for configuring Claude Cod
 
 ## In Progress
 
-- **First case study**: the maintainer's own setup, labelled as not independent, in review in [PR 79](https://github.com/faizkhairi/claude-code-blueprint/pull/79)
+_Nothing currently in progress. Open a Discussion if you want to drive a specific direction._
 
 ## Planned
 
@@ -31,7 +32,7 @@ Items we intend to build. No timeline; contributions welcome.
 
 - **Rule-drift detection**: flag rules that have not loaded in the last N sessions, as review candidates, never as safe to delete. Design note and a suggested first version in [issue 55](https://github.com/faizkhairi/claude-code-blueprint/issues/55) (help wanted)
 - **Discussion templates**: Q&A and Show & Tell category templates (shipped in `.github/DISCUSSION_TEMPLATE/`)
-- **Community case studies**: Anonymized before/after metrics and workflow improvements from real adopters. Submission template lives at [CASE-STUDIES.md](CASE-STUDIES.md); no case studies yet, be the first
+- **Community case studies**: Anonymized before/after metrics and workflow improvements from real adopters. Submission template lives at [CASE-STUDIES.md](CASE-STUDIES.md). The first entry is the maintainer's own setup, labelled as not independent; stories from other adopters are still wanted
 - **FUNDING.yml**: GitHub Sponsors button config (file shipped; actual Sponsors enrollment is a manual GitHub UI process)
 - **Additional Claude Code product-feature integration**: As new Claude Code features ship (new hooks, agent capabilities, settings), document and integrate them through the same understand-then-adapt lens
 

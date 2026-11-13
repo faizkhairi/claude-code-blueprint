@@ -259,7 +259,7 @@ CLAUDE.md가 작동하면 나머지도 추가하세요. 가장 쉬운 방법은 
 | **[FAQ](../FAQ.md)** | **[Getting Started](../GETTING-STARTED.md)** | **[Troubleshooting](../TROUBLESHOOTING.md)** |
 | 커뮤니티에서 자주 묻는 질문 | 제로에서 생산적으로 30분 | 일반적인 문제와 해결책 |
 | **[Setup Guide](../SETUP.md)** | **[Case Studies](../docs/CASE-STUDIES.md)** | **[Roadmap](../docs/ROADMAP.md)** |
-| 자동 설치 프로그램 + 검증 체크리스트 | 도입자 스토리와 before/after 메트릭 (제출 기반, 첫 번째가 되어 보세요) | 프로젝트 방향과 향후 계획 |
+| 자동 설치 프로그램 + 검증 체크리스트 | 도입자 스토리와 before/after 메트릭 (첫 사례는 메인테이너 본인의 것, 도입자 제출 환영) | 프로젝트 방향과 향후 계획 |
 | **[Self-Monitoring](../docs/SELF-MONITORING.md)** | | |
 | 선택적 패턴: gitleaks pre-commit + memory-curator agent | | |
 

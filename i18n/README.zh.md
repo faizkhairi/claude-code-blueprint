@@ -259,7 +259,7 @@ CLAUDE.md 生效后，再添加其余部分。最简单的方法是从克隆或 
 | **[FAQ](../FAQ.md)** | **[Getting Started](../GETTING-STARTED.md)** | **[Troubleshooting](../TROUBLESHOOTING.md)** |
 | 社区常见问题解答 | 从零到高效 30 分钟 | 常见问题与解决方案 |
 | **[Setup Guide](../SETUP.md)** | **[Case Studies](../docs/CASE-STUDIES.md)** | **[Roadmap](../docs/ROADMAP.md)** |
-| 自动安装程序 + 验证清单 | 采用者故事和前后对比指标（基于投稿，成为第一个吧） | 项目方向和后续计划 |
+| 自动安装程序 + 验证清单 | 采用者故事和前后对比指标（首个案例来自维护者本人，欢迎采用者投稿） | 项目方向和后续计划 |
 | **[Self-Monitoring](../docs/SELF-MONITORING.md)** | | |
 | 可选模式：gitleaks pre-commit + memory-curator agent | | |
 

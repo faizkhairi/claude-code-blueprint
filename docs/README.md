@@ -22,4 +22,4 @@ For getting started, see the [root README](../README.md) instead.
 ### Project
 
 - **[ROADMAP.md](ROADMAP.md)**: Project direction and what's next
-- **[CASE-STUDIES.md](CASE-STUDIES.md)**: Adopter stories and before/after metrics (empty by default, submissions welcome)
+- **[CASE-STUDIES.md](CASE-STUDIES.md)**: Adopter stories and before/after metrics (the first entry is the maintainer's own setup; adopter submissions welcome)

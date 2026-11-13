@@ -4,18 +4,57 @@ Real-world adopter stories: before/after metrics, workflow changes, lessons lear
 
 ---
 
-## No Case Studies Submitted Yet: Be the First
+## About This File
 
-This file ships empty intentionally. We don't fabricate case studies, and we don't list ourselves as the canonical example (we'd be marking our own homework).
+We don't fabricate case studies. The one entry so far is the maintainer's own setup, clearly labelled as such. It shows the blueprint in daily use, but it is not independent evidence: we'd be marking our own homework. Stories from other adopters are what this file is really for.
 
 If you've adopted the blueprint and have something to share, we'd love a PR. The bar is low: half a story honestly told beats a marketing-style post.
+
+---
+
+## Maintainer's own setup: one tech lead, daily use across work and open-source repos
+
+> Disclosure: this is the maintainer's own setup, not an independent adopter. Read it as a worked example of the blueprint in daily use, not as third-party evidence that it works. Numbers were measured on 2026-11-13.
+
+**Context**
+- Team size: one developer running the setup, working inside a team of several developers who review each other's pull requests
+- Project type: multi-repo web platform work at a day job (backend services, a frontend, integrations), plus personal open-source repos
+- Stack: TypeScript (NestJS, Nuxt, Next.js), Prisma with MySQL, Bash hooks, GitHub and a private Git server
+- Adoption date: the blueprint repo started in 2026-03; the private config it was extracted from is older and keeps evolving alongside it
+
+**Which blueprint components you adopted**
+- All of them, since the blueprint is extracted from this config. The private config is larger than the public one: 19 agents, 35 skills and 36 hook scripts, against the blueprint's 12 agents, 20 skills and 18 hooks.
+- The extra pieces are project-specific (internal deploy targets, ticket workflows, database access rules), which is why they stay private.
+
+**What you changed from the original**
+- Here the private config is the original and the blueprint is the reduced copy, so this lists how the private config differs.
+- Guard hooks are stricter than the blueprint's: production database writes, cloud mutations and pushes to protected branches are denied or need an explicit per-command approval.
+- A file-based memory (880 small markdown files plus an index) instead of the blueprint's starter memory layout.
+
+**Before / After**
+- No controlled before/after numbers. What can be measured is how much of the setup is under test: 50 test suites cover the hooks (some hooks have several), and 12 of them, the guard-hook suites, contain 1,828 assertions in total.
+- 295 session transcripts sit in the 90-day window that past decisions are searched from.
+- The felt difference (no count was taken): fewer "done" claims that turn out to be untested, because the rules and the Stop hook ask for evidence before a task is closed.
+
+**What worked well**
+- Plan first, then a cold review by a subagent that sees only the plan. It has caught gaps the author missed, for example a check that would have failed forever because two tables formatted one cell differently.
+- Treating every subagent report and review finding as a hypothesis to verify, not a conclusion.
+- Hooks for the rules that must never be skipped. A hook runs deterministically when its event fires; a sentence in CLAUDE.md is advice the model can deprioritize.
+
+**What didn't work, or what you'd do differently**
+- A hook that asks for confirmation hangs a background subagent forever, because nobody can answer the prompt. The fix was to turn "ask" into "deny" with a reason whenever the call comes from a subagent. Design guard hooks with subagents in mind from the start.
+- Audits that only searched the target repo missed references in the config's own skills and memory. Changing a shared name once left 12 stale references behind. The consumer audit now always includes the config itself.
+- Cleaning up test data is not an undo. Soft-deleting one test record on a shared dev environment once blocked every new record creation, because "latest row" logic still saw the deleted row. Re-run the create path after any cleanup.
+
+**Links (optional)**
+- The blueprint itself: [faizkhairi/claude-code-blueprint](https://github.com/faizkhairi/claude-code-blueprint)
 
 ---
 
 ## How to Submit
 
 1. **Fork** [the repo](https://github.com/faizkhairi/claude-code-blueprint) and create a branch.
-2. **Add a new H2 section** below this one using the template below.
+2. **Add a new H2 section** after the existing entries, using the template below.
 3. **Open a PR** with the title `case-study: [your project's one-line name]`.
 
 For less formal sharing, post in [Discussions > Show & Tell](https://github.com/faizkhairi/claude-code-blueprint/discussions/categories/show-and-tell) first. We can later promote a Discussion into a case-study PR with your permission.
