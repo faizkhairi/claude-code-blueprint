@@ -29,7 +29,7 @@ _Nothing currently in progress. Open a Discussion if you want to drive a specifi
 Items we intend to build. No timeline; contributions welcome.
 
 - **Discussion templates**: Q&A and Show & Tell category templates (shipped in `.github/DISCUSSION_TEMPLATE/`)
-- **Community case studies**: Anonymized before/after metrics and workflow improvements from real adopters. Submission template lives at [CASE-STUDIES.md](CASE-STUDIES.md); no case studies yet, be the first
+- **Community case studies**: Anonymized before/after metrics and workflow improvements from real adopters. Submission template lives at [CASE-STUDIES.md](CASE-STUDIES.md). The first entry is the maintainer's own setup, labelled as not independent; stories from other adopters are still wanted
 - **FUNDING.yml**: GitHub Sponsors button config (file shipped; actual Sponsors enrollment is a manual GitHub UI process)
 - **Additional Claude Code product-feature integration**: As new Claude Code features ship (new hooks, agent capabilities, settings), document and integrate them through the same understand-then-adapt lens
 

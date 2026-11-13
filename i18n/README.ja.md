@@ -259,7 +259,7 @@ CLAUDE.md が機能したら、残りを追加しましょう。最も簡単な�
 | **[FAQ](../FAQ.md)** | **[Getting Started](../GETTING-STARTED.md)** | **[Troubleshooting](../TROUBLESHOOTING.md)** |
 | コミュニティからのよくある質問 | ゼロから生産的に 30 分で | 一般的な問題と解決策 |
 | **[Setup Guide](../SETUP.md)** | **[Case Studies](../docs/CASE-STUDIES.md)** | **[Roadmap](../docs/ROADMAP.md)** |
-| 自動インストーラー + 検証チェックリスト | 採用者のストーリーと before/after メトリクス（投稿ベース、最初の一人になりましょう） | プロジェクトの方向性と今後の予定 |
+| 自動インストーラー + 検証チェックリスト | 採用者のストーリーと before/after メトリクス（最初の事例はメンテナー自身のもの。採用者の投稿を歓迎） | プロジェクトの方向性と今後の予定 |
 | **[Self-Monitoring](../docs/SELF-MONITORING.md)** | | |
 | オプションのパターン：gitleaks pre-commit + memory-curator agent | | |
 
