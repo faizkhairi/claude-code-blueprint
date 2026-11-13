@@ -167,8 +167,8 @@ CLAUDE.md가 작동하면 나머지도 추가하세요. 가장 쉬운 방법은 
 |--------|------|------|
 | SessionStart | session-start.sh | 작업공간 컨텍스트 주입 |
 | InstructionsLoaded | instructions-loaded.sh | 어떤 규칙이 왜 로드되었는지 기록 |
-| PreToolUse (Bash) | block-git-push.sh | 원격 저장소 보호 |
-| PreToolUse (Bash) | pre-commit-secret-scan.sh | 시크릿이 포함된 커밋 차단 |
+| PreToolUse (Bash, PowerShell) | block-git-push.sh | 원격 저장소 보호 |
+| PreToolUse (Bash, PowerShell) | pre-commit-secret-scan.sh | 시크릿이 포함된 커밋 차단 |
 | PreToolUse (Write/Edit) | protect-config.sh | linter/build 설정 가드 |
 | PreToolUse (Write/Edit) | protect-claude-settings.sh | 자신의 settings.json에 있는 안전 키 편집을 확인하고, 보호된 경로에 대한 효과 없는 allow 규칙을 표시 |
 | PreToolUse (Write/Edit/Bash) | agent-write-guard.sh | 읽기 전용 agent를 모든 권한 모드에서 읽기 전용으로 유지 |

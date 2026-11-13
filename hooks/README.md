@@ -9,8 +9,8 @@
 | SessionStart | New session begins | session-start.sh | Inject workspace context |
 | SessionStart (`compact`) | After any compaction | (inline `echo`) | Restore working habits: todo list, plan file, CLAUDE.md |
 | InstructionsLoaded | CLAUDE.md / rules load into context | instructions-loaded.sh | Log which rules fired and why (observability) |
-| PreToolUse (Bash) | Before any bash command | block-git-push.sh | Protect remote repos |
-| PreToolUse (Bash) | Before any bash command | pre-commit-secret-scan.sh | Block commits containing secrets (gitleaks) |
+| PreToolUse (Bash, PowerShell) | Before any Bash or PowerShell command | block-git-push.sh | Protect remote repos |
+| PreToolUse (Bash, PowerShell) | Before any Bash or PowerShell command | pre-commit-secret-scan.sh | Block commits containing secrets (gitleaks) |
 | PreToolUse (Write/Edit) | Before any file edit | protect-config.sh | Guard linter/build configs |
 | PreToolUse (Write/Edit) | Before any file edit | protect-claude-settings.sh | Confirm edits to safety keys in your own settings.json, and flag no-op allow rules for protected paths |
 | PreToolUse (Write/Edit/Bash) | Before a write or shell call | agent-write-guard.sh | Keep read-only agents read-only in every permission mode (keyed on `agent_type`) |
@@ -174,6 +174,21 @@ brew install gitleaks     # macOS
 
 This is the one hook that intentionally **blocks** (exit 2) on a detected secret, the same documented exception to "exit 0 always" that `block-git-push.sh` uses. A committed credential is the one mistake worth stopping.
 
+### Known limits of the git guards
+
+`block-git-push.sh` and `pre-commit-secret-scan.sh` read the command text. Threat model: these hooks stop accidental pushes to protected remotes and accidental secret commits; they are not a sandbox against deliberately obfuscated commands, so a parser cannot follow every shell expansion. These routes are not covered:
+
+- Text handed to another interpreter through a pipe or a launcher: `echo "git push" | bash`, `find . -exec git push {} \;`, `su -c 'git push'`, and the PowerShell `iex` and `Start-Process` forms.
+- PowerShell launched with `pwsh -EncodedCommand` (base64 text) or an abbreviated parameter (only `-Command`, `-c` and `-cmd` are read), and the glued `cmd /c"..."` form.
+- A directory change by `popd` or `Pop-Location` (`cd`, `pushd` and `Set-Location` are tracked).
+- A push URL that only comes from a config file pulled in by a command-supplied `-c include.path=<file>`, or from `GIT_CONFIG_*` variables: only `remote.`, `url.`, `branch.` and `push.` keys given with `-c` are applied when the target is resolved.
+- A hook that Claude Code stops at its timeout does not block: the command then runs.
+- For the secret scan only: a secret written to a new file earlier in the same command line (`echo "$KEY" > .env && git add .env && git commit`). The file does not exist yet when the hook runs, so there is nothing to scan.
+
+When the hook cannot tell what a push or commit would do (a variable or a substitution as the command or the subcommand, a shell alias given with `-c alias.x=!...`, a commit directory that comes from a variable, `~user` or `cd -`, text that does not parse, an error while judging it), it blocks rather than guesses. An error while a commit scan is being prepared, or a parser that exits abnormally on a command that mentions `push` or `commit`, blocks too: an error never allows the command.
+
+The hooks' own git calls never receive a command-supplied `-c` pair, with one exception: `block-git-push.sh` passes pairs whose key starts with `remote.`, `url.`, `branch.` or `push.` (any case) to the calls that resolve the push target, so `git -c core.fsmonitor=<program> commit` cannot make a hook run a program before you decide. Without Python, `pre-commit-secret-scan.sh` prints a warning on stderr and allows the commit (fail-open, like `block-git-push.sh`).
+
 ## Testing Hooks
 
 You can test any hook locally by piping JSON to stdin:
@@ -202,3 +217,5 @@ echo 'not json' | bash hooks/block-git-push.sh
 - **agent-write-guard.sh** reads `agent_type` from the hook input, which is present only inside a subagent or a `claude --agent <name>` session. The default read-only list is the agents shipped with `permissionMode: plan` except memory-curator; set `AGENT_WRITE_GUARD_AGENTS` (space-separated names, for example in the `env` block of `settings.json`) to replace it. It stops honest mistakes, not a determined bypass: an interpreter that writes a file itself (`python -c`, `node -e`), a download tool (`curl -o`, `wget`) or a script file run by name is not seen. `git fetch` is allowed on purpose: it updates remote-tracking refs, never the working tree.
 - **guard-exit-plan.sh** denies `ExitPlanMode` until the plan text contains `AUDIT CLEAN`, which the `self-audit` skill writes into the plan file, or the line `self-audit: not required (trivial)`. Install both together (full preset).
 - Both fail open: without Python they print a warning on stderr and allow the call, like every other hook here.
+- **block-git-push.sh**, **pre-commit-secret-scan.sh** and **post-commit-review.sh** share one command parser (the same text between the `BEGIN SHARED CMDPARSE` and `END SHARED CMDPARSE` lines in each; hooks stay standalone, and `test-hooks.sh` diffs the copies, so edit all three together). It judges the git command that would run: parts split on `; && || |` and newlines outside quotes, `env`, `sudo`, `VAR=val`, `bash -c`, `eval` and `$(...)` unwrapped, `git` and `git.exe` with `-C`, `-c` and other global options, `cd` tracked per part. A target it cannot resolve (a variable, a missing directory, an unknown remote) blocks with a message instead of guessing, and block-git-push.sh allows with a warning when git is not on PATH. The first two are wired under both a `Bash` and a `PowerShell` matcher in `examples/settings-template.json`. The secret scan has no skip for `--no-verify` or `--amend` (those skip git's hooks, not this one); `$GITLEAKS_BIN` names the gitleaks binary.
+- **protect-config.sh** and **protect-claude-settings.sh** normalise the file path before matching it (`\`, `//`, `/./`, `x/..`, trailing dots, case, 8.3 short names). They see the Write and Edit tools only: a shell command that writes the same file (`sed -i`, `echo >`) is out of scope for both. Guard shell writes with a Bash-side hook or the permission rules.
