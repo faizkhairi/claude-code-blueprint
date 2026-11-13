@@ -96,6 +96,7 @@ Use the full [`settings-template.json`](../examples/settings-template.json) as y
 2. Adjust the `allow` list for your stack (remove tools you don't use)
 3. Edit `block-git-push.sh` to match your protected remote URLs
 4. Review hook paths: ensure they match your OS (forward slashes on all platforms)
+5. `block-git-push.sh` and `pre-commit-secret-scan.sh` are wired twice in the template, once under the `Bash` matcher and once under a `PowerShell` matcher, so a push or commit run through the PowerShell tool is judged the same way. If you copy only the `Bash` block, the PowerShell tool is not guarded. Both hooks read `tool_input.command`, which both tools use.
 
 ### What you get (beyond Minimal)
 
@@ -200,7 +201,7 @@ Use the full [`settings-template.json`](../examples/settings-template.json) as y
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "Bash",
+        "matcher": "Bash|PowerShell",
         "hooks": [
           {
             "type": "command",

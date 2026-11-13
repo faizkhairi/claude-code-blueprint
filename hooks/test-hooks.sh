@@ -8,8 +8,13 @@
 # (agent-write-guard, guard-exit-plan) deny and allow, one named case per edge case.
 # Section 8 holds regression cases (Windows Store python3 stub, async subagent launch,
 # cost-tracker fields, log rotation, MCP sync with no Cursor, the two dash checkers, and
-# a subagent's ask turning into a deny). A case labelled "control" passes before and
-# after its fix. The dash-checker fixtures contain the pattern they test, on purpose.
+# a subagent's ask turning into a deny). Section 9 holds the git-guard and path-spelling
+# cases: block-git-push, pre-commit-secret-scan (against a fake gitleaks, plus a real-gitleaks
+# smoke case that is skipped when gitleaks is absent) and post-commit-review run against
+# throwaway git repos, the protect hooks against path spellings, a diff of the shared parser
+# and path-normaliser blocks, and a twice-run setup.sh merge into a temp HOME. A case labelled
+# "control" passes before and after its fix. The dash-checker fixtures contain the pattern
+# they test, on purpose.
 
 PASS=0
 FAIL=0
@@ -726,6 +731,650 @@ with open(sys.argv[1], 'w') as f:
   done
 
   rm -rf "$T8"
+fi
+echo ""
+
+# 9. PR B: the git guards judge the command that actually runs, and the protect hooks
+# judge the file that is actually written. Each case runs a hook against a throwaway git
+# repo or a path spelling. A case labelled "control" passes before and after its fix.
+echo "--- Regression: git guards judge the command that runs, path spellings ---"
+if [ -z "$PYTHON" ]; then
+  skip "git guard checks need Python"
+elif ! command -v git >/dev/null 2>&1; then
+  skip "git guard checks need git"
+else
+  T9=$(mktemp -d)
+  # Git Bash rewrites an argument that looks like a POSIX path before a Windows program sees it
+  # (it collapses // and /./), which would change the spelling a case is meant to test. The
+  # json.dumps calls below therefore run with MSYS2_ARG_CONV_EXCL set (a no-op elsewhere).
+  export GIT_AUTHOR_NAME=t GIT_AUTHOR_EMAIL=t@t GIT_COMMITTER_NAME=t GIT_COMMITTER_EMAIL=t@t
+  gq() { git -c commit.gpgsign=false "$@"; }
+  # mkrepo <name>: a repo with one commit; prints its path (a path a Windows Python can open).
+  mkrepo() {
+    local r="$T9/$1"
+    mkdir -p "$r"
+    gq -C "$r" init -q 2>/dev/null
+    echo base > "$r/base.txt"
+    gq -C "$r" add base.txt
+    gq -C "$r" commit -qm base 2>/dev/null
+    winpath "$r"
+  }
+  # verdict <hook> <cwd> <command> <tool> [VAR=value ...]: block (exit 2), allow (exit 0) or rc=N.
+  # The hook's stdout is in $T9/out and its stderr in $T9/err.
+  verdict() {
+    local hook=$1 cwd=$2 cmd=$3 tool=$4 json rc
+    shift 4
+    json=$(MSYS2_ARG_CONV_EXCL='*' "$PYTHON" -c 'import json,sys; print(json.dumps({"tool_name":sys.argv[3],"cwd":sys.argv[1],"tool_input":{"command":sys.argv[2]}}))' "$cwd" "$cmd" "$tool")
+    (cd "$cwd" 2>/dev/null || cd "$T9" || exit 1; printf '%s' "$json" | env "$@" bash "$HOOKS_DIR/$hook" >"$T9/out" 2>"$T9/err")
+    rc=$?
+    case $rc in 0) echo allow ;; 2) echo block ;; *) echo "rc=$rc" ;; esac
+  }
+  has_err() {  # has_err <name> <pattern>: the last hook's stderr matches
+    if grep -qi "$2" "$T9/err"; then pass "$1"; else fail "$1 (stderr: $(head -c 200 "$T9/err"))"; fi
+  }
+
+  # ---- B1: block-git-push.sh. origin is the blocked host unless a case says otherwise.
+  echo "  (B1: block-git-push judges the push that would run)"
+  BGP=block-git-push.sh
+  INTERNAL=https://git.internal.example.com/team/app.git
+  RP=$(mkrepo rp); gq -C "$RP" remote add origin "$INTERNAL"; gq -C "$RP" remote add internal "$INTERNAL"
+  gq -C "$RP" remote add gh https://github.com/someone/app.git
+  RQ=$(mkrepo rq); gq -C "$RQ" remote add origin https://github.com/someone/app.git
+  RN=$(mkrepo rn)
+  RD=$(mkrepo rd); gq -C "$RD" remote add origin "$INTERNAL"; gq -C "$RD" checkout -q --detach
+  OTHER=$(mkrepo other)
+  push() {  # push <name> <expected> <cwd> <command> [tool]
+    expect "block-git-push: $1" "$2" "$(verdict $BGP "$3" "$4" "${5:-Bash}")"
+  }
+  push "control: a push to the blocked origin is blocked" block "$RP" 'git push origin main'
+  push "a push to an allowed remote passes while origin is blocked" allow "$RP" 'git push gh main'
+  push "control: a default push in a repo whose origin is allowed passes" allow "$RQ" 'git push'
+  push "control: a default push follows origin to the blocked host" block "$RP" 'git push'
+  push "control: a detached HEAD with no upstream falls back to origin" block "$RD" 'git push'
+  push "git -C <repo> push is judged in that repo, not the hook's directory" block "$RQ" "git -C $RP push"
+  push "cd <repo> && git push is judged in that repo" block "$RQ" "cd $RP && git push"
+  push "a second space before push is still a push" block "$RP" 'git  push origin'
+  push "git -c k=v push is still a push" block "$RP" 'git -c push.default=current push origin'
+  push "git.exe push is still a push" block "$RP" 'git.exe push origin'
+  push "control: FOO=1 git push is still a push" block "$RP" 'FOO=1 git push origin'
+  push "control: env git push is still a push" block "$RP" 'env git push origin'
+  push "control: sudo git push is still a push" block "$RP" 'sudo git push origin'
+  push "control: bash -c with a push to a blocked remote name is blocked" block "$RP" 'bash -c "git push internal main"'
+  push "control: a push after && is judged" block "$RP" 'git status && git push origin'
+  push "control: git push -o ci.skip origin targets origin" block "$RP" 'git push -o ci.skip origin'
+  push "git push -o ci.skip gh targets gh, not the option value" allow "$RP" 'git push -o ci.skip gh'
+  push "control: --repo names the target (blocked host)" block "$RP" 'git push --repo internal'
+  push "--repo names the target, not origin (allowed host)" allow "$RP" 'git push --repo gh'
+  push "a literal blocked URL is blocked" block "$RQ" "git push $INTERNAL main"
+  push "a literal allowed URL passes" allow "$RP" 'git push https://github.com/someone/app.git main'
+  push "echo \"git push\" is not a push" allow "$RP" 'echo "git push origin"'
+  push "a commit message that quotes ; git push is not a push" allow "$RP" 'git commit -m "fix; git push origin"'
+  push "control: git status is not a push" allow "$RP" 'git status'
+  push "a PowerShell push is judged the same way" block "$RQ" "Set-Location $RP; git push" PowerShell
+  RPW=${RP//\//\\}
+  if [ "$RPW" != "$RP" ]; then
+    push "a quoted Windows backslash path after -C is resolved" block "$RQ" "git -C \"$RPW\" push"
+    push "an unquoted Windows backslash path after -C is resolved (PowerShell)" block "$RQ" "git -C $RPW push" PowerShell
+  else
+    skip "Windows backslash path cases need a Windows path"
+  fi
+  push "a repo with no remote configured is blocked" block "$RN" 'git push'
+  has_err "block-git-push: the no-remote block says which remote is missing" 'no remote named'
+  push "cd to a missing directory is blocked" block "$RQ" 'cd /no-such-dir-ccb-test && git push'
+  has_err "block-git-push: the missing-directory block says so" 'does not exist'
+  # shellcheck disable=SC2016
+  push "a target built from a variable is blocked" block "$RQ" 'git push "$REMOTE" main'
+  push "xargs git push cannot be resolved and is blocked" block "$RQ" 'ls | xargs git push'
+  # ---- Review round 1: assignments, -c pairs, GIT_DIR, env -S, backslashes, ANSI-C quotes, braces.
+  RX=$(mkrepo rx); gq -C "$RX" remote add origin https://github.com/someone/app.git
+  gq -C "$RX" remote add internal "$INTERNAL"; gq -C "$RX" remote add gh https://github.com/someone/app.git
+  # shellcheck disable=SC2016
+  {
+    push "PowerShell: \$out = git push origin main 2>&1 is a push" block "$RP" '$out = git push origin main 2>&1' PowerShell
+    push "PowerShell: \$out=git push origin main 2>&1 is a push" block "$RP" '$out=git push origin main 2>&1' PowerShell
+    push "control: PowerShell \$out = git push gh main 2>&1 passes" allow "$RP" '$out = git push gh main 2>&1' PowerShell
+    push "PowerShell: \$out=git push gh main 2>&1 resolves gh, not a guessed target" allow "$RP" '$out=git push gh main 2>&1' PowerShell
+    push "PowerShell: \$r += git push origin is a push" block "$RP" '$r += git push origin' PowerShell
+  }
+  push "git -c remote.origin.pushurl=<blocked> push origin is blocked" block "$RQ" \
+    'git -c remote.origin.pushurl=https://internal.example.com/z.git push origin'
+  push "git -c url.<blocked>.insteadOf=<allowed> push origin is blocked" block "$RQ" \
+    'git -c url.https://internal.example.com/.insteadOf=https://github.com/ push origin'
+  push "git -c url.<blocked>.insteadOf=<allowed> push <allowed URL> is blocked" block "$RQ" \
+    'git -c url.https://internal.example.com/.insteadOf=https://github.com/ push https://github.com/someone/app.git main'
+  push "control: a literal allowed URL with an unrelated -c passes" allow "$RQ" \
+    'git -c push.default=current push https://github.com/someone/app.git main'
+  push "git -c remote.pushDefault=internal push follows the pair" block "$RX" 'git -c remote.pushDefault=internal push'
+  push "control: git push in a repo whose origin is allowed passes" allow "$RX" 'git push'
+  push "control: git -c push.default=current push origin passes (allowed origin)" allow "$RQ" 'git -c push.default=current push origin'
+  push "GIT_DIR=<blocked repo> git push is judged in that repo" block "$RQ" "GIT_DIR=$RP/.git git push origin"
+  push "env GIT_DIR=<blocked repo> git push is judged in that repo" block "$RQ" "env GIT_DIR=$RP/.git git push origin"
+  push "GIT_DIR and GIT_WORK_TREE together are applied" block "$RQ" "GIT_DIR=$RP/.git GIT_WORK_TREE=$RP git push origin"
+  push "GIT_DIR=<allowed repo> git push is judged in that repo, not the cwd" allow "$RP" "GIT_DIR=$RQ/.git git push origin"
+  push "env -S 'git push origin' is a push" block "$RP" "env -S 'git push origin'"
+  push "env --split-string='git push origin' is a push" block "$RP" "env --split-string='git push origin'"
+  push "env -S'git push origin' (glued value) is a push" block "$RP" "env -S'git push origin'"
+  push "env -i -S 'FOO=1 git push origin' is a push" block "$RP" "env -i -S 'FOO=1 git push origin'"
+  push "control: env -S 'git push gh' passes" allow "$RP" "env -S 'git push gh'"
+  # shellcheck disable=SC2016
+  {
+    push "git pu\sh origin is a push (unquoted backslash dropped)" block "$RP" 'git pu\sh origin'
+    push "g\it push origin is a push" block "$RP" 'g\it push origin'
+    push "git push g\h names the remote gh" allow "$RP" 'git push g\h'
+    push "control: echo pu\sh is not a push" allow "$RP" 'echo pu\sh origin'
+    push "ANSI-C quotes holding an escaped quote do not hide a push" block "$RP" "echo \$'\'' ; git push origin ; echo \$'\''"
+    push "an allowed push after an ANSI-C escaped quote is judged, not guessed" allow "$RP" "echo \$'\\'' ; git push gh ; echo \$'\\''"
+    push "text inside ANSI-C quotes is not a command" allow "$RP" "git commit -m \$'it\'s; git push origin'"
+    push "ANSI-C hex escapes build the word push" block "$RP" "git \$'\x70ush' origin"
+    push "{ git push gh; } resolves gh" allow "$RX" '{ git push gh; }'
+    push "{ git push internal; } resolves internal" block "$RX" '{ git push internal; }'
+    push "{ git push } resolves the default remote, not }" allow "$RX" '{ git push }'
+    push "{ git push internal } resolves internal" block "$RX" '{ git push internal }'
+    push "PowerShell: if (\$ok) { git push gh } resolves gh" allow "$RX" 'if ($ok) { git push gh }' PowerShell
+    push "PowerShell: if (\$ok) { git push internal } resolves internal" block "$RX" 'if ($ok) { git push internal }' PowerShell
+    push "PowerShell: if (\$ok) { git push } resolves the default remote, not }" allow "$RX" 'if ($ok) { git push }' PowerShell
+    push "PowerShell: { git push gh} (} glued to the last word) resolves gh" allow "$RX" 'if ($ok) { git push gh}' PowerShell
+    push "PowerShell: both branches are judged" block "$RX" 'if ($ok) { git push gh } else { git push internal }' PowerShell
+    push "PowerShell: a script block after a cmdlet is judged" block "$RX" 'Invoke-Command -ScriptBlock { git push internal }' PowerShell
+    push "PowerShell: try { git push internal } is judged" block "$RX" 'try { git push internal } catch { }' PowerShell
+  }
+  # Fail closed (round 2): an error after a push was detected must block, never allow. The fault
+  # seam CCB_GUARD_FAULT raises inside the judging loop; a python that dies is shadowed on PATH.
+  mkdir -p "$T9/badpy"
+  printf '#!/bin/bash\ncat >/dev/null\nexit 1\n' > "$T9/badpy/python3"
+  chmod +x "$T9/badpy/python3"
+  expect "block-git-push: an unexpected error while judging a detected push blocks (CCB_GUARD_FAULT seam)" block \
+    "$(verdict $BGP "$RQ" 'git push' Bash CCB_GUARD_FAULT=1)"
+  has_err "block-git-push: the fail-closed message says the guard could not judge the push" 'could not judge'
+  expect "block-git-push: control, a command that does not push is allowed even with the fault seam set" allow \
+    "$(verdict $BGP "$RQ" 'ls -la' Bash CCB_GUARD_FAULT=1)"
+  expect "block-git-push: a parser that dies on a command that mentions push blocks (exit status checked)" block \
+    "$(verdict $BGP "$RQ" 'git push' Bash "PATH=$T9/badpy:$PATH")"
+  expect "block-git-push: a parser that dies on a command with no push is allowed" allow \
+    "$(verdict $BGP "$RQ" 'ls -la' Bash "PATH=$T9/badpy:$PATH")"
+
+  # git not on PATH: a PATH with only python and cat wrappers. The hook cannot resolve a remote
+  # name, so it warns and allows (a literal URL still works without git).
+  mkdir -p "$T9/nogit"
+  printf '#!/bin/bash\nexec "%s" "$@"\n' "$PYTHON" > "$T9/nogit/python"
+  printf '#!/bin/bash\nexec "%s" "$@"\n' "$(command -v cat)" > "$T9/nogit/cat"
+  chmod +x "$T9/nogit/python" "$T9/nogit/cat"
+  BASH_BIN=$(command -v bash)
+  json=$(printf '%s' '{"tool_name":"Bash","cwd":"'"$RP"'","tool_input":{"command":"git push origin main"}}')
+  printf '%s' "$json" | env "PATH=$T9/nogit" "$BASH_BIN" "$HOOKS_DIR/$BGP" >"$T9/out" 2>"$T9/err"
+  expect "block-git-push: control, git not on PATH allows" 0 "$?"
+  has_err "block-git-push: git not on PATH warns" 'git not found'
+
+  # ---- B2: pre-commit-secret-scan.sh with a fake gitleaks that flags the text FAKESECRET.
+  echo "  (B2: pre-commit-secret-scan scans what the commit would record)"
+  PCS_HOOK=pre-commit-secret-scan.sh
+  FAKE_GL=$T9/fake-gitleaks
+  cat > "$FAKE_GL" <<'FAKEEOF'
+#!/bin/bash
+# Fake gitleaks: exit 1 when the staged diff holds FAKESECRET. If FAKE_GL_COUNTER names a file,
+# the first call reports clean (as gitleaks 8.30.1 has done intermittently) and later calls scan.
+if [ -n "$FAKE_GL_COUNTER" ]; then
+  n=$(cat "$FAKE_GL_COUNTER" 2>/dev/null || echo 0)
+  echo $((n + 1)) > "$FAKE_GL_COUNTER"
+  [ "$n" = 0 ] && exit 0
+fi
+if git diff --cached | grep -q FAKESECRET; then echo "fake leak found"; exit 1; fi
+exit 0
+FAKEEOF
+  chmod +x "$FAKE_GL"
+  SCAN_BEFORE=$("$PYTHON" -c "import glob,os,tempfile; print(len(glob.glob(os.path.join(tempfile.gettempdir(),'ccb-scan-*'))))")
+  scan() {  # scan <name> <expected> <cwd> <command> [VAR=value ...]
+    local name=$1 want=$2 cwd=$3 cmd=$4
+    shift 4
+    expect "pre-commit-secret-scan: $name" "$want" "$(verdict $PCS_HOOK "$cwd" "$cmd" Bash "GITLEAKS_BIN=$FAKE_GL" "$@")"
+  }
+  S1=$(mkrepo s1); echo "x FAKESECRET" > "$S1/s.txt"; gq -C "$S1" add s.txt
+  S2=$(mkrepo s2); echo "x FAKESECRET" > "$S2/base.txt"
+  S3=$(mkrepo s3); echo "x FAKESECRET" > "$S3/new.txt"
+  S4=$(mkrepo s4); echo hello > "$S4/h.txt"; gq -C "$S4" add h.txt
+  S5=$(mkrepo s5); echo "x FAKESECRET" > "$S5/s.txt"; gq -C "$S5" add s.txt
+  scan "a staged secret blocks a plain commit (through the GITLEAKS_BIN seam)" block "$S1" 'git commit -m x'
+  scan "control: a clean staged file passes" allow "$S4" 'git commit -m x'
+  scan "control: a plain commit with an unstaged secret records nothing, so it passes" allow "$S2" 'git commit -m x'
+  scan "control: a plain commit with an untracked secret records nothing, so it passes" allow "$S3" 'git commit -m x'
+  scan "control: a message that mentions cd <other repo> scans the real directory" allow "$S4" "git commit -m 'run cd $S1 first'"
+  scan "git -C <repo> commit scans that repo" block "$OTHER" "git -C $S1 commit -m x"
+  scan "git -c k=v commit is still a commit" block "$S1" 'git -c user.name=z commit -m x'
+  scan "a second space before commit is still a commit" block "$S1" 'git  commit -m x'
+  scan "cd <repo> && git commit scans that repo" block "$OTHER" "cd $S1 && git commit -m x"
+  scan "--no-verify does not skip this scan" block "$S1" 'git commit --no-verify -m x'
+  scan "--amend --no-edit does not skip this scan" block "$S1" 'git commit --amend --no-edit'
+  scan "-am scans the tracked working-tree change" block "$S2" 'git commit -am x'
+  scan "-a -m scans the tracked working-tree change" block "$S2" 'git commit -a -m x'
+  scan "a pathspec commit scans that file's working-tree change" block "$S2" 'git commit -m x base.txt'
+  scan "git add -A && git commit scans the file the add would stage" block "$S3" 'git add -A && git commit -m x'
+  scan "git add <file>; git commit scans that file" block "$S3" 'git add new.txt; git commit -m x'
+  expect "pre-commit-secret-scan: control, the real index is untouched by an overlay scan" "?? new.txt" "$(gq -C "$S3" status --short)"
+  scan "control: echo \"git commit\" is not a commit" allow "$S1" 'echo "git commit -m x"'
+  expect "pre-commit-secret-scan: a PowerShell commit is scanned too" block \
+    "$(verdict $PCS_HOOK "$S1" 'git commit -m x' PowerShell "GITLEAKS_BIN=$FAKE_GL")"
+  rm -f "$T9/cnt"
+  scan "a clean first gitleaks result is re-run and the second call blocks" block "$S5" 'git commit -m x' "FAKE_GL_COUNTER=$T9/cnt"
+  expect "pre-commit-secret-scan: the re-run made 2 gitleaks calls" 2 "$(cat "$T9/cnt" 2>/dev/null)"
+  has_err "pre-commit-secret-scan: the block message offers the allowlist step" 'gitleaks.toml'
+  expect "pre-commit-secret-scan: control, gitleaks missing allows with a note" allow \
+    "$(verdict $PCS_HOOK "$S1" 'git commit -m x' Bash GITLEAKS_BIN=/no/such/gitleaks)"
+  # Fail closed (round 2): a commit was detected but its scan could not be prepared. CCB_SCAN_TMPDIR
+  # points the throwaway scan directory somewhere that cannot be created; a python that dies is
+  # shadowed on PATH. Both must block, and neither may leave a scan directory behind.
+  S6=$(mkrepo s6); echo "clean change" > "$S6/base.txt"
+  scan "a scan directory that cannot be created blocks a commit that needs one (-a)" block "$S6" 'git commit -am x' "CCB_SCAN_TMPDIR=$T9/no/such/dir"
+  has_err "pre-commit-secret-scan: the fail-closed message says the scan could not be prepared" 'could not be prepared'
+  scan "control: a plain commit of a clean index needs no scan directory, so the bad one is not used" allow "$S4" 'git commit -m x' "CCB_SCAN_TMPDIR=$T9/no/such/dir"
+  scan "control: the same -a commit passes when the scan directory is fine" allow "$S6" 'git commit -am x'
+  scan "a bad scan directory also blocks a pathspec commit" block "$S6" 'git commit -m x base.txt' "CCB_SCAN_TMPDIR=$T9/no/such/dir"
+  scan "a bad scan directory blocks a commit after git add" block "$S6" 'git add base.txt && git commit -m x' "CCB_SCAN_TMPDIR=$T9/no/such/dir"
+  mkdir -p "$T9/badpy"
+  printf '#!/bin/bash\ncat >/dev/null\nexit 1\n' > "$T9/badpy/python3"
+  chmod +x "$T9/badpy/python3"
+  scan "a parser that dies on a command that mentions commit blocks (exit status checked)" block "$S4" 'git commit -m x' "PATH=$T9/badpy:$PATH"
+  scan "a parser that dies on a command with no commit is allowed" allow "$S4" 'ls -la' "PATH=$T9/badpy:$PATH"
+  # git commit options that take a separate value are options, not pathspecs. base.txt in S2 holds the
+  # secret as an unstaged change; each command names it as the pathspec after the option and its value.
+  scan "--trailer \"k: v\" -m x <file>: the value is not a pathspec, the file's change is scanned" block "$S2" 'git commit --trailer "k: v" -m x base.txt'
+  scan "--trailer=k:v -m x <file> is scanned" block "$S2" 'git commit --trailer=k:v -m x base.txt'
+  scan "--author \"A <a@b.c>\" -m x <file> is scanned" block "$S2" 'git commit --author "A <a@b.c>" -m x base.txt'
+  scan "--date <d> -m x <file> is scanned" block "$S2" 'git commit --date "2020-01-01" -m x base.txt'
+  scan "--cleanup strip -m x <file> is scanned" block "$S2" 'git commit --cleanup strip -m x base.txt'
+  scan "-C HEAD <file> is scanned" block "$S2" 'git commit -C HEAD base.txt'
+  scan "-c HEAD <file> is scanned" block "$S2" 'git commit -c HEAD base.txt'
+  scan "-F msg.txt <file> is scanned" block "$S2" 'git commit -F msg.txt base.txt'
+  scan "--fixup HEAD <file> is scanned" block "$S2" 'git commit --fixup HEAD base.txt'
+  scan "--squash HEAD <file> is scanned" block "$S2" 'git commit --squash HEAD base.txt'
+  scan "--template t.txt -m x <file> is scanned" block "$S2" 'git commit --template t.txt -m x base.txt'
+  scan "--pathspec-from-file list.txt -m x <file> is scanned" block "$S2" 'git commit --pathspec-from-file list.txt -m x base.txt'
+  scan "git stage <file> && git commit stages like git add" block "$S3" 'git stage new.txt && git commit -m x'
+  scan "git stage -A; git commit stages like git add -A" block "$S3" 'git stage -A; git commit -m x'
+  SCAN_AFTER=$("$PYTHON" -c "import glob,os,tempfile; print(len(glob.glob(os.path.join(tempfile.gettempdir(),'ccb-scan-*'))))")
+  expect "pre-commit-secret-scan: control, no throwaway scan directory is left behind" "$SCAN_BEFORE" "$SCAN_AFTER"
+  # Real gitleaks smoke: skipped when it is not installed. The token is random, never stored.
+  REAL_GL=$(command -v gitleaks 2>/dev/null)
+  if [ -n "$REAL_GL" ]; then
+    TOK="ghp_$("$PYTHON" -c "import secrets,string; print(''.join(secrets.choice(string.ascii_letters+string.digits) for _ in range(36)))")"
+    SR=$(mkrepo sr); echo "token=$TOK" > "$SR/s.txt"; gq -C "$SR" add s.txt
+    SC=$(mkrepo sc); echo "token=$TOK" > "$SC/new.txt"
+    expect "pre-commit-secret-scan: control, real gitleaks blocks a staged token" block \
+      "$(verdict $PCS_HOOK "$SR" 'git commit -m x' Bash "GITLEAKS_BIN=$REAL_GL")"
+    expect "pre-commit-secret-scan: real gitleaks blocks a token an earlier git add would stage" block \
+      "$(verdict $PCS_HOOK "$SC" 'git add -A && git commit -m x' Bash "GITLEAKS_BIN=$REAL_GL")"
+  else
+    skip "real gitleaks smoke: gitleaks is not installed"
+  fi
+
+  # ---- B4: post-commit-review.sh reviews the commit that was just made.
+  echo "  (B4: post-commit-review reviews the right repo and the right commit)"
+  PCR=post-commit-review.sh
+  review() {  # review <cwd> <command> [VAR=value ...]: the systemMessage text, or "silent"
+    local cwd=$1 cmd=$2 json
+    shift 2
+    json=$(MSYS2_ARG_CONV_EXCL='*' "$PYTHON" -c 'import json,sys; print(json.dumps({"tool_name":"Bash","cwd":sys.argv[1],"tool_input":{"command":sys.argv[2]}}))' "$cwd" "$cmd")
+    local out
+    out=$(cd "$cwd" 2>/dev/null && printf '%s' "$json" | env "$@" bash "$HOOKS_DIR/$PCR" 2>/dev/null | tr -d '\r')
+    if [ -z "$out" ]; then echo silent; else json_field "$out" systemMessage | tr '\n' ' '; fi
+  }
+  contains() {  # contains <name> <text> <needle>
+    case "$2" in *"$3"*) pass "$1" ;; *) fail "$1 (got: ${2:-<empty>})" ;; esac
+  }
+  RA=$(mkrepo ra); mkdir -p "$RA/prisma"; echo m > "$RA/prisma/schema.prisma"
+  gq -C "$RA" add -A; gq -C "$RA" commit -qm "feat: schema" 2>/dev/null
+  RB=$(mkrepo rb); echo m > "$RB/schemaXprisma.txt"
+  gq -C "$RB" add -A; gq -C "$RB" commit -qm "feat: lookalike" 2>/dev/null
+  contains "post-commit-review: control, a fresh plain commit is reported" "$(review "$RA" 'git commit -m x')" 'Commit created: '
+  contains "post-commit-review: schema.prisma is flagged HIGH-RISK" "$(review "$RA" 'git commit -m x')" 'HIGH-RISK'
+  out=$(review "$RB" 'git commit -m x')
+  case "$out" in *HIGH-RISK*) fail "post-commit-review: control, a file named schemaXprisma.txt is not schema.prisma (got: $out)" ;; *'Commit created'*) pass "post-commit-review: control, a file named schemaXprisma.txt is not schema.prisma" ;; *) fail "post-commit-review: control, a file named schemaXprisma.txt is reported (got: $out)" ;; esac
+  contains "post-commit-review: git -C <repo> commit reviews that repo" "$(review "$OTHER" "git -C $RA commit -m x")" 'feat: schema'
+  contains "post-commit-review: cd <repo> && git commit reviews that repo" "$(review "$OTHER" "cd $RA && git commit -m x")" 'feat: schema'
+  contains "post-commit-review: git -c k=v commit is a commit" "$(review "$RA" 'git -c user.name=z commit -m x')" 'Commit created: '
+  expect "post-commit-review: control, an amend is skipped" silent "$(review "$RA" 'git commit --amend --no-edit')"
+  expect "post-commit-review: control, echo \"git commit\" is not a commit" silent "$(review "$RA" 'echo "git commit"')"
+  RS=$(mkrepo rs); echo s > "$RS/old.txt"; gq -C "$RS" add -A
+  GIT_COMMITTER_DATE="2020-01-01T00:00:00 +0000" gq -C "$RS" commit -qm "old commit" 2>/dev/null
+  expect "post-commit-review: a stale HEAD (a command that only mentions commit) is not reported" silent "$(review "$RS" 'git commit -m x')"
+  RM=$(mkrepo rm); gq -C "$RM" checkout -q -b feat 2>/dev/null
+  echo 1 > "$RM/f1.txt"; echo 2 > "$RM/f2.txt"; gq -C "$RM" add -A; gq -C "$RM" commit -qm "feature" 2>/dev/null
+  gq -C "$RM" checkout -q - 2>/dev/null; echo 3 > "$RM/m1.txt"; gq -C "$RM" add -A; gq -C "$RM" commit -qm "mainline" 2>/dev/null
+  gq -C "$RM" merge --no-ff --no-commit -q feat >/dev/null 2>&1; gq -C "$RM" commit -qm "merge feat" 2>/dev/null
+  contains "post-commit-review: a merge commit lists the files it brought in" "$(review "$RM" 'git commit -m x')" '(2 files changed)'
+
+  # ---- B6: review round 3. Command-supplied -c pairs, PowerShell escapes, dynamic subcommands, aliases,
+  # PowerShell line endings, the fail-closed text check, an unknown commit directory, no Python.
+  echo "  (B6: round 3 hardening)"
+  PARSE_BEFORE=$("$PYTHON" -c "import glob,os,tempfile; print(len(glob.glob(os.path.join(tempfile.gettempdir(),'ccb-parse-*'))))")
+  FSM=$T9/fsmon.sh; MARK=$T9/fsmon-marker; T2=$T9/trace2.log
+  printf '#!/bin/bash\n: > "%s"\nexit 0\n' "$(winpath "$MARK")" > "$FSM"; chmod +x "$FSM"
+  FSMC="core.fsmonitor=$(winpath "$FSM")"
+  nomark() {  # nomark <name>: the harmless fsmonitor program was not run (it would have created $MARK)
+    if [ -e "$MARK" ]; then fail "$1 (the program ran)"; else pass "$1"; fi
+    rm -f "$MARK"
+  }
+  # argv <hook> <cwd> <command>: run a hook with git's trace2 event log on; $T2 then holds every git argv it ran.
+  argv() {
+    rm -f "$T2"
+    verdict "$1" "$2" "$3" Bash "GIT_TRACE2_EVENT=$(winpath "$T2")" "GITLEAKS_BIN=$FAKE_GL" >/dev/null
+  }
+  rm -f "$MARK"
+  scan "git -c core.fsmonitor=<program> commit -a: the hook's own git calls do not run the program" allow "$S6" "git -c $FSMC commit -a -m x"
+  nomark "pre-commit-secret-scan: the fsmonitor program was not run by the hook"
+  push "git -c core.fsmonitor=<program> push origin is judged as a push" block "$RP" "git -c $FSMC push origin"
+  nomark "block-git-push: the fsmonitor program was not run by the hook"
+  contains "post-commit-review: git -c core.fsmonitor=<program> commit is still a commit" "$(review "$RA" "git -c $FSMC commit -m x")" 'Commit created: '
+  nomark "post-commit-review: the fsmonitor program was not run by the hook"
+  argv $BGP "$RQ" "git -c $FSMC -c Push.Default=current -c remote.origin.pushurl=https://example.org/z.git -c url.https://example.org/.insteadOf=u: push origin"
+  if [ -s "$T2" ] && ! grep -q 'core.fsmonitor' "$T2" && grep -q 'Push.Default=current' "$T2" && grep -q 'remote.origin.pushurl=' "$T2" && grep -q 'insteadOf=u:' "$T2"; then
+    pass "block-git-push: only remote., url., branch. and push. pairs (any case) reach its git calls"
+  else
+    fail "block-git-push: only remote., url., branch. and push. pairs (any case) reach its git calls"
+  fi
+  argv $PCS_HOOK "$S6" "git -c $FSMC -c user.name=zz commit -am x"
+  if [ -s "$T2" ] && ! grep -q 'core.fsmonitor\|user.name=zz' "$T2"; then
+    pass "pre-commit-secret-scan: no command-supplied -c pair reaches its git calls"
+  else
+    fail "pre-commit-secret-scan: no command-supplied -c pair reaches its git calls"
+  fi
+  rm -f "$T2"
+  review "$RA" "git -c $FSMC -c user.name=zz commit -m x" "GIT_TRACE2_EVENT=$(winpath "$T2")" >/dev/null
+  if [ -s "$T2" ] && ! grep -q 'core.fsmonitor\|user.name=zz' "$T2"; then
+    pass "post-commit-review: no command-supplied -c pair reaches its git calls"
+  else
+    fail "post-commit-review: no command-supplied -c pair reaches its git calls"
+  fi
+  # PowerShell: a backtick escapes the next character (it is not command substitution), also inside "...",
+  # and a backslash is not an escape inside "...".
+  # shellcheck disable=SC2016
+  {
+    push 'PowerShell: git pu`sh origin is a push' block "$RP" 'git pu`sh origin' PowerShell
+    push 'PowerShell: "pu`sh" inside double quotes is a push' block "$RP" 'git "pu`sh" origin' PowerShell
+    push 'PowerShell: a backtick before a letter in the remote name (git push `gh) names gh' allow "$RP" 'git push `gh' PowerShell
+    push 'PowerShell: a backslash before the closing quote does not swallow it' allow "$RP" 'Write-Host "C:\tmp\"; git push gh' PowerShell
+    expect 'pre-commit-secret-scan: PowerShell git comm`it -am x is a commit' block \
+      "$(verdict $PCS_HOOK "$S2" 'git comm`it -am x' PowerShell "GITLEAKS_BIN=$FAKE_GL")"
+  }
+  # Dynamic subcommand: a variable, a substitution or a brace expansion as the subcommand is a guess, kept for any subcommand.
+  # shellcheck disable=SC2016
+  {
+    push 'a variable as the subcommand (S=push; git $S origin main) is blocked' block "$RQ" 'S=push; git $S origin main'
+    push 'git pu$()sh origin main is blocked' block "$RQ" 'git pu$()sh origin main'
+    push 'git {push,pull} origin main is blocked' block "$RQ" 'git {push,pull} origin main'
+    push 'control: git status $(date) is not a push' allow "$RP" 'git status $(date)'
+    scan 'a variable as the subcommand (S=commit; git $S -m x) is scanned as a commit' block "$S1" 'S=commit; git $S -m x'
+    contains 'post-commit-review: a variable as the subcommand is reviewed as a commit' "$(review "$RA" 'S=commit; git $S -m x')" 'Commit created: '
+  }
+  # Aliases defined on the command line.
+  push "git -c 'alias.x=!git push origin main' x is blocked" block "$RQ" "git -c 'alias.x=!git push origin main' x"
+  push "control: git -c alias.p=push p gh resolves the alias and judges gh" allow "$RP" 'git -c alias.p=push p gh'
+  push "an unknown subcommand while an alias is defined is blocked" block "$RQ" 'git -c alias.a=push foo origin main'
+  scan "git -c 'alias.c=!git commit -am x' c scans the commit it runs" block "$S2" "git -c 'alias.c=!git commit -am x' c"
+  contains "post-commit-review: git -c 'alias.c=!git commit -am x' c is reviewed as a commit" "$(review "$RA" "git -c 'alias.c=!git commit -am x' c")" 'Commit created: '
+  # PowerShell: a trailing backslash is part of a path, not a line continuation.
+  NL=$'\n'; CRNL=$'\r\n'
+  push "PowerShell: cd <dir>\\ then a newline then git push is two commands" block "$RQ" "cd ${RP}\\${NL}git push internal main" PowerShell
+  push "PowerShell: the same with a CRLF line ending" block "$RQ" "cd ${RP}\\${CRNL}git push internal main" PowerShell
+  push "control: in Bash a backslash and a newline is a continuation" allow "$RQ" "cd ${RP}\\${NL}git push internal main"
+  # Fail closed: the fallback checks the text without quotes, backslashes and backticks.
+  expect "block-git-push: a parser fault plus git pu\"\"sh internal still blocks" block \
+    "$(verdict $BGP "$RP" 'git pu""sh internal' Bash "PATH=$T9/badpy:$PATH")"
+  expect "block-git-push: a parser fault plus git pu\\sh internal still blocks" block \
+    "$(verdict $BGP "$RP" 'git pu\sh internal' Bash "PATH=$T9/badpy:$PATH")"
+  scan 'a parser fault plus git comm""it -m x still blocks' block "$S4" 'git comm""it -m x' "PATH=$T9/badpy:$PATH"
+  scan "control: a parser fault on a command with no commit is allowed" allow "$S4" 'git status' "PATH=$T9/badpy:$PATH"
+  # Secret scan: a commit whose directory cannot be resolved is blocked, not scanned in the payload directory.
+  # shellcheck disable=SC2016
+  scan 'cd "$OTHER" && git commit -m x is blocked (unknown directory)' block "$S4" 'cd "$OTHER" && git commit -m x'
+  has_err "pre-commit-secret-scan: the unknown-directory block says so" 'directory'
+  # shellcheck disable=SC2016
+  scan 'git -C "$OTHER" commit -m x is blocked (unknown directory)' block "$S4" 'git -C "$OTHER" commit -m x'
+  scan "cd ~no-such-user-ccb && git commit -m x is blocked (unknown directory)" block "$S4" 'cd ~no-such-user-ccb && git commit -m x'
+  scan "cd - && git commit -m x is blocked (unknown directory)" block "$S4" 'cd - && git commit -m x'
+  scan "control: cd <known repo> && git commit scans that repo and passes" allow "$S4" "cd $S4 && git commit -m x"
+  # No Python: the secret scan warns on stderr and allows, like block-git-push.
+  mkdir -p "$T9/nopy"
+  printf '#!/bin/bash\nexec "%s" "$@"\n' "$(command -v cat)" > "$T9/nopy/cat"
+  chmod +x "$T9/nopy/cat"
+  printf '%s' '{"tool_name":"Bash","cwd":"/","tool_input":{"command":"git commit -m x"}}' | env "PATH=$T9/nopy" "$BASH_BIN" "$HOOKS_DIR/$PCS_HOOK" >"$T9/out" 2>"$T9/err"
+  expect "pre-commit-secret-scan: control, no Python allows" 0 "$?"
+  has_err "pre-commit-secret-scan: no Python warns on stderr" 'python not found'
+  # The parser runs from a temp file (python -I FILE); with no usable temp directory it falls back to python -c.
+  expect "block-git-push: control, with no usable temp directory the parser falls back to python -c and still blocks" block     "$(verdict $BGP "$RP" 'git push origin' Bash "TMPDIR=$T9/no/such/dir")"
+  scan "control: with no usable temp directory the secret scan falls back to python -c and still blocks" block "$S1" 'git commit -m x' "TMPDIR=$T9/no/such/dir"
+  PARSE_AFTER=$("$PYTHON" -c "import glob,os,tempfile; print(len(glob.glob(os.path.join(tempfile.gettempdir(),'ccb-parse-*'))))")
+  expect "control: no parser temp file is left behind" "$PARSE_BEFORE" "$PARSE_AFTER"
+
+  # ---- B3: the protect hooks normalise the path before matching it.
+  echo "  (B3: path spellings)"
+  spell() {  # spell <hook> <name> <expected> <path> [old new]
+    local json
+    json=$(MSYS2_ARG_CONV_EXCL='*' "$PYTHON" -c 'import json,sys; print(json.dumps({"tool_name":"Edit","tool_input":{"file_path":sys.argv[1],"old_string":"a","new_string":sys.argv[2]}}))' "$4" "${6:-b}")
+    expect "$1: $2" "$3" "$(guard_decision "$1" "$json")"
+  }
+  SAFE='"disableAllHooks": true'
+  PCS_=protect-claude-settings.sh
+  PCF_=protect-config.sh
+  json_sub() { MSYS2_ARG_CONV_EXCL='*' "$PYTHON" -c 'import json,sys; print(json.dumps({"tool_name":"Edit","agent_id":"a1","tool_input":{"file_path":sys.argv[1],"old_string":"a","new_string":sys.argv[2]}}))' "$1" "$2"; }
+  spell $PCS_ "control: the plain settings.json path asks" ask '/home/u/.claude/settings.json' a "$SAFE"
+  spell $PCS_ "a doubled slash still asks" ask '/home/u/.claude//settings.json' a "$SAFE"
+  spell $PCS_ "a /./ segment still asks" ask '/home/u/.claude/./settings.json' a "$SAFE"
+  spell $PCS_ "an x/.. segment still asks" ask '/home/u/.claude/x/../settings.json' a "$SAFE"
+  spell $PCS_ "a trailing dot still asks" ask '/home/u/.claude/settings.json.' a "$SAFE"
+  spell $PCS_ "a trailing space still asks" ask '/home/u/.claude/settings.json ' a "$SAFE"
+  spell $PCS_ "control: a Windows backslash path asks" ask 'C:\Users\u\.claude\settings.json' a "$SAFE"
+  spell $PCS_ "a mixed slash path with doubled backslashes asks" ask 'C:\Users\u/.claude\\settings.local.json' a "$SAFE"
+  spell $PCS_ "control: a different case asks" ask '/home/u/.CLAUDE/Settings.JSON' a "$SAFE"
+  spell $PCS_ "the 8.3 short name SETTIN~1.JSO asks" ask 'C:\Users\u\.claude\SETTIN~1.JSO' a "$SAFE"
+  spell $PCS_ "an 8.3 parent CLAUDE~1 asks" ask 'C:\Users\u\CLAUDE~1\settings.json' a "$SAFE"
+  spell $PCS_ "control: a path that resolves away from settings.json stays silent" silent '/home/u/.claude/settings.json/../notes.txt' a "$SAFE"
+  spell $PCS_ "control: settings.json.bak stays silent" silent '/home/u/.claude/settings.json.bak' a "$SAFE"
+  expect "protect-claude-settings: a subagent with a spelled-differently path is denied" deny \
+    "$(guard_decision $PCS_ "$(json_sub '/home/u/.claude//settings.json' "$SAFE")")"
+  spell $PCS_ "an NTFS ::\$DATA stream on settings.json asks" ask 'C:\Users\u\.claude\settings.json::$DATA' a "$SAFE"
+  spell $PCS_ "an NTFS :\$DATA stream on settings.json asks" ask 'C:\Users\u\.claude\settings.json:$DATA' a "$SAFE"
+  spell $PCS_ "a named stream :name:\$DATA on settings.local.json asks" ask '/home/u/.claude/settings.local.json:x:$DATA' a "$SAFE"
+  spell $PCS_ "a named stream :name on settings.json asks" ask '/home/u/.claude/settings.json:x' a "$SAFE"
+  spell $PCS_ "a stream on the 8.3 short name asks" ask 'C:\Users\u\.claude\SETTIN~1.JSO::$DATA' a "$SAFE"
+  spell $PCS_ "control: the drive-letter colon is kept (C: path still asks)" ask 'C:/Users/u/.claude/settings.json' a "$SAFE"
+  spell $PCS_ "control: a stream on a different file stays silent" silent 'C:\Users\u\.claude\notes.txt::$DATA' a "$SAFE"
+  spell $PCS_ "control: a colon in a parent directory is not cut" silent '/home/u/.claude:x/settings.json' a "$SAFE"
+  spell $PCF_ "control: the plain tsconfig.json path asks" ask '/w/proj/tsconfig.json'
+  spell $PCF_ "control: a doubled slash still asks (the config match is a substring match)" ask '/w/proj//tsconfig.json'
+  spell $PCF_ "control: a /./ segment still asks (the config match is a substring match)" ask '/w/proj/./eslint.config.js'
+  spell $PCF_ "control: an x/.. segment still asks (the config match is a substring match)" ask '/w/proj/src/../tsconfig.json'
+  spell $PCF_ "control: a trailing dot still asks (the config match is a substring match)" ask '/w/proj/tsconfig.json.'
+  spell $PCF_ "control: a Windows backslash path asks" ask 'C:\w\proj\biome.json'
+  spell $PCF_ "control: a different case asks" ask '/w/proj/TSCONFIG.JSON'
+  spell $PCF_ "the 8.3 short name TSCONF~1.JSO asks" ask 'C:\w\proj\TSCONF~1.JSO'
+  spell $PCF_ "a path that resolves away from the config stays silent" silent '/w/proj/tsconfig.json/../app.ts'
+  spell $PCF_ "an NTFS ::\$DATA stream on tsconfig.json asks (the substring match already covered it: control)" ask 'C:\w\proj\tsconfig.json::$DATA'
+  spell $PCF_ "a stream on the 8.3 short name TSCONF~1.JSO::\$DATA asks" ask 'C:\w\proj\TSCONF~1.JSO::$DATA'
+  spell $PCF_ "a named stream on the 8.3 short name asks" ask 'C:\w\proj\TSCONF~1.JSO:s:$DATA'
+  spell $PCF_ "control: a stream on an unrelated file stays silent" silent 'C:\w\proj\app.ts::$DATA'
+  expect "protect-config: control, a subagent with a spelled-differently path is denied" deny \
+    "$(guard_decision $PCF_ "$(json_sub '/w/proj//tsconfig.json' b)")"
+
+  # ---- Drift: the shared parser and the shared path normaliser are one text in each hook.
+  echo "  (drift: shared blocks are identical)"
+  grab() {  # grab <hook> <marker>: the lines from BEGIN <marker> to END <marker>, CR removed
+    sed -n "/^# BEGIN SHARED $2/,/^# END SHARED $2/p" "$HOOKS_DIR/$1" | tr -d '\r'
+  }
+  for h in block-git-push.sh pre-commit-secret-scan.sh post-commit-review.sh; do
+    grab $h CMDPARSE > "$T9/parse-$h.py"
+    n=$(grep -c '^# BEGIN SHARED CMDPARSE' "$HOOKS_DIR/$h")
+    expect "$h: holds exactly one shared parser block" 1 "$n"
+    # A source passed to python -c stays under 24000 bytes (a Windows command line tops out near 32 KB). A hook whose
+    # source is longer runs it from a temp file (python -I FILE) and keeps -c only as the fallback when mktemp fails.
+    sz=$(sed -n "/<<'PYEOF' || true/,/^PYEOF\$/p" "$HOOKS_DIR/$h" | wc -c | tr -d ' ')
+    if grep -q 'PYARGS=(-I ' "$HOOKS_DIR/$h" && grep -q 'PYARGS=(-c ' "$HOOKS_DIR/$h"; then
+      if [ "$sz" -gt 100 ] && [ "$sz" -le 31000 ]; then
+        pass "$h: the python source is $sz bytes and runs from a temp file, with -c as the fallback (limit 31000)"
+      else
+        fail "$h: the python source is $sz bytes (limit 31000, it also has to fit -c as the fallback)"
+      fi
+    elif [ "$sz" -gt 100 ] && [ "$sz" -le 24000 ]; then
+      pass "$h: the python -c source is $sz bytes (limit 24000)"
+    else
+      fail "$h: the python -c source is $sz bytes (limit 24000)"
+    fi
+  done
+  for h in pre-commit-secret-scan.sh post-commit-review.sh; do
+    if cmp -s "$T9/parse-block-git-push.sh.py" "$T9/parse-$h.py" && [ -s "$T9/parse-$h.py" ]; then
+      pass "$h: the shared parser is identical to block-git-push.sh's"
+    else
+      fail "$h: the shared parser differs from block-git-push.sh's"
+    fi
+  done
+  grab protect-config.sh NORMPATH > "$T9/norm-a.py"; grab protect-claude-settings.sh NORMPATH > "$T9/norm-b.py"
+  if cmp -s "$T9/norm-a.py" "$T9/norm-b.py" && [ -s "$T9/norm-a.py" ]; then
+    pass "protect-config.sh and protect-claude-settings.sh share one path normaliser"
+  else
+    fail "protect-config.sh and protect-claude-settings.sh share one path normaliser"
+  fi
+  # One case table through every copy of the parser: sub|dir|args per git call, ! marks a guess.
+  IFS= read -r -d '' PT_SRC <<'PYEOF' || true
+import sys
+exec(open(sys.argv[1]).read())
+B = '/B'
+def r(cmd, sub, ps=False):
+    out = []
+    for c in (git_calls(cmd, B, sub, True) if ps else git_calls(cmd, B, sub)):
+        out.append('%s|%s|%s%s' % (c['sub'], c['dir'], ' '.join(c['args']), '!' if c['fuzzy'] else ''))
+    return ';'.join(out)
+cases = [
+ ('git push origin main', 'push', 'push|/B|origin main'),
+ ('git  push origin', 'push', 'push|/B|origin'),
+ ('git -C /r push origin', 'push', 'push|/r|origin'),
+ ('git -C "C:\\Repo\\x" push origin', 'push', 'push|C:/Repo/x|origin'),
+ ('cd /r && git push', 'push', 'push|/r|'),
+ ('cd /r; cd sub && git push', 'push', 'push|/r/sub|'),
+ ('(cd /r && git push); git push o', 'push', 'push|/r|;push|/B|o'),
+ ('echo "git push"', 'push', ''),
+ ('git commit -m "a; git push"', 'push', ''),
+ ('git commit -m "a; git push"', 'commit', 'commit|/B|-m a; git push'),
+ ('FOO=1 git push o', 'push', 'push|/B|o'),
+ ('env -i FOO=1 git push o', 'push', 'push|/B|o'),
+ ('sudo -u x git push o', 'push', 'push|/B|o'),
+ ('command git push o', 'push', 'push|/B|o'),
+ ('nohup git push o &', 'push', 'push|/B|o'),
+ ('time git push o', 'push', 'push|/B|o'),
+ ('bash -c "git push o"', 'push', 'push|/B|o'),
+ ("sh -lc 'cd /r && git push'", 'push', 'push|/r|'),
+ ('eval "git push o"', 'push', 'push|/B|o'),
+ ('echo $(git push o)', 'push', 'push|/B|o'),
+ ('echo `git push o`', 'push', 'push|/B|o'),
+ ('git.exe push o', 'push', 'push|/B|o'),
+ ('/usr/bin/git push o', 'push', 'push|/B|o'),
+ ('"/c/Program Files/Git/bin/git.exe" push o', 'push', 'push|/B|o'),
+ ('xargs git push', 'push', 'push|/B|!'),
+ ('ls | xargs -n1 git -C /r push', 'push', 'push|/r|!'),
+ ('cat <<EOF\ngit push o\nEOF', 'push', ''),
+ ('bash <<EOF\ngit push o\nEOF', 'push', 'push|/B|o'),
+ ('git commit -m "$(cat <<\'EOF\'\nit\'s done; git push x\nEOF\n)"', 'push', ''),
+ ('git -c core.x=1 push -o ci.skip origin', 'push', 'push|/B|-o ci.skip origin'),
+ ('git push 2>&1 | tail -3', 'push', 'push|/B|'),
+ ('git push > out.txt origin', 'push', 'push|/B|origin'),
+ ('$GIT push origin', 'push', 'push|/B|origin!'),
+ ('git push "unterminated', 'push', 'push|/B|unterminated;push|/B|!'),
+ ('git --no-pager -C a -C b push', 'push', 'push|/B/a/b|'),
+ ('cd "$(mktemp -d)" && git push', 'push', 'push|None|'),
+ ('git -c alias.p=push p origin', 'push', 'push|/B|origin'),
+ ('for r in a b; do git push $r; done', 'push', 'push|/B|$r'),
+ ('{ git push o; }', 'push', 'push|/B|o'),
+ ('$out = git push o 2>&1', 'push', 'push|/B|o'),
+ ('$out=git push o', 'push', 'push|/B|o'),
+ ("env -S 'git push o'", 'push', 'push|/B|o'),
+ ('git pu\\sh o', 'push', 'push|/B|o'),
+ ('g\\it push o', 'push', 'push|/B|o'),
+ ("echo $'\\'' ; git push o ; echo $'\\''", 'push', 'push|/B|o'),
+ ('{ git push o }', 'push', 'push|/B|o'),
+ ('if ($ok) { git push o }', 'push', 'push|/B|o'),
+ ('git push o}', 'push', 'push|/B|o'),
+ ('if true; then git push o; fi', 'push', 'push|/B|o'),
+ ('echo a # git push', 'push', ''),
+ ('echo a#b; git push', 'push', 'push|/B|'),
+ ('git add -A && git commit -m x', 'commit', 'commit|/B|-m x'),
+ ('Set-Location C:\\Repo\\x; git push origin', 'push', 'push|C:/Repo/x|origin', True),
+ ('Set-Location C:\\Repo\\x; git push origin', 'push', 'push|/B/C:Repox|origin'),
+ ('if ($ok) { git push gh } else { git push internal }', 'push', 'push|/B|gh;push|/B|internal', True),
+ ('Invoke-Command -ScriptBlock { git push internal }', 'push', 'push|/B|internal', True),
+ ('pwsh -Command "git push origin"', 'push', 'push|/B|origin'),
+ ('cmd /c "git push origin"', 'push', 'push|/B|origin'),
+ ('& "C:\\Program Files\\Git\\bin\\git.exe" push origin', 'push', 'push|/B|origin'),
+ ('env -C /z git push', 'push', 'push|/z|'),
+ ('git --git-dir=/g --work-tree /w push', 'push', 'push|/B|'),
+ ('S=push; git $S origin main', 'push', '$S|/B|origin main!'),
+ ('git pu$()sh origin main', 'push', 'pu$()sh|/B|origin main!'),
+ ('git {push,pull} origin main', 'push', '{push,pull}|/B|origin main!'),
+ ("git -c 'alias.x=!git push origin main' x", 'push', 'x|/B|!;push|/B|origin main'),
+ ('git -c alias.a=b foo origin', 'push', 'foo|/B|origin!'),
+ ('git -c alias.p=push p origin', 'status', ''),
+ ('git pu`sh o', 'push', 'push|/B|o', True),
+ ('git "pu`sh" o', 'push', 'push|/B|o', True),
+ ('git comm`it -am x', 'commit', 'commit|/B|-am x', True),
+ ('Write-Host "C:\\tmp\\"; git push o', 'push', 'push|/B|o', True),
+ ('cd C:\\x\\\ngit push o', 'push', 'push|C:/x/|o', True),
+ ('cd C:\\x\\\r\ngit push o', 'push', 'push|C:/x/|o', True),
+ ('cd /x\\\ngit push o', 'push', ''),
+ ('cd ~bob && git push o', 'push', 'push|None|o'),
+]
+bad = 0
+for case in cases:
+    cmd, sub, exp = case[:3]
+    got = r(cmd, sub, len(case) > 3)
+    if got != exp:
+        bad += 1
+        print('BAD', repr(cmd), 'expected', repr(exp), 'got', repr(got))
+print('bad=%d' % bad)
+PYEOF
+  for h in block-git-push.sh pre-commit-secret-scan.sh post-commit-review.sh; do
+    res=$("$PYTHON" -I -c "$PT_SRC" "$(winpath "$T9/parse-$h.py")" 2>&1)
+    last=$(printf '%s\n' "$res" | tail -1)
+    if [ "$last" = "bad=0" ]; then
+      pass "$h: its parser copy handles the whole case table"
+    else
+      fail "$h: its parser copy handles the whole case table ($(printf '%s' "$res" | head -c 400))"
+    fi
+  done
+
+  # ---- B5: setup.sh wires block-git-push and pre-commit-secret-scan under a PowerShell
+  # matcher too, and a second run adds nothing.
+  echo "  (B5: setup.sh merge, run twice)"
+  SETUP_SH="$HOOKS_DIR/../setup.sh"
+  if [ ! -f "$SETUP_SH" ]; then
+    skip "setup.sh not found next to hooks/"
+  else
+    H5="$T9/home5"; mkdir -p "$H5"
+    for run in 1 2; do
+      HOME="$H5" bash "$SETUP_SH" --preset=full --yes </dev/null >"$T9/setup$run.out" 2>&1
+      expect "setup.sh --preset=full --yes run $run exits 0" 0 "$?"
+    done
+    res=$("$PYTHON" -c '
+import json, sys
+try:
+    d = json.load(open(sys.argv[1]))
+    pre = d["hooks"]["PreToolUse"]
+except Exception as e:
+    print("unreadable: %s" % e); sys.exit(0)
+want = ["block-git-push.sh", "pre-commit-secret-scan.sh"]
+bad = []
+for m in ("Bash", "PowerShell"):
+    blocks = [b for b in pre if b.get("matcher") == m]
+    if len(blocks) != 1:
+        bad.append("%d %s blocks" % (len(blocks), m)); continue
+    cmds = [h.get("command", "") for h in blocks[0].get("hooks", [])]
+    for w in want:
+        n = sum(1 for c in cmds if w in c)
+        if n != 1:
+            bad.append("%s holds %s %d times" % (m, w, n))
+print("ok" if not bad else "; ".join(bad))
+' "$(winpath "$H5/.claude/settings.json")" 2>&1)
+    expect "setup.sh: Bash and PowerShell PreToolUse blocks each hold both git guards once, after two runs" ok "$res"
+  fi
+
+  rm -rf "$T9"
+  unset GIT_AUTHOR_NAME GIT_AUTHOR_EMAIL GIT_COMMITTER_NAME GIT_COMMITTER_EMAIL
 fi
 echo ""
 

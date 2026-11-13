@@ -167,8 +167,8 @@ CLAUDE.md が機能したら、残りを追加しましょう。最も簡単な�
 |-------|------|---------|
 | SessionStart | session-start.sh | ワークスペースコンテキストを注入 |
 | InstructionsLoaded | instructions-loaded.sh | どのルールが、なぜロードされたかを記録 |
-| PreToolUse (Bash) | block-git-push.sh | リモートリポジトリを保護 |
-| PreToolUse (Bash) | pre-commit-secret-scan.sh | シークレットを含むコミットをブロック |
+| PreToolUse (Bash, PowerShell) | block-git-push.sh | リモートリポジトリを保護 |
+| PreToolUse (Bash, PowerShell) | pre-commit-secret-scan.sh | シークレットを含むコミットをブロック |
 | PreToolUse (Write/Edit) | protect-config.sh | Linter/ビルド設定をガード |
 | PreToolUse (Write/Edit) | protect-claude-settings.sh | 自分の settings.json の安全性キーの編集を確認し、保護パスに対して効果のない allow ルールを警告 |
 | PreToolUse (Write/Edit/Bash) | agent-write-guard.sh | 読み取り専用 agent を、どのパーミッションモードでも読み取り専用に保つ |

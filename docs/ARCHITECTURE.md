@@ -13,7 +13,7 @@ Session Start
 Active Session
   │
   ├─ PreToolUse hooks
-  │   ├─ Bash ──→ block-git-push.sh (protect remote)
+  │   ├─ Bash|PowerShell ──→ block-git-push.sh (protect remote)
   │   └─ Write|Edit ──→ protect-config.sh (guard linter configs)
   │
   ├─ PostToolUse hooks

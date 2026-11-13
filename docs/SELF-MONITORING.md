@@ -30,8 +30,7 @@ COMMAND=$(echo "$INPUT" | python -c "import sys,json; print(json.load(sys.stdin)
 
 # Only intercept git commit (skip non-commit commands)
 if ! echo "$COMMAND" | grep -qE 'git commit( |$)'; then exit 0; fi
-# Honor user's explicit --no-verify
-if echo "$COMMAND" | grep -qE 'git commit.*--no-verify'; then exit 0; fi
+# No --no-verify or --amend skip: --no-verify turns off git's own hooks, not this Claude-side gate
 # Skip if gitleaks not installed (no false-positive blocks)
 command -v gitleaks >/dev/null 2>&1 || exit 0
 
@@ -39,7 +38,7 @@ OUTPUT=$(gitleaks protect --staged --no-banner --redact --exit-code 1 2>&1)
 if [ $? -ne 0 ]; then
   echo "Blocked: gitleaks detected secrets in staged content." >&2
   echo "$OUTPUT" | head -20 >&2
-  echo "To bypass (use sparingly): git commit --no-verify" >&2
+  echo "Unstage and remove the secret, rotate it, or allowlist a false positive in .gitleaks.toml." >&2
   exit 2
 fi
 exit 0
@@ -58,6 +57,8 @@ exit 0
 ```
 
 Per-repo allowlists go in `.gitleaks.toml` at the project root (see gitleaks docs).
+
+The script above is the minimal idea. The shipped `hooks/pre-commit-secret-scan.sh` does not skip on `--no-verify` or `--amend` (a commit that bypasses git's own hooks is still scanned), and there is no flag that turns the scan off from the command line. It also handles `git -C dir commit`, `cd dir && git commit`, `-a` and pathspec commits, and files a `git add` earlier in the same command would stage. If a scan is blocking a legitimate commit, allowlist the finding in `.gitleaks.toml` or ask the user to commit it themselves.
 
 ---
 

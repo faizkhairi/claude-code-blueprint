@@ -312,7 +312,7 @@ The template configures hooks across 8 lifecycle events. For the full lifecycle 
 | Event | Hook | Purpose |
 |-------|------|---------|
 | **SessionStart** | `session-start.sh` | Injects workspace context at the beginning of each session |
-| **PreToolUse** (Bash) | `block-git-push.sh` | Blocks `git push` to protected remotes |
+| **PreToolUse** (Bash, PowerShell) | `block-git-push.sh` | Blocks `git push` to protected remotes |
 | **PreToolUse** (Write/Edit) | `protect-config.sh` | Prevents modifying linter/build configs |
 | **PostToolUse** (Write/Edit) | `notify-file-changed.sh` | Reminds Claude to verify after file changes |
 | **PostToolUse** (Bash) | `post-commit-review.sh` | Auto-reviews commits for risk flags |

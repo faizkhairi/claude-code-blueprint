@@ -167,8 +167,8 @@ CLAUDE.md 生效后，再添加其余部分。最简单的方法是从克隆或 
 |-----|------|------|
 | SessionStart | session-start.sh | 注入工作区上下文 |
 | InstructionsLoaded | instructions-loaded.sh | 记录加载了哪些规则及原因 |
-| PreToolUse (Bash) | block-git-push.sh | 保护远程仓库 |
-| PreToolUse (Bash) | pre-commit-secret-scan.sh | 阻止包含密钥的提交 |
+| PreToolUse (Bash, PowerShell) | block-git-push.sh | 保护远程仓库 |
+| PreToolUse (Bash, PowerShell) | pre-commit-secret-scan.sh | 阻止包含密钥的提交 |
 | PreToolUse (Write/Edit) | protect-config.sh | 守护 linter/build 配置 |
 | PreToolUse (Write/Edit) | protect-claude-settings.sh | 编辑你自己 settings.json 中的安全键时要求确认，并标记针对受保护路径的无效 allow 规则 |
 | PreToolUse (Write/Edit/Bash) | agent-write-guard.sh | 让只读 agent 在任何权限模式下都保持只读 |

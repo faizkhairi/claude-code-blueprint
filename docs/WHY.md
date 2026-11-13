@@ -44,7 +44,7 @@ Every component in this blueprint exists because something went wrong without it
 
 **What we learned:** `git push` has side effects that extend beyond your local machine: CI/CD triggers, teammate disruptions, deployment pipelines. The developer should control *when* pushes happen, not the AI assistant.
 
-**What we built:** A `PreToolUse` hook on Bash commands that detects `git push` and blocks it (exit code 2). Claude can commit freely but cannot push. The developer pushes manually when ready. The hook can be configured with an allowlist for specific remotes where auto-push is acceptable.
+**What we built:** A `PreToolUse` hook on Bash and PowerShell commands that detects `git push` and blocks it (exit code 2). Claude can commit freely but cannot push. The developer pushes manually when ready. The hook can be configured with an allowlist for specific remotes where auto-push is acceptable.
 
 ---
 

@@ -165,8 +165,8 @@ See [skills/README.md](skills/README.md) for customization and placeholder varia
 |-------|------|---------|
 | SessionStart | session-start.sh | Inject workspace context |
 | InstructionsLoaded | instructions-loaded.sh | Log which rules loaded and why |
-| PreToolUse (Bash) | block-git-push.sh | Protect remote repos |
-| PreToolUse (Bash) | pre-commit-secret-scan.sh | Block commits containing secrets |
+| PreToolUse (Bash, PowerShell) | block-git-push.sh | Protect remote repos |
+| PreToolUse (Bash, PowerShell) | pre-commit-secret-scan.sh | Block commits containing secrets |
 | PreToolUse (Write/Edit) | protect-config.sh | Guard linter/build configs |
 | PreToolUse (Write/Edit) | protect-claude-settings.sh | Confirm edits to safety keys in your own settings.json, and flag no-op allow rules for protected paths |
 | PreToolUse (Write/Edit/Bash) | agent-write-guard.sh | Keep read-only agents read-only in every permission mode |
