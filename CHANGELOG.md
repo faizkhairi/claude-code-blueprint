@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and the 
 
 ## [Unreleased]
 
+### Fixed
+- All 16 Python-based hooks, `setup.sh`, `tests/judge-eval.sh`, `tests/install-matrix.sh` and `hooks/test-hooks.sh` now skip the Windows Store `python3` stub (a `python3` under `WindowsApps` that exits 49 without running anything). Before, the guards ran nothing and let the call through. A candidate on that path is run once with `-c ''`, then `python` and `py` are tried. The detection snippet in `hooks/README.md`, `TROUBLESHOOTING.md` and `GETTING-STARTED.md` is updated.
+- `hooks/verify-subagent-findings.sh` no longer says a report was received when a background agent has only been launched (`tool_response.status` of `async_launched`). It sends Claude a short "launched, no report yet" note instead.
+- `hooks/cost-tracker.sh` now logs the real `session_id` (from the hook's stdin JSON) and the model (from the last transcript entry that has one) instead of `unknown`, and cuts an oversize log through a temp file and a rename.
+- `hooks/instructions-loaded.sh` rotates its log at 1 MB, keeping one `.1` generation, so it no longer grows without bound.
+- `hooks/verify-mcp-sync.sh` prints "Cursor not installed, comparison skipped" when the Cursor config does not exist, instead of reporting OUT OF SYNC.
+- `hooks/check-no-dash-file.py` skips Markdown code spans and fenced blocks when it looks for the double-dash substitute, so a comment that quotes `git log -- path` can be posted. Banned characters are still checked everywhere.
+- `hooks/no-dash-check.sh` judges each double-dash occurrence in `.md`, `.markdown` and `.txt` files (code spans blanked, fenced blocks skipped) instead of excluding a whole line that holds a flag or a code span. Other file types keep the line filter.
+- `hooks/protect-config.sh` and `hooks/protect-claude-settings.sh` return a deny, not an ask, when the call comes from a subagent (non-empty top-level `agent_id`), because a subagent cannot answer a prompt. The deny tells it to ask the user to make the change.
+- Regression cases for all of the above in `hooks/test-hooks.sh`.
+
 ## [1.3.1] - 2026-11-13
 
 ### Changed

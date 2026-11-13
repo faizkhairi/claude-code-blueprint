@@ -28,6 +28,8 @@
 | PermissionDenied | Auto mode classifier denies an action | *(not used)* | React to auto-mode blocks (log, retry with `{retry: true}`) |
 | TaskCreated | Background task spawned via TaskCreate | *(not used)* | Track or gate background agent spawning |
 
+> `protect-config.sh` and `protect-claude-settings.sh` ask you to confirm. Inside a subagent (the payload has a non-empty `agent_id`) they deny instead, with the same reason plus a request to ask you to make the change, because a subagent cannot answer a prompt.
+
 > `CwdChanged`, `FileChanged`, `PermissionDenied`, and `TaskCreated` are available but not used in this blueprint. They're useful for monorepo setups (auto-switching context on `cd`), reactive config reloading, auto-mode denial logging, and background agent governance.
 
 ## All hook events
@@ -149,10 +151,15 @@ So a synchronous PostToolUse hook that wants Claude to act must return `addition
 All command-type hooks require **Python 3.6+** on your PATH (f-strings are used in error messages). Each script auto-detects with:
 
 ```bash
-PYTHON=$(command -v python3 2>/dev/null || command -v python 2>/dev/null)
+PYTHON=""
+for _p in python3 python py; do
+  _c=$(command -v "$_p" 2>/dev/null) || continue
+  case "$_c" in *[Ww]indows[Aa]pps*) "$_c" -c '' >/dev/null 2>&1 || continue ;; esac
+  PYTHON=$_c; break
+done
 ```
 
-If neither `python3` nor `python` is found, the hook prints a warning to stderr and exits cleanly (no blocking). The inline SessionStart `compact` command and the Stop prompt hook have no dependencies.
+On Windows, `python3` can be the Microsoft Store stub: a launcher under `WindowsApps` that prints a notice and exits 49 without running anything. The `case` line runs only that path with `-c ''` and moves on to `python`, then `py`, when it fails, so no extra process starts on other systems. If no working interpreter is found, the hook prints a warning to stderr and exits cleanly (no blocking). The inline SessionStart `compact` command and the Stop prompt hook have no dependencies.
 
 **Why Python?** Bash cannot safely parse or construct JSON. All hook input/output uses JSON, so Python handles the serialization boundary. This is a deliberate choice: one dependency for correctness, rather than fragile string manipulation.
 

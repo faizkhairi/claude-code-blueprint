@@ -26,7 +26,13 @@
 # so the plan goes to the normal approval prompt. A guard that blocked every plan
 # whenever its input looked unusual would be disabled within a day. The missing-Python
 # case prints a warning on stderr.
-PYTHON=$(command -v python3 2>/dev/null || command -v python 2>/dev/null)
+# python3 can be the Windows Store stub (under WindowsApps, exits 49): skip it unless it runs.
+PYTHON=""
+for _p in python3 python py; do
+  _c=$(command -v "$_p" 2>/dev/null) || continue
+  case "$_c" in *[Ww]indows[Aa]pps*) "$_c" -c '' >/dev/null 2>&1 || continue ;; esac
+  PYTHON=$_c; break
+done
 if [ -z "$PYTHON" ]; then
   echo "guard-exit-plan: Python not found, plans are NOT checked for a self-audit" >&2
   exit 0

@@ -34,7 +34,13 @@ FAILED_CASES=()
 # Strings that must never appear on stderr (each is a symptom of a fixed bug).
 BANNED_PATTERNS='integer expression|AttributeError|Traceback|No such file or directory|command not found|unbound variable'
 
-PY="$(command -v python3 2>/dev/null || command -v python 2>/dev/null || echo "")"
+# python3 can be the Windows Store stub (under WindowsApps, exits 49): skip it unless it runs.
+PY=""
+for _p in python3 python py; do
+  _c=$(command -v "$_p" 2>/dev/null) || continue
+  case "$_c" in *[Ww]indows[Aa]pps*) "$_c" -c '' >/dev/null 2>&1 || continue ;; esac
+  PY=$_c; break
+done
 
 new_home() {
   # Print a fresh empty temp dir to use as HOME.

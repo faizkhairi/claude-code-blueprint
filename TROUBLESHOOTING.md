@@ -267,7 +267,7 @@ See [GETTING-STARTED.md](GETTING-STARTED.md#windows-notes) for the full Windows 
 
 **Symptoms:** Hook scripts fail because Python isn't found on PATH.
 
-**Background:** All hooks auto-detect Python using `command -v python3 || command -v python`. You need either `python3` or `python` on your PATH, not both. If neither is found, hooks print a warning to stderr and exit cleanly (no blocking).
+**Background:** All hooks auto-detect Python by trying `python3`, then `python`, then `py` (`command -v` on each). On Windows, `python3` is often the Microsoft Store stub under `WindowsApps`, which exits 49 without running anything; a candidate on that path is run once with `-c ''` and skipped when it fails. You need one working interpreter on your PATH. If none is found, hooks print a warning to stderr and exit cleanly (no blocking).
 
 **Fixes:**
 1. **Windows:** Install Python: `winget install Python.Python.3` or download from [python.org](https://python.org). The installer adds `python` to PATH.

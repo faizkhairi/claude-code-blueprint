@@ -6,7 +6,13 @@
 # Configure: Set SESSION_FILE to your memory system's session file path.
 #            Set WORKSPACE_CONTEXT to describe your workspace layout.
 
-PYTHON=$(command -v python3 2>/dev/null || command -v python 2>/dev/null)
+# python3 can be the Windows Store stub (under WindowsApps, exits 49): skip it unless it runs.
+PYTHON=""
+for _p in python3 python py; do
+  _c=$(command -v "$_p" 2>/dev/null) || continue
+  case "$_c" in *[Ww]indows[Aa]pps*) "$_c" -c '' >/dev/null 2>&1 || continue ;; esac
+  PYTHON=$_c; break
+done
 if [ -z "$PYTHON" ]; then
   echo "session-start: python not found: session context not injected" >&2
   exit 0
@@ -34,7 +40,7 @@ fi
 WORKSPACE_CONTEXT="Active workspace: $(pwd). Always verify after completing work: run tests, check types, hit live endpoints."
 export WORKSPACE_CONTEXT
 
-$PYTHON -c "
+"$PYTHON" -c "
 import os, json
 stale = os.environ.get('STALE_WARNING', '')
 workspace = os.environ.get('WORKSPACE_CONTEXT', '')

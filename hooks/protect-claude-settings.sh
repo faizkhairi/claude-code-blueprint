@@ -5,6 +5,8 @@
 # silently weaken the harness: defaultMode (which can enable bypassPermissions),
 # the deny or ask permission lists, disableAllHooks, or disableAutoMode. Routine
 # edits (adding an allow rule, a theme, an env var) pass through with no prompt.
+# A subagent cannot answer the prompt, so for a call with a non-empty top-level
+# agent_id the same message is a deny that says to ask the user (see emit_ask).
 #
 # Why this exists: settings-schema validation rejects INVALID keys, but it does
 # not catch VALID-but-dangerous ones. If your permissions allow editing files
@@ -15,12 +17,40 @@
 #
 # JSON parsing uses Python (see hooks/README "Why Python"); fail-open if Python
 # is unavailable, so a missing dependency never blocks an edit.
-PYTHON=$(command -v python3 2>/dev/null || command -v python 2>/dev/null)
+# python3 can be the Windows Store stub (under WindowsApps, exits 49): skip it unless it runs.
+PYTHON=""
+for _p in python3 python py; do
+  _c=$(command -v "$_p" 2>/dev/null) || continue
+  case "$_c" in *[Ww]indows[Aa]pps*) "$_c" -c '' >/dev/null 2>&1 || continue ;; esac
+  PYTHON=$_c; break
+done
 if [ -z "$PYTHON" ]; then exit 0; fi
 
 INPUT=$(cat)
 
-FILE_PATH=$(echo "$INPUT" | $PYTHON -c "
+# emit_ask <reason>: print the PreToolUse "ask" decision. A subagent (the hook input has
+# a non-empty top-level agent_id) cannot answer a permission prompt, and a background one
+# waits forever, so for a subagent the same reason goes out as a deny that says to hand
+# the change to the user. agent_type alone does not count: it also marks a `claude --agent`
+# main thread, which can answer.
+emit_ask() {
+  local reason="$1" decision=ask sub
+  sub=$(printf '%s' "$INPUT" | "$PYTHON" -c "
+import sys, json
+try:
+    a = json.load(sys.stdin).get('agent_id')
+    print('1' if isinstance(a, str) and a else '')
+except Exception:
+    print('')
+" 2>/dev/null)
+  if [ -n "$sub" ]; then
+    decision=deny
+    reason="$reason Denied instead of asked: this call came from a subagent, which cannot answer a permission prompt. Ask the user to make this change."
+  fi
+  printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"%s","permissionDecisionReason":"%s"}}\n' "$decision" "$reason"
+}
+
+FILE_PATH=$(echo "$INPUT" | "$PYTHON" -c "
 import sys, json
 try:
     d = json.load(sys.stdin)
@@ -36,7 +66,7 @@ fi
 
 # Gather the text this edit introduces: new_string (Edit) or content (Write),
 # plus old_string (Edit) so a removed safety key is caught too.
-COMBINED=$(echo "$INPUT" | $PYTHON -c "
+COMBINED=$(echo "$INPUT" | "$PYTHON" -c "
 import sys, json
 try:
     ti = json.load(sys.stdin).get('tool_input', {})
@@ -48,7 +78,7 @@ except:
 
 # The introduced text ONLY, without old_string. The protected-path check below must
 # not fire when you are REMOVING one of these entries, which is the usual cleanup.
-ADDED=$(echo "$INPUT" | $PYTHON -c "
+ADDED=$(echo "$INPUT" | "$PYTHON" -c "
 import sys, json
 try:
     ti = json.load(sys.stdin).get('tool_input', {})
@@ -60,7 +90,7 @@ except:
 # Safety keys whose presence in the edit warrants a confirm.
 if echo "$COMBINED" | grep -qE '"(defaultMode|deny|ask|disableAllHooks|disableAutoMode)"' \
    || echo "$COMBINED" | grep -qE 'bypassPermissions'; then
-  echo '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"ask","permissionDecisionReason":"This edit touches a Claude safety setting (defaultMode / deny / ask / disableAllHooks / disableAutoMode / bypassPermissions). Confirm it does not weaken the permission guards or disable hooks. Routine settings edits (allow rules, theme, env) do not trigger this prompt."}}'
+  emit_ask "This edit touches a Claude safety setting (defaultMode / deny / ask / disableAllHooks / disableAutoMode / bypassPermissions). Confirm it does not weaken the permission guards or disable hooks. Routine settings edits (allow rules, theme, env) do not trigger this prompt."
   exit 0
 fi
 
@@ -81,7 +111,7 @@ fi
 #
 # Matches the introduced text only, so removing an entry is never blocked.
 if echo "$ADDED" | grep -qE '"(Edit|Write)\((~|[A-Za-z]:)?[/\\]?[^"]*\.claude[/\\][^"]*\)"'; then
-  echo '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"ask","permissionDecisionReason":"This edit adds an Edit()/Write() allow rule for a path inside the Claude config directory. Those entries have no effect: .claude is a protected path, so the safety check runs before allow rules and the write is routed to the classifier (auto mode) or denied (dontAsk) regardless. See code.claude.com/docs/en/permission-modes#protected-paths. Removing the entry is safe and does not change effective permissions."}}'
+  emit_ask "This edit adds an Edit()/Write() allow rule for a path inside the Claude config directory. Those entries have no effect: .claude is a protected path, so the safety check runs before allow rules and the write is routed to the classifier (auto mode) or denied (dontAsk) regardless. See code.claude.com/docs/en/permission-modes#protected-paths. Removing the entry is safe and does not change effective permissions."
   exit 0
 fi
 

@@ -6,6 +6,10 @@
 # Sections 1 to 6 test that hooks don't crash, always exit 0, and handle bad input
 # gracefully. Section 7 also tests decisions: what the two PreToolUse guards
 # (agent-write-guard, guard-exit-plan) deny and allow, one named case per edge case.
+# Section 8 holds regression cases (Windows Store python3 stub, async subagent launch,
+# cost-tracker fields, log rotation, MCP sync with no Cursor, the two dash checkers, and
+# a subagent's ask turning into a deny). A case labelled "control" passes before and
+# after its fix. The dash-checker fixtures contain the pattern they test, on purpose.
 
 PASS=0
 FAIL=0
@@ -36,11 +40,17 @@ echo ""
 
 # 2. Python detection (should not crash if Python missing)
 echo "--- Python Detection ---"
-PYTHON=$(command -v python3 2>/dev/null || command -v python 2>/dev/null)
+# python3 can be the Windows Store stub (under WindowsApps, exits 49): skip it unless it runs.
+PYTHON=""
+for _p in python3 python py; do
+  _c=$(command -v "$_p" 2>/dev/null) || continue
+  case "$_c" in *[Ww]indows[Aa]pps*) "$_c" -c '' >/dev/null 2>&1 || continue ;; esac
+  PYTHON=$_c; break
+done
 if [ -n "$PYTHON" ]; then
   pass "Python found: $PYTHON"
 else
-  skip "Python not found -- hooks will skip JSON parsing (expected behavior)"
+  skip "Python not found: hooks will skip JSON parsing (expected behavior)"
 fi
 echo ""
 
@@ -376,6 +386,346 @@ print('ok')" 2>/dev/null
     code=$?
     expect "$g without Python exits 0 with no decision" "0:" "$code:$out"
   done
+fi
+echo ""
+
+# 8. Regressions: each group below was red before its fix and names the script it targets.
+# Cases labelled "control" pass before and after the fix: they pin the behaviour that
+# must not change. Everything runs in one temp dir, removed at the end of the section.
+echo "--- Regression: Windows Store python3 stub, dash checkers, subagent ask, small fixes ---"
+if [ -z "$PYTHON" ]; then
+  skip "regression checks need Python"
+else
+  T8=$(mktemp -d)
+  # winpath <path>: a path a Windows Python can open (identity on Linux and macOS).
+  winpath() { cygpath -m "$1" 2>/dev/null || printf '%s' "$1"; }
+  # hook_out <hook> <json> [VAR=value ...]: the hook's stdout, CR removed.
+  hook_out() {
+    local hook="$HOOKS_DIR/$1" json="$2"; shift 2
+    printf '%s' "$json" | env "$@" bash "$hook" 2>/dev/null | tr -d '\r'
+  }
+
+  # D9. On Windows, python3 can be the Microsoft Store stub: it sits under WindowsApps and
+  # exits 49 without running anything. Every hook used to take it, run nothing, and let the
+  # call through. The stub is faked here: a python3 under a directory named WindowsApps that
+  # exits 49, and a python wrapper that runs the real interpreter, found before PATH changes.
+  echo "  (D9: Store stub)"
+  mkdir -p "$T8/WindowsApps" "$T8/pybin"
+  printf '#!/bin/bash\necho "Python was not found; run without arguments to install from the Microsoft Store." >&2\nexit 49\n' > "$T8/WindowsApps/python3"
+  printf '#!/bin/bash\nexec "%s" "$@"\n' "$PYTHON" > "$T8/pybin/python"
+  chmod +x "$T8/WindowsApps/python3" "$T8/pybin/python"
+  STUB_PATH="$T8/WindowsApps:$T8/pybin:$PATH"
+  expect "guard-exit-plan: an unaudited plan is still denied when python3 is the Store stub" deny \
+    "$(guard_decision guard-exit-plan.sh '{"tool_name":"ExitPlanMode","tool_input":{"plan":"## Plan\n1. Edit the file."}}' "PATH=$STUB_PATH")"
+  expect "agent-write-guard: rm -rf by a read-only agent is still denied when python3 is the Store stub" deny \
+    "$(guard_decision agent-write-guard.sh '{"agent_type":"code-reviewer","tool_name":"Bash","cwd":"/work/proj","tool_input":{"command":"rm -rf x"}}' "${GENV[@]}" "PATH=$STUB_PATH")"
+  expect "protect-config: a linter config edit still asks when python3 is the Store stub" ask \
+    "$(guard_decision protect-config.sh '{"tool_name":"Edit","tool_input":{"file_path":"/work/proj/eslint.config.js","old_string":"a","new_string":"b"}}' "PATH=$STUB_PATH")"
+  # control: a python3 under WindowsApps that runs is used as before.
+  printf '#!/bin/bash\nexec "%s" "$@"\n' "$PYTHON" > "$T8/WindowsApps/python3"
+  expect "guard-exit-plan: control, a working python3 under WindowsApps is still used" deny \
+    "$(guard_decision guard-exit-plan.sh '{"tool_name":"ExitPlanMode","tool_input":{"plan":"## Plan\n1. Edit the file."}}' "PATH=$STUB_PATH")"
+  # Every script that detects Python carries the same guard, so a new copy cannot skip it.
+  for f in "$HOOKS_DIR"/*.sh; do
+    name=$(basename "$f")
+    [ "$name" = "test-hooks.sh" ] && continue
+    grep -q 'PYTHON=' "$f" || continue
+    if grep -q 'WindowsApps' "$f"; then
+      pass "$name guards against the Store python3 stub"
+    else
+      fail "$name guards against the Store python3 stub (no WindowsApps check)"
+    fi
+  done
+  # The same snippet is copied into the installer and the two test scripts: keep them in step.
+  for f in "$HOOKS_DIR/../setup.sh" "$HOOKS_DIR/../tests/judge-eval.sh" "$HOOKS_DIR/../tests/install-matrix.sh"; do
+    name=$(basename "$f")
+    if grep -q '[Ww]indows[Aa]pps' "$f" 2>/dev/null; then
+      pass "$name carries the Store python3 stub guard"
+    else
+      fail "$name carries the Store python3 stub guard (no WindowsApps check)"
+    fi
+  done
+  # These grep the docs, they do not run anything: they only keep the snippet text in step.
+  for f in "$HOOKS_DIR/README.md" "$HOOKS_DIR/../TROUBLESHOOTING.md" "$HOOKS_DIR/../GETTING-STARTED.md"; do
+    name=$(basename "$f")
+    if grep -qi 'windowsapps' "$f" 2>/dev/null; then
+      pass "docs sync: $name mentions the Store python3 stub"
+    else
+      fail "docs sync: $name mentions the Store python3 stub (no WindowsApps text)"
+    fi
+  done
+
+  # Item: the interpreter path is quoted at every call site. A path with a space (for
+  # example under "Program Files") would otherwise split into words and the hook would
+  # run nothing and fail open.
+  echo "  (quoted interpreter path)"
+  mkdir -p "$T8/Program Files/py"
+  printf '#!/bin/bash\nexec "%s" "$@"\n' "$PYTHON" > "$T8/Program Files/py/python3"
+  chmod +x "$T8/Program Files/py/python3"
+  SP_PATH="$T8/Program Files/py:$PATH"
+  expect "guard-exit-plan: an unaudited plan is denied when python lives under a path with a space" deny \
+    "$(guard_decision guard-exit-plan.sh '{"tool_name":"ExitPlanMode","tool_input":{"plan":"## Plan\n1. Edit the file."}}' "PATH=$SP_PATH")"
+  expect "agent-write-guard: rm -rf by a read-only agent is denied when python lives under a path with a space" deny \
+    "$(guard_decision agent-write-guard.sh '{"agent_type":"code-reviewer","tool_name":"Bash","cwd":"/work/proj","tool_input":{"command":"rm -rf x"}}' "${GENV[@]}" "PATH=$SP_PATH")"
+  expect "protect-config: a linter config edit asks when python lives under a path with a space" ask \
+    "$(guard_decision protect-config.sh '{"tool_name":"Edit","tool_input":{"file_path":"/work/proj/eslint.config.js","old_string":"a","new_string":"b"}}' "PATH=$SP_PATH")"
+  expect "protect-claude-settings: a safety edit asks when python lives under a path with a space" ask \
+    "$(guard_decision protect-claude-settings.sh '{"tool_name":"Edit","tool_input":{"file_path":"/home/u/.claude/settings.json","old_string":"a","new_string":"\"disableAllHooks\": true"}}' "PATH=$SP_PATH")"
+  out=$(hook_out verify-subagent-findings.sh '{"tool_name":"Agent","tool_input":{"subagent_type":"code-reviewer"}}' "PATH=$SP_PATH")
+  expect "verify-subagent-findings: the reminder is sent when python lives under a path with a space" PostToolUse \
+    "$(json_field "$out" hookSpecificOutput.hookEventName | tr -d '\r')"
+  for f in "$HOOKS_DIR"/*.sh; do
+    name=$(basename "$f")
+    [ "$name" = "test-hooks.sh" ] && continue
+    # shellcheck disable=SC2016 # the pattern is literal text, not an expansion
+    if grep -nE '(^|[^"])\$PYTHON( |$)' "$f" | grep -vE '^[0-9]+:[[:space:]]*#' | grep -q .; then
+      fail "$name quotes the interpreter at every call site (found an unquoted \$PYTHON)"
+    else
+      pass "$name quotes the interpreter at every call site"
+    fi
+  done
+
+  # Item: the Store stub path is matched case-insensitively (Windows paths are).
+  echo "  (case-insensitive WindowsApps match)"
+  mkdir -p "$T8/ci/windowsapps"
+  printf '#!/bin/bash\necho "Python was not found" >&2\nexit 49\n' > "$T8/ci/windowsapps/python3"
+  chmod +x "$T8/ci/windowsapps/python3"
+  expect "guard-exit-plan: a lower-case windowsapps stub is skipped" deny \
+    "$(guard_decision guard-exit-plan.sh '{"tool_name":"ExitPlanMode","tool_input":{"plan":"## Plan\n1. Edit the file."}}' "PATH=$T8/ci/windowsapps:$T8/pybin:$PATH")"
+
+  # D10. verify-subagent-findings.sh: a background spawn returns at launch, before any
+  # report exists, so "report received" would be false.
+  echo "  (D10: async_launched)"
+  VSF=verify-subagent-findings.sh
+  out=$(hook_out $VSF '{"tool_name":"Agent","tool_input":{"subagent_type":"code-reviewer"},"tool_response":{"status":"async_launched"}}')
+  ctx=$(json_field "$out" hookSpecificOutput.additionalContext)
+  case "$ctx" in
+    *"no report yet"*) pass "verify-subagent-findings: an async launch says no report yet" ;;
+    *) fail "verify-subagent-findings: an async launch says no report yet (got: ${out:-<no output>})" ;;
+  esac
+  if printf '%s' "$out" | grep -qi 'report received'; then
+    fail "verify-subagent-findings: an async launch must not claim a report was received (got: $out)"
+  else
+    pass "verify-subagent-findings: an async launch does not claim a report was received"
+  fi
+  out=$(hook_out $VSF '{"tool_name":"Agent","tool_input":{"subagent_type":"code-reviewer"},"tool_response":{"status":"completed"}}')
+  case "$(json_field "$out" hookSpecificOutput.additionalContext)" in
+    *"REPORT RECEIVED"*) pass "verify-subagent-findings: control, a completed agent still says report received" ;;
+    *) fail "verify-subagent-findings: control, a completed agent still says report received (got: ${out:-<no output>})" ;;
+  esac
+
+  # D13. cost-tracker.sh: session_id comes from stdin, the model from the transcript.
+  echo "  (D13: cost-tracker)"
+  CT_HOME="$T8/cthome"; mkdir -p "$CT_HOME"
+  TR="$T8/transcript.jsonl"
+  printf '%s\n' \
+    '{"type":"user","message":{"role":"user","content":"hi"}}' \
+    '{"type":"assistant","message":{"model":"claude-old-model","role":"assistant"}}' \
+    'not json {{{' \
+    '{"type":"assistant","message":{"model":"claude-test-model-2","role":"assistant"}}' \
+    '{"type":"system","subtype":"x"}' > "$TR"
+  printf '{"hook_event_name":"Stop","session_id":"abc-123","transcript_path":"%s"}' "$(winpath "$TR")" \
+    | env HOME="$CT_HOME" bash "$HOOKS_DIR/cost-tracker.sh" >/dev/null 2>&1
+  last=$(tail -n 1 "$CT_HOME/.claude/metrics/costs.jsonl" 2>/dev/null)
+  expect "cost-tracker: session_id comes from the stdin JSON" abc-123 "$(json_field "$last" session_id | tr -d '\r')"
+  expect "cost-tracker: model comes from the last transcript entry that has one" claude-test-model-2 "$(json_field "$last" model | tr -d '\r')"
+  printf '{"hook_event_name":"Stop"}' | env HOME="$CT_HOME" bash "$HOOKS_DIR/cost-tracker.sh" >/dev/null 2>&1
+  last=$(tail -n 1 "$CT_HOME/.claude/metrics/costs.jsonl" 2>/dev/null)
+  expect "cost-tracker: control, no session_id and no transcript logs unknown" unknown:unknown \
+    "$(json_field "$last" session_id | tr -d '\r'):$(json_field "$last" model | tr -d '\r')"
+  # Truncation: over 10 MB keeps the newest half and leaves no temp file behind.
+  CT_BIG="$T8/ctbig"; mkdir -p "$CT_BIG/.claude/metrics"
+  MONTH=$(date -u +%Y-%m)
+  "$PYTHON" -c "
+import sys
+with open(sys.argv[1], 'w') as f:
+    for i in range(110000):
+        f.write('{\"session_id\": \"old\", \"model\": \"m\", \"timestamp\": \"' + sys.argv[2] + '-01T00:00:00Z\", \"event\": \"stop\", \"pad\": \"' + 'x' * 60 + '\"}\n')
+" "$CT_BIG/.claude/metrics/costs.jsonl" "$MONTH" 2>/dev/null
+  before=$(wc -c < "$CT_BIG/.claude/metrics/costs.jsonl" | tr -d ' ')
+  printf '{"hook_event_name":"Stop","session_id":"big-1"}' | env HOME="$CT_BIG" bash "$HOOKS_DIR/cost-tracker.sh" >/dev/null 2>&1
+  after=$(wc -c < "$CT_BIG/.claude/metrics/costs.jsonl" | tr -d ' ')
+  leftover=0
+  for f in "$CT_BIG/.claude/metrics"/* "$CT_BIG/.claude/metrics"/.[!.]*; do
+    [ -e "$f" ] && [ "$(basename "$f")" != costs.jsonl ] && leftover=$((leftover + 1))
+  done
+  if [ "$before" -gt 10485760 ] && [ "$after" -lt "$before" ] && [ "$leftover" = 0 ] \
+     && tail -n 1 "$CT_BIG/.claude/metrics/costs.jsonl" | grep -q '"event": "stop"' \
+     && ! tail -n 1 "$CT_BIG/.claude/metrics/costs.jsonl" | grep -q '"pad"'; then
+    pass "cost-tracker: control, an oversize log is cut, ends with the new entry and leaves no temp file"
+  else
+    fail "cost-tracker: control, an oversize log is cut, ends with the new entry and leaves no temp file (before=$before after=$after leftover=$leftover)"
+  fi
+
+  # A placeholder model such as <synthetic> is skipped and the search goes on backwards.
+  printf '%s\n' \
+    '{"type":"assistant","message":{"model":"claude-real-model","role":"assistant"}}' \
+    '{"type":"assistant","message":{"model":"<synthetic>","role":"assistant"}}' > "$T8/transcript2.jsonl"
+  printf '{"hook_event_name":"Stop","session_id":"syn-1","transcript_path":"%s"}' "$(winpath "$T8/transcript2.jsonl")" \
+    | env HOME="$CT_HOME" bash "$HOOKS_DIR/cost-tracker.sh" >/dev/null 2>&1
+  last=$(tail -n 1 "$CT_HOME/.claude/metrics/costs.jsonl" 2>/dev/null)
+  expect "cost-tracker: a <synthetic> model is skipped for the real one before it" claude-real-model "$(json_field "$last" model | tr -d '\r')"
+  # The cut keeps the log's file mode. Only meaningful where chmod works (not Windows).
+  CT_MODE="$T8/ctmode"; mkdir -p "$CT_MODE/.claude/metrics"
+  cat "$CT_BIG/.claude/metrics/costs.jsonl" "$CT_BIG/.claude/metrics/costs.jsonl" > "$CT_MODE/.claude/metrics/costs.jsonl" 2>/dev/null
+  chmod 664 "$CT_MODE/.claude/metrics/costs.jsonl" 2>/dev/null
+  mode_before=$(stat -c %a "$CT_MODE/.claude/metrics/costs.jsonl" 2>/dev/null)
+  printf '{"hook_event_name":"Stop","session_id":"mode-1"}' | env HOME="$CT_MODE" bash "$HOOKS_DIR/cost-tracker.sh" >/dev/null 2>&1
+  mode_after=$(stat -c %a "$CT_MODE/.claude/metrics/costs.jsonl" 2>/dev/null)
+  if [ -z "$mode_before" ]; then
+    skip "cost-tracker: the cut keeps the log file mode (stat -c unavailable)"
+  else
+    expect "cost-tracker: the cut keeps the log file mode" "$mode_before" "$mode_after"
+  fi
+
+  # D11. instructions-loaded.sh: rotate its log at 1 MB, keeping one .1 generation.
+  echo "  (D11: instructions-loaded log rotation)"
+  IL_HOME="$T8/ilhome"; mkdir -p "$IL_HOME/.claude/logs"
+  IL_LOG="$IL_HOME/.claude/logs/instructions-loaded.log"
+  IL_IN='{"hook_event_name":"InstructionsLoaded","file_path":"/work/proj/CLAUDE.md","load_reason":"session_start","memory_type":"Project"}'
+  yes "old log line padding padding padding padding" 2>/dev/null | head -c 1100000 > "$IL_LOG"
+  printf '%s' "$IL_IN" | env HOME="$IL_HOME" bash "$HOOKS_DIR/instructions-loaded.sh" >/dev/null 2>&1
+  if [ -f "$IL_LOG.1" ] && [ "$(wc -c < "$IL_LOG.1" | tr -d ' ')" -gt 1000000 ] \
+     && [ "$(wc -c < "$IL_LOG" | tr -d ' ')" -lt 2000 ] && grep -q 'session_start' "$IL_LOG"; then
+    pass "instructions-loaded: a log over 1 MB is rotated to .1 and a fresh log starts"
+  else
+    fail "instructions-loaded: a log over 1 MB is rotated to .1 and a fresh log starts"
+  fi
+  rm -f "$IL_LOG.1"; printf 'one old line\n' > "$IL_LOG"
+  printf '%s' "$IL_IN" | env HOME="$IL_HOME" bash "$HOOKS_DIR/instructions-loaded.sh" >/dev/null 2>&1
+  if [ ! -f "$IL_LOG.1" ] && [ "$(wc -l < "$IL_LOG" | tr -d ' ')" = 2 ]; then
+    pass "instructions-loaded: control, a small log is appended to and not rotated"
+  else
+    fail "instructions-loaded: control, a small log is appended to and not rotated"
+  fi
+
+  # D12. verify-mcp-sync.sh: an absent Cursor config means "not installed", not "drifted".
+  echo "  (D12: verify-mcp-sync)"
+  MS_HOME="$T8/mshome"; mkdir -p "$MS_HOME"
+  printf '{"mcpServers":{"a":{},"b":{}}}' > "$MS_HOME/.claude.json"
+  out=$(env HOME="$MS_HOME" USERPROFILE="$MS_HOME" bash "$HOOKS_DIR/verify-mcp-sync.sh" 2>/dev/null | tr -d '\r')
+  case "$out" in
+    *"Cursor not installed, comparison skipped"*) pass "verify-mcp-sync: a missing Cursor file says it is not installed" ;;
+    *) fail "verify-mcp-sync: a missing Cursor file says it is not installed (got: $out)" ;;
+  esac
+  case "$out" in
+    *"OUT OF SYNC"*) fail "verify-mcp-sync: a missing Cursor file is not reported as OUT OF SYNC" ;;
+    *) pass "verify-mcp-sync: a missing Cursor file is not reported as OUT OF SYNC" ;;
+  esac
+  mkdir -p "$MS_HOME/.cursor"; printf '{"mcpServers":{"a":{},"b":{}}}' > "$MS_HOME/.cursor/mcp.json"
+  out=$(env HOME="$MS_HOME" USERPROFILE="$MS_HOME" bash "$HOOKS_DIR/verify-mcp-sync.sh" 2>/dev/null | tr -d '\r')
+  case "$out" in
+    *"Status: IN SYNC"*) pass "verify-mcp-sync: control, two matching files are IN SYNC" ;;
+    *) fail "verify-mcp-sync: control, two matching files are IN SYNC (got: $out)" ;;
+  esac
+  printf '{"mcpServers":{"a":{}}}' > "$MS_HOME/.cursor/mcp.json"
+  out=$(env HOME="$MS_HOME" USERPROFILE="$MS_HOME" bash "$HOOKS_DIR/verify-mcp-sync.sh" 2>/dev/null | tr -d '\r')
+  case "$out" in
+    *"Status: OUT OF SYNC"*) pass "verify-mcp-sync: control, a real difference is still OUT OF SYNC" ;;
+    *) fail "verify-mcp-sync: control, a real difference is still OUT OF SYNC (got: $out)" ;;
+  esac
+
+  # D8. check-no-dash-file.py: the gate blocks a post, so a code span or a fenced block
+  # that quotes a command must not trip it. Banned characters are still checked everywhere.
+  echo "  (D8: check-no-dash-file.py)"
+  CND="$HOOKS_DIR/check-no-dash-file.py"
+  # nd_file_rc <content>: exit code of the checker on a file holding the content.
+  nd_file_rc() {
+    printf '%s\n' "$1" > "$T8/nd.md"
+    "$PYTHON" "$CND" "$(winpath "$T8/nd.md")" >/dev/null 2>&1
+    echo $?
+  }
+  # shellcheck disable=SC2016 # backticks in the fixture are Markdown, not command substitution
+  expect "check-no-dash-file: a code span holding a double-dash is clean" 0 "$(nd_file_rc 'Run `git log -- path` now.')"
+  expect "check-no-dash-file: a fenced block holding a double-dash is clean" 0 "$(nd_file_rc $'Before:\n```\ngit diff -- f\n```\nAfter.')"
+  expect "check-no-dash-file: a ~~~ fenced block holding a double-dash is clean" 0 "$(nd_file_rc $'Before:\n~~~\ngit diff -- f\n~~~\nAfter.')"
+  expect "check-no-dash-file: control, a prose double-dash is flagged" 1 "$(nd_file_rc 'Wait -- then run it.')"
+  # shellcheck disable=SC2016 # backticks in the fixture are Markdown, not command substitution
+  expect "check-no-dash-file: control, a prose double-dash next to a code span is flagged" 1 "$(nd_file_rc 'Use `ls` to list files and wait -- then run it.')"
+  expect "check-no-dash-file: control, prose after a closed fence is flagged" 1 "$(nd_file_rc $'```\ngit diff -- f\n```\nWait -- then run it.')"
+  expect "check-no-dash-file: control, an em-dash is flagged" 1 "$(nd_file_rc "a $(printf '\342\200\224') b")"
+  expect "check-no-dash-file: control, an em-dash inside a code span is still flagged" 1 "$(nd_file_rc "x \`a $(printf '\342\200\224') b\` y")"
+  # Fences close only on the same marker with at least the opener's length; one left open
+  # at the end of the file is not a fence, so its lines are judged as prose.
+  expect "check-no-dash-file: an unclosed fence does not hide a prose double-dash" 1 "$(nd_file_rc $'```\nWait -- then run it.')"
+  expect "check-no-dash-file: a 4-backtick fence holding a 3-backtick line still skips its body" 0 "$(nd_file_rc $'````\n```\ngit diff -- f\n````\nAfter.')"
+  expect "check-no-dash-file: a ~~~ fence is not closed by a backtick line" 0 "$(nd_file_rc $'~~~\n```\ngit diff -- f\n~~~\nAfter.')"
+
+  # D7. no-dash-check.sh: judge each occurrence in prose files instead of excluding whole lines.
+  echo "  (D7: no-dash-check.sh)"
+  # nd_hook <file-name> <content>: "flagged" when the hook warns, else "clean".
+  nd_hook() {
+    printf '%s\n' "$2" > "$T8/$1"
+    local out
+    out=$(hook_out no-dash-check.sh '{"tool_input":{"file_path":"'"$(winpath "$T8/$1")"'"}}')
+    case "$out" in *"double-dash"*) echo flagged ;; "") echo clean ;; *) echo "other:$out" ;; esac
+  }
+  expect "no-dash-check: a prose double-dash on a line that also has a flag is flagged" flagged \
+    "$(nd_hook a.md 'npm test --coverage then wait -- retry')"
+  expect "no-dash-check: the same line in a .markdown file is flagged" flagged \
+    "$(nd_hook a.markdown 'npm test --coverage then wait -- retry')"
+  # shellcheck disable=SC2016 # backticks in the fixture are Markdown, not command substitution
+  expect "no-dash-check: control, a prose double-dash on a line that also has a code span is flagged" flagged \
+    "$(nd_hook b.md 'Use `ls` to list files and wait -- then run it.')"
+  expect "no-dash-check: a fenced block holding a double-dash is clean" clean \
+    "$(nd_hook c.md $'Before:\n```\ngit log -- path\n```\nAfter.')"
+  # shellcheck disable=SC2016 # backticks in the fixture are Markdown, not command substitution
+  expect "no-dash-check: control, a code span holding a double-dash is clean" clean \
+    "$(nd_hook d.md 'Use `git log -- path` to see history.')"
+  expect "no-dash-check: control, a double-dash followed by another flag is clean" clean \
+    "$(nd_hook e.md 'Run npm test -- --coverage for a report.')"
+  expect "no-dash-check: a .txt file is judged per occurrence" flagged \
+    "$(nd_hook f.txt 'npm test --coverage then wait -- retry')"
+  expect "no-dash-check: control, a plain prose double-dash is flagged" flagged \
+    "$(nd_hook g.md 'A plain sentence -- with a dash.')"
+  expect "no-dash-check: control, a shell file keeps the coarse rule (a git pathspec is clean)" clean \
+    "$(nd_hook h.sh 'git diff --cached -- file')"
+  expect "no-dash-check: control, a shell file with a prose double-dash is flagged" flagged \
+    "$(nd_hook i.sh '# wait -- then retry')"
+  # A non-ASCII line must not crash the checker on a pipe that is not UTF-8 (cp1252 here).
+  printf 'caf\303\251 \346\227\245\346\234\254 wait -- then\n' > "$T8/u.md"
+  out=$(hook_out no-dash-check.sh '{"tool_input":{"file_path":"'"$(winpath "$T8/u.md")"'"}}' PYTHONIOENCODING=cp1252)
+  case "$out" in
+    *"double-dash"*) pass "no-dash-check: a non-ASCII prose line is still flagged on a cp1252 pipe" ;;
+    *) fail "no-dash-check: a non-ASCII prose line is still flagged on a cp1252 pipe (got: ${out:-<no output>})" ;;
+  esac
+  # Fences close only on the same marker with at least the opener's length; one left open
+  # at the end of the file is not a fence, so its lines are judged as prose.
+  expect "no-dash-check: an unclosed fence does not hide a prose double-dash" flagged \
+    "$(nd_hook j.md $'```\nWait -- then run it.')"
+  expect "no-dash-check: a 4-backtick fence holding a 3-backtick line still skips its body" clean \
+    "$(nd_hook k.md $'````\n```\ngit log -- path\n````\nAfter.')"
+  expect "no-dash-check: a ~~~ fence is not closed by a backtick line" clean \
+    "$(nd_hook l.md $'~~~\n```\ngit log -- path\n~~~\nAfter.')"
+  expect "no-dash-check: control, a closed fence still skips its body" clean \
+    "$(nd_hook m.md $'```\ngit log -- path\n```\nAfter.')"
+
+  # Item 7. protect-config.sh and protect-claude-settings.sh ask the user. A subagent
+  # (non-empty top-level agent_id) cannot answer a prompt and would hang, so it gets a deny.
+  echo "  (subagent ask becomes deny)"
+  PC_IN='{"tool_name":"Edit","tool_input":{"file_path":"/work/proj/eslint.config.js","old_string":"a","new_string":"b"}'
+  PS_SAFE='"tool_name":"Edit","tool_input":{"file_path":"/home/u/.claude/settings.json","old_string":"a","new_string":"\"disableAllHooks\": true"}'
+  PS_ALLOW='"tool_name":"Edit","tool_input":{"file_path":"/home/u/.claude/settings.json","old_string":"\"allow\": []","new_string":"\"allow\": [\"Edit(~/.claude/**)\"]"}'
+  expect "protect-config: a main-thread edit still asks (control)" ask "$(guard_decision protect-config.sh "$PC_IN}")"
+  expect "protect-config: a subagent edit is denied" deny "$(guard_decision protect-config.sh "$PC_IN"',"agent_id":"a1b2c3"}')"
+  expect "protect-config: an empty agent_id still asks (control)" ask "$(guard_decision protect-config.sh "$PC_IN"',"agent_id":""}')"
+  expect "protect-config: an agent_id nested in tool_input does not count (control)" ask \
+    "$(guard_decision protect-config.sh '{"tool_name":"Edit","tool_input":{"file_path":"/work/proj/eslint.config.js","old_string":"a","new_string":"b","agent_id":"x"}}')"
+  expect "protect-claude-settings: a main-thread safety edit still asks (control)" ask "$(guard_decision protect-claude-settings.sh "{$PS_SAFE}")"
+  expect "protect-claude-settings: a subagent safety edit is denied" deny "$(guard_decision protect-claude-settings.sh "{$PS_SAFE"',"agent_id":"a1b2c3"}')"
+  expect "protect-claude-settings: a main-thread Edit() allow rule still asks (control)" ask "$(guard_decision protect-claude-settings.sh "{$PS_ALLOW}")"
+  expect "protect-claude-settings: a subagent Edit() allow rule is denied" deny "$(guard_decision protect-claude-settings.sh "{$PS_ALLOW"',"agent_id":"a1b2c3"}')"
+  for pair in "protect-config.sh|$PC_IN"',"agent_id":"a1b2c3"}' "protect-claude-settings.sh|{$PS_SAFE"',"agent_id":"a1b2c3"}'; do
+    h=${pair%%|*}; p=${pair#*|}
+    reason=$(json_field "$(hook_out "$h" "$p")" hookSpecificOutput.permissionDecisionReason)
+    if printf '%s' "$reason" | grep -qi 'ask the user to make this change'; then
+      pass "$h: the subagent deny tells it to ask the user to make the change"
+    else
+      fail "$h: the subagent deny tells it to ask the user to make the change (got: ${reason:-<no reason>})"
+    fi
+  done
+
+  rm -rf "$T8"
 fi
 echo ""
 
