@@ -112,7 +112,7 @@ CLAUDE.md를 프로젝트에 복사하세요. 4개의 행동 규칙. 즉각적�
 | AI 코딩 실수를 방지하는 [4개의 행동 규칙](../CLAUDE.md) | 복사할 설정 목록 |
 | Copilot, Cursor, Cline, Roo Code, OpenCode 등 10개 도구를 위한 [교차 도구 가이드](../docs/CROSS-TOOL-GUIDE.md) | 단일 도구만 |
 | [초보자 친화적](../GETTING-STARTED.md) 6개의 도입 페르소나 | 전문성 가정 |
-| [149개 자동 테스트](../hooks/test-hooks.sh)를 통한 [스모크 테스트 hooks](../hooks/test-hooks.sh) | 테스트되지 않은 스크립트 |
+| [161개 자동 테스트](../hooks/test-hooks.sh)를 통한 [스모크 테스트 hooks](../hooks/test-hooks.sh) | 테스트되지 않은 스크립트 |
 | 안전 우선: [설정 배치 가이드](../GETTING-STARTED.md#where-config-belongs-project-vs-personal), 개인정보 경고, [우아한 성능 저하](../agents/README.md#agents-are-not-infallible) | 안전 지침 없음 |
 | [프레임워크 비의존적](../FAQ.md#what-framework-or-language-does-this-work-with): 모든 언어와 스택에서 동작 | 특정 언어/프레임워크를 가정 |
 
@@ -185,7 +185,7 @@ CLAUDE.md를 프로젝트에 복사하세요. 4개의 행동 규칙. 즉각적�
 
 추가 2개 유틸리티 스크립트: `verify-mcp-sync.sh` (MCP 설정 확인) 및 `status-line.sh` (브랜치/프로젝트 상태), 그리고 컴패니언 도구 `check-no-dash-file.py` (`no-dash-check.sh`용 게시 전 프로즈 검사). 유틸리티는 full 프리셋으로 배포됩니다. 폴더의 마지막 파일은 `test-hooks.sh`이며, 로컬 테스트 하네스로 `bash hooks/test-hooks.sh`로 실행하여 모든 hooks를 검증합니다. 이 파일만 `~/.claude/hooks/`에 배포되지 않으며, "18 hooks" 총합에도 포함되지 않습니다.
 
-`bash hooks/test-hooks.sh`를 실행하여 모든 hooks가 통과하는지 확인하세요 (149개 자동 테스트).
+`bash hooks/test-hooks.sh`를 실행하여 모든 hooks가 통과하는지 확인하세요 (161개 자동 테스트).
 
 [hooks/README.md](../hooks/README.md)에서 전체 라이프사이클, 테스트 가이드, 설계 원칙을 참조하세요.
 

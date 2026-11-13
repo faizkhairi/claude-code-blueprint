@@ -1,7 +1,7 @@
 #!/bin/bash
 # Hook: PreToolUse (Write|Edit) - Claude settings self-protection.
 # Fires only on edits to ~/.claude/settings.json or settings.local.json.
-# Prompts (decision:ask) ONLY when the edit touches a SAFETY key that could
+# Prompts (permissionDecision: ask) ONLY when the edit touches a SAFETY key that could
 # silently weaken the harness: defaultMode (which can enable bypassPermissions),
 # the deny or ask permission lists, disableAllHooks, or disableAutoMode. Routine
 # edits (adding an allow rule, a theme, an env var) pass through with no prompt.
@@ -60,7 +60,7 @@ except:
 # Safety keys whose presence in the edit warrants a confirm.
 if echo "$COMBINED" | grep -qE '"(defaultMode|deny|ask|disableAllHooks|disableAutoMode)"' \
    || echo "$COMBINED" | grep -qE 'bypassPermissions'; then
-  echo '{"decision": "ask", "reason": "This edit touches a Claude safety setting (defaultMode / deny / ask / disableAllHooks / disableAutoMode / bypassPermissions). Confirm it does not weaken the permission guards or disable hooks. Routine settings edits (allow rules, theme, env) do not trigger this prompt."}'
+  echo '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"ask","permissionDecisionReason":"This edit touches a Claude safety setting (defaultMode / deny / ask / disableAllHooks / disableAutoMode / bypassPermissions). Confirm it does not weaken the permission guards or disable hooks. Routine settings edits (allow rules, theme, env) do not trigger this prompt."}}'
   exit 0
 fi
 
@@ -81,7 +81,7 @@ fi
 #
 # Matches the introduced text only, so removing an entry is never blocked.
 if echo "$ADDED" | grep -qE '"(Edit|Write)\((~|[A-Za-z]:)?[/\\]?[^"]*\.claude[/\\][^"]*\)"'; then
-  echo '{"decision": "ask", "reason": "This edit adds an Edit()/Write() allow rule for a path inside the Claude config directory. Those entries have no effect: .claude is a protected path, so the safety check runs before allow rules and the write is routed to the classifier (auto mode) or denied (dontAsk) regardless. See code.claude.com/docs/en/permission-modes#protected-paths. Removing the entry is safe and does not change effective permissions."}'
+  echo '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"ask","permissionDecisionReason":"This edit adds an Edit()/Write() allow rule for a path inside the Claude config directory. Those entries have no effect: .claude is a protected path, so the safety check runs before allow rules and the write is routed to the classifier (auto mode) or denied (dontAsk) regardless. See code.claude.com/docs/en/permission-modes#protected-paths. Removing the entry is safe and does not change effective permissions."}}'
   exit 0
 fi
 

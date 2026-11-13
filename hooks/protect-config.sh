@@ -18,7 +18,7 @@ except:
 
 # Block if editing config files that should not be weakened
 if echo "$FILE_PATH" | grep -qiE '(eslint\.config|\.eslintrc|prettier\.config|\.prettierrc|tsconfig|biome\.json|vitest\.config|\.stylelintrc|tailwind\.config|next\.config|nuxt\.config|jest\.config|\.npmrc|webpack\.config|rollup\.config)'; then
-  echo '{"decision": "ask", "reason": "This is a linter/formatter/build config file. Confirm this edit improves the config rather than weakening rules to suppress errors."}'
+  echo '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"ask","permissionDecisionReason":"This is a linter/formatter/build config file. Confirm this edit improves the config rather than weakening rules to suppress errors."}}'
   exit 0
 fi
 
