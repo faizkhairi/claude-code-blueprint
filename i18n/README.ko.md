@@ -6,13 +6,14 @@
 
 60초 안에 한 파일을 복사하세요. 프로젝트가 커지면 더 복사하세요. 모든 언어, 모든 프레임워크, 모든 스킬 레벨에서 작동합니다.
 
+[![Install Test](https://github.com/faizkhairi/claude-code-blueprint/actions/workflows/install-test.yml/badge.svg)](https://github.com/faizkhairi/claude-code-blueprint/actions/workflows/install-test.yml)
 [![Stars](https://img.shields.io/github/stars/faizkhairi/claude-code-blueprint?style=flat)](https://github.com/faizkhairi/claude-code-blueprint)
 [![Forks](https://img.shields.io/github/forks/faizkhairi/claude-code-blueprint?style=flat)](https://github.com/faizkhairi/claude-code-blueprint/network/members)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](../LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-compatible-blueviolet)](https://docs.anthropic.com/en/docs/claude-code)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](../CONTRIBUTING.md)
 
-**12 agents** · **20 skills** · **18 hooks** · **6 rules**, 실제 프로젝트에서 검증됨
+**12 agents** · **20 skills** · **18 hooks** · **6 rules**, 필요한 것만 복사하거나 프리셋(minimal / standard / core / full)을 설치하세요
 
 [English](../README.md) | [日本語](README.ja.md) | [한국어](README.ko.md) | [简体中文](README.zh.md)
 
@@ -22,7 +23,7 @@
 
 ---
 
-> **시작하기 전에:** 이것은 프로젝트 템플릿이 아니라 참조 저장소입니다. **이 저장소 내에서** Claude Code를 **실행하지 마세요.** (블루프린트 자체의 CLAUDE.md를 로드하여 당신의 프로젝트 규칙을 무시하게 됩니다.) 자신의 프로젝트에 fork하거나 개별 파일을 복사하세요. 전체 설정 안내는 [GETTING-STARTED.md](../GETTING-STARTED.md)를 참조하세요.
+> **복사하기 전에:** 이것은 프로젝트 템플릿이 아니라 참조 저장소입니다. 파일을 여기서 자신의 프로젝트로 복사해 사용합니다. **이 저장소 내에서** Claude Code를 **실행하지 마세요.** (당신의 프로젝트가 아닌 블루프린트 자체의 CLAUDE.md를 로드하게 됩니다.) 전체 설정 안내는 [GETTING-STARTED.md](../GETTING-STARTED.md)를 참조하세요.
 >
 > 이 저장소로 작업하는 AI 어시스턴트용: 오리엔테이션은 [AGENTS.md](../AGENTS.md)를 참조하세요.
 
@@ -30,18 +31,14 @@
 
 ## Quick Start
 
-하나의 파일을 복사하세요. 4개의 행동 규칙을 얻으세요. 60초 안에 완료.
+**먼저 이것부터 하세요.** 파일 하나만 설치하면 60초 안에 끝납니다:
 
 ```bash
-# 프로젝트 루트에서
-curl -o CLAUDE.md https://raw.githubusercontent.com/faizkhairi/claude-code-blueprint/main/CLAUDE.md
+# 모든 프로젝트에 전역으로 설치
+mkdir -p ~/.claude && curl -o ~/.claude/CLAUDE.md https://raw.githubusercontent.com/faizkhairi/claude-code-blueprint/main/CLAUDE.md
 ```
 
-이렇게 하면 Claude Code에 가장 흔한 AI 코딩 실수를 방지하는 4가지 규칙을 제공합니다:
-
-**Verify-After-Complete** · **Diagnose-First** · **Plan-First** · **Verify-Before-Exit-Plan**
-
-더 알고 싶으신가요? [전체 도입 경로](#recommended-adoption-path)를 보거나 [30분 초보자 가이드](../GETTING-STARTED.md)를 참조하세요. Claude Code가 처음이신가요? [대상자](#who-is-this-for)를 확인하거나 [FAQ](../FAQ.md)를 참조하세요.
+이렇게 하면 Claude Code에 가장 흔한 AI 코딩 실수를 방지하는 4가지 행동 규칙이 추가됩니다: **Verify-After-Complete** · **Diagnose-First** · **Plan-First** · **Verify-Before-Exit-Plan**. 이 규칙은 당신 컴퓨터의 모든 프로젝트에 적용됩니다. 첫 단계는 이것이 전부입니다. 먼저 써 보고, 더 필요하면 다시 오세요. 프로젝트별 규칙도 원한다면 [설정을 둘 위치](../GETTING-STARTED.md#where-config-belongs-project-vs-personal)를 참조하세요.
 
 <details>
 <summary><strong>CLAUDE.md 이상을 원하시나요?</strong> (hooks, agents, 설정)</summary>
@@ -52,10 +49,12 @@ CLAUDE.md가 작동하면 나머지도 추가하세요. 가장 쉬운 방법은 
 ./setup.sh --preset=standard
 ```
 
-또는 Claude에게 맡기세요. Claude Code 세션에 붙여넣기: *"Claude Code Blueprint을 설정해 주세요. CLAUDE.md를 프로젝트 루트에 복사하고, hooks와 설정을 ~/.claude/에 설정해 주세요. 각 단계를 보여주세요."*
+또는 Claude에게 맡기세요. Claude Code 세션에 붙여넣기: *"Claude Code Blueprint을 설정해 주세요. CLAUDE.md를 ~/.claude/CLAUDE.md에 설치하고, hooks와 설정을 ~/.claude/에 설정해 주세요. 각 단계를 보여주세요."*
 
 모든 설치 옵션(fork / clone / cherry-pick / presets)과 검증 체크리스트는 **[SETUP.md](../SETUP.md)**를 참조하세요.
 </details>
+
+**Claude Code가 처음이거나 안내를 따라 하고 싶으신가요?** **[초보자 가이드](../GETTING-STARTED.md)**가 같은 내용을 단계별로 안내합니다. 누구를 위한 것인지 궁금하다면 아래 [대상자](#who-is-this-for)를 확인하세요.
 
 ---
 
@@ -78,7 +77,7 @@ CLAUDE.md가 작동하면 나머지도 추가하세요. 가장 쉬운 방법은 
 
 ## Who Is This For?
 
-모든 개발자, 모든 프레임워크, 모든 스킬 레벨.
+**모든 개발자, 모든 프레임워크, 모든 스킬 레벨.** 블루프린트는 Claude Code의 동작을 설정하며, 프로젝트의 언어나 프레임워크는 상관하지 않습니다.
 
 | 당신은 | 여기서 시작 | 가치 실현 시간 |
 |--------|-----------|--------------|
@@ -91,14 +90,7 @@ CLAUDE.md가 작동하면 나머지도 추가하세요. 가장 쉬운 방법은 
 
 ### Your Progression
 
-**Level 1: 여기서 시작 (60초)**
-CLAUDE.md를 프로젝트에 복사하세요. 4개의 행동 규칙. 즉각적인 효과.
-
-**Level 2: 안전망 추가 (5분)**
-2-3개 hooks를 추가하세요. 토큰 비용 제로. 자동화된 설정 보호와 편집 검증.
-
-**Level 3: 성장하면서 커스터마이즈 (지속적)**
-워크플로우가 성숙하면 agents, skills, rules, memory를 추가하세요. 준비된 설정은 [Presets](../docs/PRESETS.md)를 참조하세요.
+필요에 따라 키워 가세요: CLAUDE.md(위)로 시작해 hooks를 몇 개 추가하고, 워크플로우가 성숙하면 agents/skills/rules를 추가하세요. `core` 프리셋이 좋은 중간 단계입니다. 정확한 순서는 아래 [권장 도입 경로](#recommended-adoption-path)에, 각 단계별로 바로 복사할 수 있는 설정은 [Presets](../docs/PRESETS.md)에 있습니다.
 
 ---
 
@@ -112,7 +104,7 @@ CLAUDE.md를 프로젝트에 복사하세요. 4개의 행동 규칙. 즉각적�
 | AI 코딩 실수를 방지하는 [4개의 행동 규칙](../CLAUDE.md) | 복사할 설정 목록 |
 | Copilot, Cursor, Cline, Roo Code, OpenCode 등 10개 도구를 위한 [교차 도구 가이드](../docs/CROSS-TOOL-GUIDE.md) | 단일 도구만 |
 | [초보자 친화적](../GETTING-STARTED.md) 6개의 도입 페르소나 | 전문성 가정 |
-| [149개 자동 테스트](../hooks/test-hooks.sh)를 통한 [스모크 테스트 hooks](../hooks/test-hooks.sh) | 테스트되지 않은 스크립트 |
+| [스모크 테스트를 거친 hooks](../hooks/test-hooks.sh): 149개 자동 테스트 | 테스트되지 않은 스크립트 |
 | 안전 우선: [설정 배치 가이드](../GETTING-STARTED.md#where-config-belongs-project-vs-personal), 개인정보 경고, [우아한 성능 저하](../agents/README.md#agents-are-not-infallible) | 안전 지침 없음 |
 | [프레임워크 비의존적](../FAQ.md#what-framework-or-language-does-this-work-with): 모든 언어와 스택에서 동작 | 특정 언어/프레임워크를 가정 |
 
@@ -130,22 +122,22 @@ CLAUDE.md를 프로젝트에 복사하세요. 4개의 행동 규칙. 즉각적�
 | project-architect | opus | 시스템 설계, 아키텍처 결정, 기술 선택 |
 | backend-specialist | sonnet | API 끝점, 서비스, 데이터베이스 작동, 미들웨어 |
 | frontend-specialist | sonnet | UI 컴포넌트, 상태 관리, 폼, 스타일링 |
-| code-reviewer | sonnet | 코드 품질, 패턴, 모범 사례 (읽기 전용) |
-| security-reviewer | sonnet | OWASP Top 10, 인증 결함, 주입 공격 (읽기 전용) |
-| db-analyst | sonnet | 스키마 분석, 쿼리 최적화, 마이그레이션 계획 (읽기 전용) |
-| devops-engineer | sonnet | 배포 설정, CI/CD, Docker, 인프라 (읽기 전용) |
+| code-reviewer | sonnet | 코드 품질, 패턴, 모범 사례 (의도적 읽기 전용) |
+| security-reviewer | sonnet | OWASP Top 10, 인증 결함, 주입 공격 (의도적 읽기 전용) |
+| db-analyst | sonnet | 스키마 분석, 쿼리 최적화, 마이그레이션 계획 (의도적 읽기 전용) |
+| devops-engineer | sonnet | 배포 설정, CI/CD, Docker, 인프라 (의도적 읽기 전용) |
 | qa-tester | sonnet | 단위 테스트, 통합 테스트, E2E 테스트 |
-| verify-plan | sonnet | 7포인트 기계적 계획 검증 (읽기 전용) |
+| verify-plan | sonnet | 7포인트 기계적 계획 검증 (의도적 읽기 전용) |
 | docs-writer | haiku | README, API 문서, 변경 로그, 아키텍처 문서 |
-| architecture-reviewer | sonnet | 의존성 방향, god 파일, 데드 코드, 모듈성 (읽기 전용) |
+| architecture-reviewer | sonnet | 의존성 방향, god 파일, 데드 코드, 모듈성 (의도적 읽기 전용) |
 | memory-curator | sonnet | 메모리 디렉터리의 고아 파일, 인덱스 드리프트, 깨진 링크, 오래된 항목 감사 (보고 전용) |
 
-[agents/README.md](../agents/README.md)에서 권한 모드, 비용 추정, maxTurns를 참조하세요.
+"의도적 읽기 전용"은 `permissionMode: plan`을 의미하며, 메인 세션이 default 또는 dontAsk 모드로 실행될 때만 유지됩니다. `memory`를 설정한 agent는 여전히 쓰기가 가능합니다. 권한 모드, 상대 비용 티어, frontmatter 필드, maxTurns는 [agents/README.md](../agents/README.md)를 참조하세요. `opus`, `sonnet`, `haiku` 별칭은 각 계열의 최신 모델로 해석되므로(2026년 11월 기준 Anthropic API에서 Opus 5.5, Sonnet 5.5, Haiku 5.5), 새 모델이 출시되어도 agent 파일을 수정할 필요가 없습니다.
 
 </details>
 
 <details>
-<summary><strong>20 Skills</strong>: 자연어 트리거 워크플로우(슬래시 명령 필요 없음)</summary>
+<summary><strong>20 Skills</strong>: 자연어 트리거 워크플로우(각각 `/name` 명령으로도 실행 가능)</summary>
 
 &nbsp;
 
@@ -159,6 +151,7 @@ CLAUDE.md를 프로젝트에 복사하세요. 4개의 행동 규칙. 즉각적�
 | Session | load-session, save-session, session-end, save-diary | 세션 시작/종료, "저장", "안녕", "완료" |
 | Project | scaffold-project, register-project, status, changelog | "새 프로젝트", "상태", "변경 로그" |
 | Database | db-check | "스키마 확인", "모델 검증" |
+| Debugging | diagnose-before-finding | "진단", "근본 원인", "이게 버그인가?", "반드시 수정" |
 | Utilities | tech-radar | "뭐가 새로워?", "업그레이드해야 할까?" |
 
 [skills/README.md](../skills/README.md)에서 커스터마이제이션과 플레이스홀더 변수 설정을 참조하세요.
@@ -177,10 +170,16 @@ CLAUDE.md를 프로젝트에 복사하세요. 4개의 행동 규칙. 즉각적�
 | PreToolUse (Bash) | block-git-push.sh | 원격 저장소 보호 |
 | PreToolUse (Bash) | pre-commit-secret-scan.sh | 시크릿이 포함된 커밋 차단 |
 | PreToolUse (Write/Edit) | protect-config.sh | linter/build 설정 가드 |
+| PreToolUse (Write/Edit) | protect-claude-settings.sh | 자신의 settings.json에 있는 안전 키 편집을 확인하고, 보호된 경로에 대한 효과 없는 allow 규칙을 표시 |
+| PreToolUse (Write/Edit/Bash) | agent-write-guard.sh | 읽기 전용 agent를 모든 권한 모드에서 읽기 전용으로 유지 |
+| PreToolUse (ExitPlanMode) | guard-exit-plan.sh | 계획에 자체 감사가 포함될 때까지 plan 모드 종료를 거부 |
 | PostToolUse (Write/Edit) | notify-file-changed.sh | 검증 알림 |
+| PostToolUse (Write/Edit) | no-dash-check.sh | 문체 위반(예: em-dash)을 경고 |
 | PostToolUse (Bash) | post-commit-review.sh | 커밋 후 검토 |
-| PreCompact | precompact-state.sh | 상태를 디스크에 직렬화 |
-| Stop | security check + cost-tracker.sh + session-checkpoint.sh | 최후 방어 + 메트릭 |
+| PostToolUse (Agent/Task) | verify-subagent-findings.sh | sub-agent의 발견을 검증해야 할 가설로 취급 |
+| PostToolUseFailure (MCP) | mcp-failure-hint.sh | MCP 도구가 실패할 때의 대체 안내 |
+| PreCompact | precompact-state.sh | 상태를 디스크에 직렬화 + 압축 요약에 무엇을 남길지 알림 |
+| Stop | security and claim-evidence check + cost-tracker.sh + session-checkpoint.sh | 최후 방어 + 메트릭 |
 | SessionEnd | session-checkpoint.sh | 보장된 최종 저장 |
 
 추가 2개 유틸리티 스크립트: `verify-mcp-sync.sh` (MCP 설정 확인) 및 `status-line.sh` (브랜치/프로젝트 상태), 그리고 컴패니언 도구 `check-no-dash-file.py` (`no-dash-check.sh`용 게시 전 프로즈 검사). 유틸리티는 full 프리셋으로 배포됩니다. 폴더의 마지막 파일은 `test-hooks.sh`이며, 로컬 테스트 하네스로 `bash hooks/test-hooks.sh`로 실행하여 모든 hooks를 검증합니다. 이 파일만 `~/.claude/hooks/`에 배포되지 않으며, "18 hooks" 총합에도 포함되지 않습니다.
@@ -235,6 +234,10 @@ CLAUDE.md를 프로젝트에 복사하세요. 4개의 행동 규칙. 즉각적�
 
 ## Getting Started
 
+위의 [Quick Start](#quick-start)가 빠른 길입니다. `CLAUDE.md`를 복사하면 60초 안에 시작할 수 있습니다. 다음 단계는 자신에게 맞는 문서를 고르세요: **Claude Code가 처음이라면** **[GETTING-STARTED.md](../GETTING-STARTED.md)**(개념 + 안내형 워크스루)를 읽으세요. **설치 명령과 프리셋만 필요하다면** **[SETUP.md](../SETUP.md)**(모든 옵션 + 검증 체크리스트)로 바로 가세요.
+
+나머지는 다음 순서로 차근차근 도입하세요:
+
 ### Recommended adoption path
 
 1. **[CLAUDE.md](../CLAUDE.md)부터 시작하세요**: 행동 규칙 템플릿. 설정 없이 가장 큰 영향.
@@ -250,13 +253,13 @@ CLAUDE.md를 프로젝트에 복사하세요. 4개의 행동 규칙. 즉각적�
 | | | |
 |:--|:--|:--|
 | **[Architecture](../docs/ARCHITECTURE.md)** | **[Settings Guide](../docs/SETTINGS-GUIDE.md)** | **[Battle Stories](../docs/WHY.md)** |
-| 시스템 설계, hook 라이프사이클, 컴포넌트 관계 | 모든 환경 변수, 권한, hook 설명(비용 영향 포함) | 모든 컴포넌트 뒤의 사건과 교훈 |
+| 시스템 설계, hook 라이프사이클, 컴포넌트 관계 | 모든 환경 변수, 권한, hook을 근거와 함께 설명 | 모든 컴포넌트 뒤의 사건과 교훈 |
 | **[Benchmarks](../docs/BENCHMARKS.md)** | **[Presets](../docs/PRESETS.md)** | **[Cross-Tool Guide](../docs/CROSS-TOOL-GUIDE.md)** |
 | 토큰 절감, 비용 영향, 품질 메트릭 | 솔로, 팀, CI/CD 환경을 위한 복사 준비된 설정 | Copilot, Cursor, Cline, Roo Code, OpenCode 등 10개 도구 |
 | **[FAQ](../FAQ.md)** | **[Getting Started](../GETTING-STARTED.md)** | **[Troubleshooting](../TROUBLESHOOTING.md)** |
 | 커뮤니티에서 자주 묻는 질문 | 제로에서 생산적으로 30분 | 일반적인 문제와 해결책 |
 | **[Setup Guide](../SETUP.md)** | **[Case Studies](../docs/CASE-STUDIES.md)** | **[Roadmap](../docs/ROADMAP.md)** |
-| 자동 설치 프로그램 + 검증 체크리스트 | 도입자 스토리와 before/after 메트릭 | 프로젝트 방향과 향후 계획 |
+| 자동 설치 프로그램 + 검증 체크리스트 | 도입자 스토리와 before/after 메트릭 (제출 기반, 첫 번째가 되어 보세요) | 프로젝트 방향과 향후 계획 |
 | **[Self-Monitoring](../docs/SELF-MONITORING.md)** | | |
 | 선택적 패턴: gitleaks pre-commit + memory-curator agent | | |
 
