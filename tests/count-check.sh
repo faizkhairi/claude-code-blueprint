@@ -468,9 +468,23 @@ echo "--- i18n table parity ---"
 
 HOOK_EVENTS='SessionStart|InstructionsLoaded|PreToolUse|PostToolUse|PostToolUseFailure|PreCompact|Stop|SessionEnd'
 
-# Hook script names from the hooks table rows, one per line, in document order.
+# The Hook cell (third field) of every data row in the hooks table, one per line. The
+# table is the first block of consecutive "|" lines that holds a known event row; its
+# header and separator (first two lines) are skipped, so a translated header still
+# works and a later table or a prose mention of a script is never read. A data row
+# whose event is not known prints "?" so the row counts stay honest.
+hook_cells_of() {
+  LC_ALL=C awk -F'|' -v re="^[|] ($HOOK_EVENTS)( |[(])" '
+    /^[|]/ { n++; line[n] = $0; cell[n] = $3; if ($0 ~ re) hit = 1; next }
+    hit    { exit }
+           { n = 0 }
+    END    { if (hit) for (i = 3; i <= n; i++) print (line[i] ~ re ? cell[i] : "?") }
+  ' "$1"
+}
+
+# Hook script names from the Hook cells, one per line, in document order.
 hooks_of() {
-  grep -E "^\| ($HOOK_EVENTS)( |\()" "$1" | grep -oE '[a-z0-9-]+\.sh'
+  hook_cells_of "$1" | LC_ALL=C grep -oE '[a-z0-9-]+\.sh'
 }
 
 # Skill names from the Skills column (second cell) of the skills table, one per line.
@@ -480,7 +494,7 @@ skills_of() {
     /<summary><strong>.*Skills<\/strong>/ { inside = 1; rows = 0; next }
     inside && /^<\/details>/              { inside = 0 }
     inside && /^\|/                        { rows++; if (rows > 2) print $3 }
-  ' "$1" | grep -oE '[a-z0-9]+(-[a-z0-9]+)*'
+  ' "$1" | LC_ALL=C grep -oE '[a-z0-9]+(-[a-z0-9]+)*'
 }
 
 # Compare an i18n list against the English one; name the file and the names.
@@ -490,8 +504,8 @@ parity() {
     pass "$file $label table matches README.md ($(printf '%s\n' "$want" | grep -c .) entries)"
     return
   fi
-  missing=$(comm -23 <(printf '%s\n' "$want" | sort -u) <(printf '%s\n' "$got" | sort -u) | tr '\n' ' ')
-  extra=$(comm -13 <(printf '%s\n' "$want" | sort -u) <(printf '%s\n' "$got" | sort -u) | tr '\n' ' ')
+  missing=$(LC_ALL=C comm -23 <(printf '%s\n' "$want" | LC_ALL=C sort -u) <(printf '%s\n' "$got" | LC_ALL=C sort -u) | tr '\n' ' ')
+  extra=$(LC_ALL=C comm -13 <(printf '%s\n' "$want" | LC_ALL=C sort -u) <(printf '%s\n' "$got" | LC_ALL=C sort -u) | tr '\n' ' ')
   if [ -z "$missing" ] && [ -z "$extra" ]; then
     fail "$file $label table: same names but different order or duplicate count (expected: $(printf '%s' "$want" | tr '\n' ' '))"
   else
@@ -501,16 +515,22 @@ parity() {
 
 EN_HOOKS=$(hooks_of README.md)
 EN_HOOK_ROWS=$(awk '/^\| Event \| Hook \| Purpose \|/ { t = 1; next } t && /^\|/ { n++; next } t { exit } END { print n - 1 }' README.md)
-EN_HOOK_MATCHED=$(grep -cE "^\| ($HOOK_EVENTS)( |\()" README.md | tr -d ' ')
+EN_HOOK_MATCHED=$(hook_cells_of README.md | grep -vcx '?' | tr -d ' ')
 EN_SKILLS=$(skills_of README.md)
 
-if [ -z "$EN_HOOKS" ] || [ -z "$EN_SKILLS" ]; then
-  fail "README.md hooks or skills table MISSING_ANCHOR (reworded? update tests/count-check.sh)"
+if [ -z "$EN_HOOKS" ] || [ -z "$EN_SKILLS" ] || [ "${EN_HOOK_ROWS:-0}" -lt 1 ]; then
+  fail "README.md hooks or skills table MISSING_ANCHOR (reworded header? update tests/count-check.sh)"
 elif [ "$EN_HOOK_ROWS" -ne "$EN_HOOK_MATCHED" ]; then
   fail "README.md hooks table has $EN_HOOK_ROWS rows but only $EN_HOOK_MATCHED start with a known event: add the new event to HOOK_EVENTS"
 else
   pass "README.md hooks table: all $EN_HOOK_ROWS rows start with a known event"
   for f in i18n/README.ja.md i18n/README.ko.md i18n/README.zh.md; do
+    rows=$(hook_cells_of "$f" | grep -c .)
+    if [ "$rows" -ne "$EN_HOOK_ROWS" ]; then
+      fail "$f hooks table has $rows rows, README.md has $EN_HOOK_ROWS (an extra, missing or translated-event row)"
+    else
+      pass "$f hooks table row count matches README.md ($rows)"
+    fi
     parity hooks  "$f" "$EN_HOOKS"  "$(hooks_of "$f")"
     parity skills "$f" "$EN_SKILLS" "$(skills_of "$f")"
   done
