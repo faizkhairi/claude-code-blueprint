@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and the 
 
 ## [Unreleased]
 
+## [1.3.1] - 2026-11-13
+
 ### Changed
 - The Japanese, Korean and Simplified Chinese READMEs are back in sync with v1.3: six missing hook rows, the `diagnose-before-finding` skill row, the global Quick Start, the preset banner and the read-only-by-intent and model-alias notes.
 
@@ -151,7 +153,8 @@ Initial public release.
 - A beginner guide, cross-tool guide, FAQ, troubleshooting guide, and four framework-specific CLAUDE.md examples.
 - Battle-story documentation (`docs/WHY.md`) explaining the reasoning behind each component.
 
-[Unreleased]: https://github.com/faizkhairi/claude-code-blueprint/compare/v1.3.0...HEAD
+[Unreleased]: https://github.com/faizkhairi/claude-code-blueprint/compare/v1.3.1...HEAD
+[1.3.1]: https://github.com/faizkhairi/claude-code-blueprint/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/faizkhairi/claude-code-blueprint/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/faizkhairi/claude-code-blueprint/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/faizkhairi/claude-code-blueprint/compare/v1.0.0...v1.1.0
