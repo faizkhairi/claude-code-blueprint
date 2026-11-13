@@ -2,6 +2,10 @@
 # Verifies every published component count against the filesystem.
 # Run: bash tests/count-check.sh
 #
+# Also covers "i18n table parity": the hooks table and the skills table in the three
+# translations must list the same hook scripts and skill names, in the same order, as
+# the English README (see the section of that name near the end of this file).
+#
 # WHY THIS EXISTS
 #
 # Counts like "12 agents" are duplicated across the README, three translations, the
@@ -440,6 +444,97 @@ preset_card Minimal  "$N_MINIMAL"
 preset_card Standard "$N_STANDARD"
 preset_card Core     "$N_CORE"
 preset_card Full     "$N_FULL"
+
+# ============================================================================
+# i18n table parity.
+#
+# The banner and prose counts above cannot see a TABLE that fell behind: after v1.3
+# the three translations still listed 10 hooks and 9 skill categories while the
+# English README listed 16 and 10, and every count bind stayed green because the
+# totals in the banner were right. So compare the table CONTENT, not just the totals.
+#
+# Only the identifier columns are compared, never the translated prose: the hook
+# script names in the Hook column of the hooks table (in order, duplicates kept, since
+# session-checkpoint.sh legitimately appears under both Stop and SessionEnd), and the
+# skill names in the Skills column of the skills table (in order). English is the
+# reference. The three translations are named explicitly, never globbed.
+#
+# Hook rows are recognised by an explicit event name in the first cell. If English
+# ever gains a row whose event is not in HOOK_EVENTS, the completeness check below
+# fails instead of silently skipping that row in every file.
+# ============================================================================
+echo ""
+echo "--- i18n table parity ---"
+
+HOOK_EVENTS='SessionStart|InstructionsLoaded|PreToolUse|PostToolUse|PostToolUseFailure|PreCompact|Stop|SessionEnd'
+
+# The Hook cell (third field) of every data row in the hooks table, one per line. The
+# table is the first block of consecutive "|" lines that holds a known event row; its
+# header and separator (first two lines) are skipped, so a translated header still
+# works and a later table or a prose mention of a script is never read. A data row
+# whose event is not known prints "?" so the row counts stay honest.
+hook_cells_of() {
+  LC_ALL=C awk -F'|' -v re="^[|] ($HOOK_EVENTS)( |[(])" '
+    /^[|]/ { n++; line[n] = $0; cell[n] = $3; if ($0 ~ re) hit = 1; next }
+    hit    { exit }
+           { n = 0 }
+    END    { if (hit) for (i = 3; i <= n; i++) print (line[i] ~ re ? cell[i] : "?") }
+  ' "$1"
+}
+
+# Hook script names from the Hook cells, one per line, in document order.
+hooks_of() {
+  hook_cells_of "$1" | LC_ALL=C grep -oE '[a-z0-9-]+\.sh'
+}
+
+# Skill names from the Skills column (second cell) of the skills table, one per line.
+# The header row and the separator row are skipped by position.
+skills_of() {
+  awk -F'|' '
+    /<summary><strong>.*Skills<\/strong>/ { inside = 1; rows = 0; next }
+    inside && /^<\/details>/              { inside = 0 }
+    inside && /^\|/                        { rows++; if (rows > 2) print $3 }
+  ' "$1" | LC_ALL=C grep -oE '[a-z0-9]+(-[a-z0-9]+)*'
+}
+
+# Compare an i18n list against the English one; name the file and the names.
+parity() {
+  local label="$1" file="$2" want="$3" got="$4" missing extra
+  if [ "$want" = "$got" ]; then
+    pass "$file $label table matches README.md ($(printf '%s\n' "$want" | grep -c .) entries)"
+    return
+  fi
+  missing=$(LC_ALL=C comm -23 <(printf '%s\n' "$want" | LC_ALL=C sort -u) <(printf '%s\n' "$got" | LC_ALL=C sort -u) | tr '\n' ' ')
+  extra=$(LC_ALL=C comm -13 <(printf '%s\n' "$want" | LC_ALL=C sort -u) <(printf '%s\n' "$got" | LC_ALL=C sort -u) | tr '\n' ' ')
+  if [ -z "$missing" ] && [ -z "$extra" ]; then
+    fail "$file $label table: same names but different order or duplicate count (expected: $(printf '%s' "$want" | tr '\n' ' '))"
+  else
+    fail "$file $label table: missing [${missing% }] extra [${extra% }]"
+  fi
+}
+
+EN_HOOKS=$(hooks_of README.md)
+EN_HOOK_ROWS=$(awk '/^\| Event \| Hook \| Purpose \|/ { t = 1; next } t && /^\|/ { n++; next } t { exit } END { print n - 1 }' README.md)
+EN_HOOK_MATCHED=$(hook_cells_of README.md | grep -vcx '?' | tr -d ' ')
+EN_SKILLS=$(skills_of README.md)
+
+if [ -z "$EN_HOOKS" ] || [ -z "$EN_SKILLS" ] || [ "${EN_HOOK_ROWS:-0}" -lt 1 ]; then
+  fail "README.md hooks or skills table MISSING_ANCHOR (reworded header? update tests/count-check.sh)"
+elif [ "$EN_HOOK_ROWS" -ne "$EN_HOOK_MATCHED" ]; then
+  fail "README.md hooks table has $EN_HOOK_ROWS rows but only $EN_HOOK_MATCHED start with a known event: add the new event to HOOK_EVENTS"
+else
+  pass "README.md hooks table: all $EN_HOOK_ROWS rows start with a known event"
+  for f in i18n/README.ja.md i18n/README.ko.md i18n/README.zh.md; do
+    rows=$(hook_cells_of "$f" | grep -c .)
+    if [ "$rows" -ne "$EN_HOOK_ROWS" ]; then
+      fail "$f hooks table has $rows rows, README.md has $EN_HOOK_ROWS (an extra, missing or translated-event row)"
+    else
+      pass "$f hooks table row count matches README.md ($rows)"
+    fi
+    parity hooks  "$f" "$EN_HOOKS"  "$(hooks_of "$f")"
+    parity skills "$f" "$EN_SKILLS" "$(skills_of "$f")"
+  done
+fi
 
 echo ""
 echo "=== Results ==="
