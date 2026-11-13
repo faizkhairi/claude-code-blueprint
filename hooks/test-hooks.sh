@@ -12,9 +12,12 @@
 # cases: block-git-push, pre-commit-secret-scan (against a fake gitleaks, plus a real-gitleaks
 # smoke case that is skipped when gitleaks is absent) and post-commit-review run against
 # throwaway git repos, the protect hooks against path spellings, a diff of the shared parser
-# and path-normaliser blocks, and a twice-run setup.sh merge into a temp HOME. A case labelled
-# "control" passes before and after its fix. The dash-checker fixtures contain the pattern
-# they test, on purpose.
+# and path-normaliser blocks, and a twice-run setup.sh merge into a temp HOME. Section 10
+# holds the agent-write-guard read-only gaps (GIT_ variables, fetch and grep options,
+# backticks, package runners, download tools, Monitor, PowerShell .NET writes) and its false
+# positives (heredoc bodies, $HOME in a path, own-memory-dir rm, cp, touch and mkdir). A
+# case labelled "control" passes before and after its fix. The dash-checker fixtures contain
+# the pattern they test, on purpose.
 
 PASS=0
 FAIL=0
@@ -1384,6 +1387,460 @@ print("ok" if not bad else "; ".join(bad))
 
   rm -rf "$T9"
   unset GIT_AUTHOR_NAME GIT_AUTHOR_EMAIL GIT_COMMITTER_NAME GIT_COMMITTER_EMAIL
+fi
+echo ""
+
+# 10. PR C: agent-write-guard read-only gaps and false positives. Each case replays one
+# command (none of it is executed) as the read-only code-reviewer and checks the decision:
+# deny, or silent for an allowed call. A case labelled "control" passes before and after
+# the fix and pins behaviour that must not change. Written as one named case per channel.
+echo "--- Regression: agent-write-guard read-only gaps and false positives ---"
+# The $ in the single-quoted commands below must reach the hook unexpanded.
+# shellcheck disable=SC2016 # literal $HOME and $(...) text is the input under test
+if [ -z "$PYTHON" ]; then
+  skip "agent-write-guard gap checks need Python"
+else
+  c10() {  # c10 <name> <expected> <tool> <command>
+    local json
+    json=$("$PYTHON" -c 'import json,sys; print(json.dumps({"agent_type":"code-reviewer","tool_name":sys.argv[1],"cwd":"/work/proj","tool_input":{"command":sys.argv[2]}}))' "$3" "$4")
+    expect "agent-write-guard: $1" "$2" "$(guard_decision "$AWG" "$json" "${GENV[@]}")"
+  }
+  c10u() {  # like c10, but the payload is raw UTF-8 JSON (no \u escapes); @UXXXX@ in the command is that code point
+    local json
+    json=$("$PYTHON" -c 'import json,re,sys
+cmd = re.sub(r"@U([0-9A-Fa-f]{4})@", lambda m: chr(int(m.group(1), 16)), sys.argv[2])
+sys.stdout.buffer.write(json.dumps({"agent_type":"code-reviewer","tool_name":sys.argv[1],"cwd":"/work/proj","tool_input":{"command":cmd}}, ensure_ascii=False).encode("utf-8"))' "$3" "$4")
+    expect "agent-write-guard: $1" "$2" "$(guard_decision "$AWG" "$json" "${GENV[@]}")"
+  }
+
+  # a. A GIT_ variable makes read-only git run a program.
+  c10 "GIT_EXTERNAL_DIFF prefix before git diff is denied" deny Bash 'GIT_EXTERNAL_DIFF=touch git diff'
+  c10 "quoted GIT_PAGER prefix before git log is denied" deny Bash 'GIT_PAGER="touch pwn" git log'
+  c10 "env GIT_PAGER before git log is denied" deny Bash 'env GIT_PAGER=touch git log'
+  c10 "env -S with a GIT_ variable is denied" deny Bash 'env -S "GIT_PAGER=touch git log"'
+  c10 "env -S with a write is denied" deny Bash 'env -S "rm x"'
+  c10 "export GIT_PAGER is denied" deny Bash 'export GIT_PAGER=touch; git log'
+  c10 "PowerShell \$env:GIT_PAGER assignment is denied" deny PowerShell '$env:GIT_PAGER = "touch pwn"; git log'
+  c10 "a non-GIT variable prefix before git log (control)" silent Bash 'FOO=1 git log'
+  c10 "the text GIT_PAGER as an argument (control)" silent Bash 'echo GIT_PAGER=x'
+
+  # b. git fetch and ls-remote can run a program through --upload-pack.
+  c10 "git fetch --upload-pack=<cmd> is denied" deny Bash 'git fetch --upload-pack="touch pwn" origin'
+  c10 "git fetch --upload-pack <cmd> (separate value) is denied" deny Bash 'git fetch --upload-pack touch origin'
+  c10 "git fetch --recurse-submodules is denied" deny Bash 'git fetch --recurse-submodules origin'
+  c10 "git fetch --recurse-submodules=on-demand is denied" deny Bash 'git fetch --recurse-submodules=on-demand'
+  c10 "git ls-remote --upload-pack is denied" deny Bash 'git ls-remote --upload-pack=touch origin'
+  c10 "plain git fetch (control)" silent Bash 'git fetch origin'
+  c10 "git fetch --prune (control)" silent Bash 'git fetch --prune origin'
+
+  # c. git grep -O runs a pager program.
+  c10 "git grep -O<cmd> is denied" deny Bash 'git grep -O"touch pwn" foo'
+  c10 "git grep -O <cmd> is denied" deny Bash 'git grep -O touch foo'
+  c10 "git grep -nO<cmd> in a cluster is denied" deny Bash 'git grep -nOtouch foo'
+  c10 "git grep --open-files-in-pager=<cmd> is denied" deny Bash 'git grep --open-files-in-pager=touch foo'
+  c10 "plain git grep -n (control)" silent Bash 'git grep -n foo -- src'
+
+  # d. Leading git global options that run programs.
+  c10 "git --exec-path=<dir> status is denied" deny Bash 'git --exec-path=/x status'
+  c10 "git --exec-path status is denied" deny Bash 'git --exec-path status'
+  c10 "git --config-env status is denied (control)" deny Bash 'git --config-env=core.pager=X status'
+  c10 "git --no-pager status (control)" silent Bash 'git --no-pager status'
+  c10 "git -C <dir> status (control)" silent Bash 'git -C /work/proj status'
+
+  # e. Backticks are command substitution, like $(...), also inside double quotes.
+  c10 "a backtick substitution is judged" deny Bash 'echo `touch pwned.txt`'
+  c10 "a backtick substitution inside double quotes is judged" deny Bash 'echo "`touch pwned.txt`"'
+  c10 "a quoted \$(...) substitution is judged" deny Bash 'echo "$(touch pwned.txt)"'
+  c10 "a backtick inside single quotes is text (control)" silent Bash 'echo '\''`touch pwned.txt`'\'''
+  c10 "a read-only backtick substitution (control)" silent Bash 'echo `date`'
+  c10 "a PowerShell backtick is an escape, not a substitution (control)" silent PowerShell 'Write-Output "a`nb"'
+
+  # f. Package runners fetch and run registry code.
+  c10 "npx is a package runner" deny Bash 'npx cowsay hi'
+  c10 "bunx is a package runner" deny Bash 'bunx cowsay hi'
+  c10 "pnpm dlx is a package runner" deny Bash 'pnpm dlx cowsay'
+  c10 "yarn dlx is a package runner" deny Bash 'yarn dlx cowsay'
+  c10 "npm exec is a package runner" deny Bash 'npm exec cowsay'
+  c10 "npm run build is not a runner (control)" silent Bash 'npm run build'
+
+  # g. Package-manager subcommand parsing.
+  c10 "npm --prefix . install skips the option value" deny Bash 'npm --prefix . install lodash'
+  c10 "pnpm --filter web add skips the option value" deny Bash 'pnpm --filter web add lodash'
+  c10 "npm version changes package.json" deny Bash 'npm version patch'
+  c10 "npm pkg set changes package.json" deny Bash 'npm pkg set a=b'
+  c10 "npm publish is denied" deny Bash 'npm publish'
+  c10 "npm init is denied" deny Bash 'npm init -y'
+  c10 "python -m pip install is denied" deny Bash 'python -m pip install requests'
+  c10 "python3 -m pip install is denied" deny Bash 'python3 -m pip install requests'
+  c10 "uv pip install is denied (control)" deny Bash 'uv pip install requests'
+  c10 "npm install (control)" deny Bash 'npm install'
+  c10 "bare yarn (control)" deny Bash 'yarn'
+  c10 "npm view <pkg> version is a read (control)" silent Bash 'npm view lodash version'
+  c10 "npm ls (control)" silent Bash 'npm ls --depth=0'
+  c10 "npm run test with args (control)" silent Bash 'npm run test -- --watch=false'
+  c10 "pip list (control)" silent Bash 'pip list'
+  c10 "python -m pytest (control)" silent Bash 'python -m pytest -q'
+  c10 "cargo test (control)" silent Bash 'cargo test'
+
+  # h. Download and output options that write a file. A target in the agent own memory
+  # dir stays allowed.
+  c10 "curl -o <file> is a write" deny Bash 'curl -o x.txt https://example.com'
+  c10 "curl -sSLo <file> in a cluster is a write" deny Bash 'curl -sSLo x.txt https://example.com'
+  c10 "curl -O is a write" deny Bash 'curl -O https://example.com/a.tgz'
+  c10 "curl --output <file> is a write" deny Bash 'curl --output x.txt https://example.com'
+  c10 "curl -D <file> is a write" deny Bash 'curl -D h.txt https://example.com'
+  c10 "wget <url> is a write" deny Bash 'wget https://example.com/a.tgz'
+  c10 "wget -O <file> is a write" deny Bash 'wget -O out.txt https://example.com'
+  c10 "sort -o <file> is a write" deny Bash 'sort -o out.txt in.txt'
+  c10 "sort --output=<file> is a write" deny Bash 'sort in.txt --output=out.txt'
+  c10 "sort --compress-program runs a program" deny Bash 'sort --compress-program=touch in.txt'
+  c10 "curl -o outside the memory dir is denied" deny Bash "curl -o $MEM/../x.txt https://example.com"
+  c10 "curl -s with no output option (control)" silent Bash 'curl -s https://example.com'
+  c10 "curl -sI (control)" silent Bash 'curl -sI https://example.com'
+  c10 "curl -o /dev/null (control)" silent Bash 'curl -s -o /dev/null https://example.com'
+  c10 "curl -o into the memory dir (control)" silent Bash "curl -s -o $MEM/page.html https://example.com"
+  c10 "wget -qO- to stdout (control)" silent Bash 'wget -qO- https://example.com'
+  c10 "wget -O into the memory dir (control)" silent Bash "wget -O $MEM/page.html https://example.com"
+  c10 "sort -o into the memory dir (control)" silent Bash "sort -o $MEM/sorted.txt in.txt"
+  c10 "sort without -o (control)" silent Bash 'sort -k2 -t, in.txt'
+
+  # i. The Monitor tool carries a shell command in tool_input.command.
+  c10 "Monitor with rm is denied" deny Monitor 'rm -rf x'
+  c10 "Monitor with a redirect into a file is denied" deny Monitor 'echo a > x.txt'
+  c10 "Monitor with a read-only command (control)" silent Monitor 'tail -n 5 log.txt'
+
+  # j. PowerShell .NET file calls.
+  c10 "[IO.File]::WriteAllText is a write" deny PowerShell "[IO.File]::WriteAllText('x.txt','a')"
+  c10 "[System.IO.File]::AppendAllText is a write" deny PowerShell "[System.IO.File]::AppendAllText('x.txt','a')"
+  c10 "[System.IO.File]::WriteAllBytes is a write" deny PowerShell "[System.IO.File]::WriteAllBytes('x.bin',\$b)"
+  c10 "[IO.File]::WriteAllText inside pwsh -Command is a write" deny Bash 'pwsh -Command "[IO.File]::WriteAllText(\"x.txt\",\"a\")"'
+  c10 "[IO.File]::ReadAllText is a read (control)" silent PowerShell "[IO.File]::ReadAllText('x.txt')"
+
+  # FP1. A heredoc body is data. Redirects and shells on the command line still count.
+  c10 "a heredoc body with rm is data" silent Bash $'cat <<EOF\nrm -rf foo\nEOF'
+  c10 "a quoted-delimiter heredoc body with \$(...) is data" silent Bash $'cat <<\'EOF\'\n$(touch x)\nEOF'
+  c10 "a <<- heredoc with tab-indented body and end is data" silent Bash $'cat <<-EOF\n\trm x\n\tEOF'
+  c10 "a heredoc body with # and an apostrophe is data" silent Bash $'cat <<EOF\n# it\'s rm time\nrm x\nEOF'
+  c10 "a heredoc into the memory dir is allowed" silent Bash "cat > $MEM/n.md <<EOF"$'\nrm x\nEOF'
+  c10 "a heredoc redirected to a file outside memory is a write (control)" deny Bash $'cat <<EOF > out.txt\nhello\nEOF'
+  c10 "a command after the heredoc is still judged (control)" deny Bash $'cat <<EOF\ntext\nEOF\nrm x'
+  c10 "an unquoted heredoc runs \$(...) in its body (control)" deny Bash $'cat <<EOF\n$(touch x)\nEOF'
+  c10 "a heredoc fed to bash runs its body (control)" deny Bash $'bash <<EOF\nrm -rf x\nEOF'
+  c10 "a heredoc piped to sh runs its body (control)" deny Bash $'cat <<EOF | sh\nrm x\nEOF'
+  c10 "a heredoc fed to pwsh runs its body as PowerShell" deny Bash $'pwsh -Command - <<EOF\nRemove-Item x\nEOF'
+  c10 "\$((1<<3)) arithmetic does not hide the next line (control)" deny Bash $'echo $((1<<3))\nrm x'
+  c10 "a here-string is not a heredoc (control)" deny Bash $'cat <<<abc\nrm x'
+
+  # FP2. $HOME, ${HOME} and ~ expand in a redirect target.
+  c10 "a redirect to \$HOME/.claude/agent-memory/<agent> is allowed" silent Bash 'cat x > $HOME/.claude/agent-memory/code-reviewer/n.md'
+  c10 "a redirect to \${HOME}/... memory is allowed" silent Bash 'cat x > ${HOME}/.claude/agent-memory/code-reviewer/n.md'
+  c10 "a redirect to \"\$HOME/...\" memory is allowed" silent Bash 'cat x > "$HOME/.claude/agent-memory/code-reviewer/n.md"'
+  c10 "a redirect to ~/... memory is allowed (control)" silent Bash 'cat x > ~/.claude/agent-memory/code-reviewer/n.md'
+  c10 "a redirect to \$HOME/.claude/settings.json is denied (control)" deny Bash 'cat x > $HOME/.claude/settings.json'
+  c10 "a redirect to \$HOME memory of another agent is denied (control)" deny Bash 'cat x > $HOME/.claude/agent-memory/security-reviewer/n.md'
+  c10 "a redirect to \$HOME memory with .. is denied (control)" deny Bash 'cat x > $HOME/.claude/agent-memory/code-reviewer/../../settings.json'
+  c10 "a single-quoted \$HOME is literal and denied (control)" deny Bash 'cat x > '\''$HOME/.claude/agent-memory/code-reviewer/n.md'\'''
+  c10 "an unknown variable in a target is denied (control)" deny Bash 'cat x > $OTHER/.claude/agent-memory/code-reviewer/n.md'
+  c10 "a brace list that escapes the memory dir is denied" deny Bash 'cat x > ~/.claude/agent-memory/code-reviewer/{../../x,y}'
+
+  # FP3. mkdir, cp, touch and rm are judged by target: the agent own memory dir is allowed.
+  c10 "mkdir -p inside the memory dir is allowed" silent Bash "mkdir -p $MEM/notes"
+  c10 "touch inside the memory dir is allowed" silent Bash "touch $MEM/n.md"
+  c10 "cp into the memory dir is allowed" silent Bash "cp /work/proj/a.md $MEM/a.md"
+  c10 "cp -t into the memory dir is allowed" silent Bash "cp -t $MEM /work/proj/a.md"
+  c10 "rm inside the memory dir is allowed" silent Bash "rm $MEM/old.md"
+  c10 "rm -rf inside the memory dir is allowed" silent Bash "rm -rf $MEM/old"
+  c10 "rm of a glob inside the memory dir is denied (a glob is not resolved)" deny Bash "rm $MEM/*.md"
+  c10 "rm through \$HOME inside the memory dir is allowed" silent Bash 'rm $HOME/.claude/agent-memory/code-reviewer/old.md'
+  c10 "mkdir then touch, both in the memory dir, is allowed" silent Bash "mkdir -p $MEM/a && touch $MEM/a/b.md"
+  c10 "rm -rf build outside memory is denied (control)" deny Bash 'rm -rf build'
+  c10 "mkdir outside memory is denied (control)" deny Bash 'mkdir newdir'
+  c10 "touch with one target outside memory is denied (control)" deny Bash "touch $MEM/a.md /work/proj/b.md"
+  c10 "cp out of the memory dir is denied (control)" deny Bash "cp $MEM/a.md /work/proj/a.md"
+  c10 "cp -t outside the memory dir is denied (control)" deny Bash "cp -t /work/proj $MEM/a.md"
+  c10 "rm with .. out of the memory dir is denied (control)" deny Bash "rm $MEM/../x"
+  c10 "rm in another agent memory dir is denied (control)" deny Bash 'rm $HOME/.claude/agent-memory/security-reviewer/old.md'
+  c10 "rm with an unknown option is denied (control)" deny Bash "rm --no-such-flag $MEM/old.md"
+  c10 "rm of a variable path is denied (control)" deny Bash 'rm $X/old.md'
+  c10 "rm of a path built by command substitution is denied (control)" deny Bash "rm \$(echo /work/proj/a.md)"
+  c10 "xargs rm with operands from stdin is denied (control)" deny Bash 'ls | xargs rm'
+  c10 "rm with no operand is denied (control)" deny Bash 'rm -rf'
+  c10 "mv inside the memory dir stays denied (control)" deny Bash "mv $MEM/a $MEM/b"
+  c10 "tee into the memory dir stays denied (control)" deny Bash "echo x | tee $MEM/n.md"
+
+  # Round 2. Cases from a cold review. Red on the previous hook unless marked "control".
+  # A1. The memory-dir allowance never applies under a wrapper that adds operands.
+  c10 "find | xargs rm with a memory path is denied" deny Bash "find / -name '*.pyc' | xargs rm -f $MEM/x"
+  c10 "xargs cp with a memory path is denied" deny Bash "echo /etc/hosts | xargs cp $MEM/a"
+  c10 "find -exec rm is denied" deny Bash "find /work -name x -exec rm {} +"
+  c10 "find -execdir rm with a memory path is denied" deny Bash "find /work -execdir rm $MEM/x ';'"
+  c10 "find -ok rm is denied" deny Bash "find /work -ok rm {} ';'"
+  c10 "parallel rm is denied" deny Bash "parallel rm ::: $MEM/a"
+  c10 "xargs -I{} rm is denied" deny Bash "ls | xargs -I{} rm $MEM/{}"
+  c10 "sudo rm inside the memory dir is judged by target (control)" silent Bash "sudo rm $MEM/old.md"
+
+  # A2. A memory-dir operand must be a plain path.
+  c10 "rm with ..'' components is denied" deny Bash "rm $MEM/..''/..''/settings.json"
+  c10 "cp with .\\./ components is denied" deny Bash "cp $MEM/p $MEM/.\\./.\\./settings.json"
+  c10 "rm with a quote inside the operand is denied" deny Bash "rm $MEM/a'b'/../../x"
+  c10 "rm with a backslash in the operand is denied" deny Bash "rm $MEM/a\\ b"
+  c10 "rm with a variable in the operand is denied" deny Bash "rm $MEM/\$X"
+  c10 "rm with a ? glob is denied" deny Bash "rm $MEM/?.md"
+  c10 "rm with a [ glob is denied" deny Bash "rm $MEM/[a].md"
+  c10 "rm with a brace list is denied" deny Bash "rm $MEM/{a,b}"
+  c10 "rm with a .. in the middle is denied" deny Bash "rm $MEM/sub/../old.md"
+  c10 "PowerShell rm with a comma list is denied" deny PowerShell "rm $MEM/a,C:\\Users\\x\\f.txt"
+  c10 "redirect with a .. component is denied" deny Bash "echo x > $MEM/sub/../../x.md"
+  c10 "rm of a plain memory path with a space in quotes (control)" silent Bash "rm \"$MEM/old note.md\""
+
+  # A3. cp links and other options.
+  c10 "cp -s is denied" deny Bash "cp -s ~/.claude/settings.json $MEM/s"
+  c10 "cp -l is denied" deny Bash "cp -l /work/proj/a $MEM/a"
+  c10 "cp --symbolic-link is denied" deny Bash "cp --symbolic-link /work/proj/a $MEM/a"
+  c10 "cp --link is denied" deny Bash "cp --link /work/proj/a $MEM/a"
+  c10 "cp -a is denied" deny Bash "cp -a /work/proj/a $MEM/a"
+  c10 "ln -s into the memory dir is denied (control)" deny Bash "ln -s /etc/hosts $MEM/h"
+  c10 "cp -rp into the memory dir (control)" silent Bash "cp -rp /work/proj/a $MEM/a"
+  c10 "cp -n into the memory dir (control)" silent Bash "cp -n /work/proj/a $MEM/a"
+
+  # A5, A6. A heredoc body is text only for a plain reader with nothing piping it on.
+  c10 "a quoted sh receiver runs the body" deny Bash $'\'sh\' <<EOF\nrm x\nEOF'
+  c10 "an escaped bash receiver runs the body" deny Bash $'\\bash <<EOF\nrm x\nEOF'
+  c10 "a \$SHELL receiver runs the body" deny Bash $'$SHELL <<EOF\nrm x\nEOF'
+  c10 "a pipe on the next line after the heredoc line runs the body" deny Bash $'cat <<EOF |\nrm x\nEOF\nsh'
+  c10 "an interpreter receiver is judged as commands" deny Bash $'python <<EOF\nrm x\nEOF'
+  c10 "\$[1<<3] is not a heredoc" deny Bash $'echo $[1<<3]\nrm x'
+  c10 "a[1<<3]= is not a heredoc" deny Bash $'a[1<<3]=1\nrm x'
+  c10 "cat<<EOF (no space) is not the plain shape, so its body is judged as commands" deny Bash $'cat<<EOF\nrm x\nEOF'
+  c10 "an unclosed delimiter judges the body as commands" deny Bash $'cat <<EOF\nrm x'
+  c10 "a different closing line leaves the heredoc unclosed" deny Bash $'cat <<EOF\nrm x\nEOF2'
+  c10 "a quoted cat receiver is still a reader (control)" silent Bash $'\'cat\' <<EOF\nrm x\nEOF'
+  c10 "grep with a heredoc body (control)" silent Bash $'grep -c x <<EOF\nrm -rf y\nEOF'
+  c10 "sort with a heredoc body (control)" silent Bash $'sort <<EOF\nb\na\nEOF'
+  c10 ": <<'EOF' comment block (control)" silent Bash $': <<\'EOF\'\nrm x\nEOF'
+  c10 "cat <<EOF into /dev/null (control)" silent Bash $'cat <<EOF > /dev/null\nrm x\nEOF'
+  c10 "cat <<EOF appended to a memory file (control)" silent Bash "cat <<EOF >> $MEM/n.md"$'\nrm x\nEOF'
+  c10 "bash <(cat <<EOF) runs the body" deny Bash $'bash <(cat <<EOF\nrm x\nEOF\n)'
+  c10 "sh -c \"\$(cat <<EOF)\" runs the body" deny Bash $'sh -c "$(cat <<EOF\nrm x\nEOF\n)"'
+  c10 "eval \"\$(cat <<'EOF')\" runs the body" deny Bash $'eval "$(cat <<\'EOF\'\nrm x\nEOF\n)"'
+
+  # A7, D. The checker fails closed.
+  DEEP=$("$PYTHON" -c 'print("echo " + "$(" * 1200 + "rm x" + ")" * 1200)')
+  c10 "1200 nested \$( levels are denied, not allowed by a crash" deny Bash "$DEEP"
+  expect "agent-write-guard: no temp dir still denies a write (control: the -c fallback works here)" deny \
+    "$(guard_decision "$AWG" '{"agent_type":"code-reviewer","tool_name":"Bash","cwd":"/work/proj","tool_input":{"command":"rm -rf build"}}' "${GENV[@]}" TMPDIR=/nonexistent/awg-none)"
+  expect "agent-write-guard: no temp file and no working Python is a deny for a guarded agent" deny \
+    "$(guard_decision "$AWG" '{"agent_type":"code-reviewer","tool_name":"Bash","cwd":"/work/proj","tool_input":{"command":"git log"}}' "${GENV[@]}" TMPDIR=/nonexistent/awg-none AGENT_WRITE_GUARD_TEST_NO_CHECKER=1)"
+  expect "agent-write-guard: no working Python leaves an unguarded agent alone (control)" silent \
+    "$(guard_decision "$AWG" '{"agent_type":"general-purpose","tool_name":"Bash","cwd":"/work/proj","tool_input":{"command":"rm -rf build"}}' "${GENV[@]}" AGENT_WRITE_GUARD_TEST_NO_CHECKER=1)"
+
+  # B. False positives.
+  c10 "git grep -eOpen is a pattern, not -O" silent Bash 'git grep -eOpen foo'
+  c10 "git grep -e Open (control)" silent Bash 'git grep -e Open foo'
+  c10 "git grep -nA3 -e <pat> (control)" silent Bash 'git grep -nA3 -e foo'
+  c10 "git grep -e <pat> -O<cmd> is still denied (control)" deny Bash 'git grep -e foo -Otouch'
+  c10 "npm pkg get is a read" silent Bash 'npm pkg get name'
+  c10 "npm pkg get with two keys is a read" silent Bash 'npm pkg get name version'
+  c10 "bare npm version is a read" silent Bash 'npm version'
+  c10 "npm version --json is a read" silent Bash 'npm version --json'
+  c10 "npm version patch is a write (control)" deny Bash 'npm version patch'
+  c10 "npm version 1.2.3 is a write (control)" deny Bash 'npm version 1.2.3'
+  c10 "npm pkg set is a write (control)" deny Bash 'npm pkg set name=x'
+  c10 "npm pkg delete is a write (control)" deny Bash 'npm pkg delete scripts'
+  c10 "npm pkg fix is a write (control)" deny Bash 'npm pkg fix'
+  c10 "GIT_TERMINAL_PROMPT=0 git fetch stays denied (control)" deny Bash 'GIT_TERMINAL_PROMPT=0 git fetch'
+  reason=$("$PYTHON" -c 'import json,sys; print(json.dumps({"agent_type":"code-reviewer","tool_name":"Bash","cwd":"/work/proj","tool_input":{"command":"GIT_TERMINAL_PROMPT=0 git fetch"}}))' | env "${GENV[@]}" bash "$HOOKS_DIR/$AWG" 2>/dev/null)
+  case "$reason" in
+    *"harmless ones"*"Set it in the environment"*) pass "agent-write-guard: the GIT_ deny message says why and what to do instead" ;;
+    *) fail "agent-write-guard: the GIT_ deny message says why and what to do instead (got: ${reason:-<empty>})" ;;
+  esac
+
+  # C. Gaps that were already there.
+  c10 "env -S with an attached quoted command is denied" deny Bash "env -S'rm x'"
+  c10 "env -iS with a command is denied" deny Bash 'env -iS "rm x"'
+  c10 "env --split-string=<cmd> is denied" deny Bash "env --split-string='rm x'"
+  c10 "python -mpip install is denied" deny Bash 'python -mpip install x'
+  c10 "python -Im pip install is denied" deny Bash 'python -Im pip install x'
+  c10 "uv pip install is denied" deny Bash 'uv pip install x'
+  c10 "python -m uv pip install is denied" deny Bash 'python -m uv pip install x'
+  for a in in i inst isntall add ci un uninstall rm r update up link ln; do
+    c10 "npm $a is a package change" deny Bash "npm $a x"
+  done
+  c10 "yarn global add is denied" deny Bash 'yarn global add x'
+  c10 "yarn global remove is denied" deny Bash 'yarn global remove x'
+  for a in "i" "add -g x" "up" "rm x" "un x" "remove x" "install" "update" "link"; do
+    c10 "pnpm $a is a package change" deny Bash "pnpm $a"
+  done
+  for a in "add x" "i" "install" "remove x" "update" "link" "a x"; do
+    c10 "bun $a is a package change" deny Bash "bun $a"
+  done
+  c10 "an unknown option value does not hide npm install" deny Bash 'npm --maxsockets 5 install x'
+  c10 "an unknown option value does not hide npm i" deny Bash 'npm --foo bar i x'
+  c10 "yarn --cwd <dir> add is denied" deny Bash 'yarn --cwd /work/proj add x'
+  c10 "npm view <pkg> install is a read (control)" silent Bash 'npm view lodash install'
+  c10 "yarn global list (control)" silent Bash 'yarn global list'
+  c10 "yarn test (control)" silent Bash 'yarn test'
+  c10 "bun test (control)" silent Bash 'bun test'
+  c10 "git grep --op=<cmd> is denied" deny Bash 'git grep --op=touch foo'
+  c10 "git grep --ope <cmd> is denied" deny Bash 'git grep --ope touch foo'
+  c10 "git grep --only-matching (control)" silent Bash 'git grep --only-matching foo'
+  c10 "git grep -e a --or -e b (control)" silent Bash 'git grep -e a --or -e b'
+  c10 "git fetch --u=<cmd> is denied" deny Bash 'git fetch --u=touch origin'
+  c10 "git fetch --up=<cmd> is denied" deny Bash 'git fetch --up=touch origin'
+  c10 "git fetch --upl=<cmd> is denied" deny Bash 'git fetch --upl=touch origin'
+  c10 "git ls-remote --up=<cmd> is denied" deny Bash 'git ls-remote --up=touch origin'
+  c10 "git fetch --unshallow (control)" silent Bash 'git fetch --unshallow'
+  c10 "curl -w with %output{} is denied" deny Bash "curl -w '%output{x.txt}hi' https://example.com"
+  c10 "curl --write-out with %output{} is denied" deny Bash "curl --write-out '%output{x.txt}' https://example.com"
+  c10 "curl --write-out=%output{} is denied" deny Bash "curl --write-out=%output{x.txt} https://example.com"
+  c10 "curl -w %{http_code} (control)" silent Bash "curl -s -o /dev/null -w '%{http_code}' https://example.com"
+  c10 "[IO.File]::Open is a write" deny PowerShell "[IO.File]::Open('x','Create')"
+  c10 "[IO.File]::OpenWrite is a write" deny PowerShell "[IO.File]::OpenWrite('x')"
+  c10 "[IO.File]::OpenOrCreate is a write" deny PowerShell "[IO.File]::OpenOrCreate('x')"
+  c10 "New-Object IO.FileStream is a write" deny PowerShell "New-Object IO.FileStream('x','Create')"
+  c10 "New-Object System.IO.FileStream is a write" deny PowerShell "New-Object System.IO.FileStream('x','Create')"
+  c10 "[IO.FileInfo] .Create() is a write" deny PowerShell "[IO.FileInfo]::new('x').Create()"
+  c10 "[IO.FileInfo] .CreateText() is a write" deny PowerShell "([IO.FileInfo]'x').CreateText()"
+  c10 "New-Object IO.FileInfo .AppendText() is a write" deny PowerShell "(New-Object IO.FileInfo 'x').AppendText()"
+  c10 "[IO.File]::OpenText is a read (control)" silent PowerShell "[IO.File]::OpenText('x')"
+  c10 "[IO.File]::OpenRead is a read (control)" silent PowerShell "[IO.File]::OpenRead('x')"
+  c10 "[IO.FileInfo] .Length is a read (control)" silent PowerShell "([IO.FileInfo]'x').Length"
+  c10 "an unquoted heredoc \$(...) after an apostrophe is judged" deny Bash $'cat <<EOF\nit\'s $(touch pwn)\nEOF'
+  c10 "an unquoted heredoc backtick after an apostrophe is judged" deny Bash $'cat <<EOF\nit\'s `touch pwn`\nEOF'
+  c10 "an unquoted heredoc \${x:-\$(...)} is judged" deny Bash $'cat <<EOF\n${x:-$(touch y)}\nEOF'
+  c10 "an escaped \\\$(...) in an unquoted heredoc is text (control)" silent Bash $'cat <<EOF\n\\$(touch x)\nEOF'
+  c10 "a quoted-delimiter heredoc keeps an apostrophe and \$(...) as data (control)" silent Bash $'cat <<\'EOF\'\nit\'s $(touch pwn)\nEOF'
+  c10 "a quoted \"\$HOME\"/... memory redirect is allowed" silent Bash 'cat x > "$HOME"/.claude/agent-memory/code-reviewer/n.md'
+  c10 "a quoted \"\$HOME\"/... redirect with .. is denied (control)" deny Bash 'cat x > "$HOME"/.claude/agent-memory/code-reviewer/../../x'
+  c10 "a quoted \"\$HOME\"/.claude/settings.json redirect is denied (control)" deny Bash 'cat x > "$HOME"/.claude/settings.json'
+  c10u "a raw UTF-8 comment (bytes C4 81) does not hide the command (control)" deny Bash 'rm x # @U0101@'
+  c10u "a raw UTF-8 comment (byte C1 as U+00C1) does not hide the command (control)" deny Bash 'rm -rf x # @U00C1@'
+  c10u "a raw UTF-8 comment on a harmless command stays allowed (control)" silent Bash 'git log # @U0101@'
+  c10 "a non-ASCII comment through escaped JSON does not hide the command (control)" deny Bash $'rm x # \xc4\x81'
+
+  # ---- Round 3 ----
+  # R3a. The heredoc-as-data rule is strict: only the plain one-line shape is data.
+  c10 "decoy )) and \$(( before a nested heredoc: the body runs" deny Bash $'echo "))" $((cat <<3))\nrm -rf x\n3'
+  c10 "decoy quote and paren before a heredoc in <(...): the body runs" deny Bash $'bash <(echo ")" >&2; cat <<EOF\nrm x\nEOF\n)'
+  c10 "a pipe behind a backslash-newline after the delimiter: the body runs" deny Bash $'cat <<EOF \\\n| sh\nrm x\nEOF'
+  c10 "a backslash-newline before the heredoc line is not the plain shape (control)" deny Bash $'echo a \\\ncat <<EOF\nrm x\nEOF'
+  c10 "a command before ; on the heredoc line is not the plain shape" deny Bash $'ls; cat <<EOF\nrm x\nEOF'
+  c10 "a second command after the delimiter is not the plain shape" deny Bash $'cat <<EOF; sh\nrm x\nEOF'
+  c10 "a quoted argument before << is not the plain shape" deny Bash $'cat "a" <<EOF\nrm x\nEOF'
+  c10 "cat <<EOF then an fd redirect is not the plain shape" deny Bash $'cat <<EOF 2>&1\nrm x\nEOF'
+  c10 "plain cat <<EOF is data (control)" silent Bash $'cat <<EOF\nrm x\nEOF'
+  c10 "plain cat <<-EOF with tabs is data (control)" silent Bash $'cat <<-EOF\n\trm x\n\tEOF'
+  c10 'cat <<"EOF" is data (control)' silent Bash $'cat <<"EOF"\nrm x\nEOF'
+  c10 "cat > /dev/null <<EOF is data (control)" silent Bash $'cat > /dev/null <<EOF\nrm x\nEOF'
+  c10 "VAR=1 cat <<EOF is data (control)" silent Bash $'FOO=1 cat <<EOF\nrm x\nEOF'
+
+  # R3b. A string method on a FileInfo is not a file write.
+  c10 "\$f.Name.Replace after a [IO.FileInfo] cast is a read" silent PowerShell $'$f=[IO.FileInfo]\'x\'; $f.Name.Replace(\'a\',\'b\')'
+  c10 "\$f.Name.Substring after a [IO.FileInfo] cast is a read" silent PowerShell $'$f=[IO.FileInfo]\'x\'; $f.Name.Substring(1)'
+  c10 "[IO.FileInfo] .Open( is a write (control)" deny PowerShell $'([IO.FileInfo]\'x\').Open(\'Create\')'
+  c10 "[IO.FileInfo] .Delete() is a write (control)" deny PowerShell $'([IO.FileInfo]\'x\').Delete()'
+
+  # R3c. Names: directory, backslash and quotes are removed before a command is matched.
+  c10 "/usr/bin/xargs rm is denied" deny Bash 'ls | /usr/bin/xargs rm -rf'
+  c10 "\\xargs rm is denied" deny Bash "\\xargs rm $MEM/x"
+  c10 "a quoted xargs wrapper is still a wrapper (control)" deny Bash "ls | 'xargs' rm $MEM/x"
+  c10 "/bin/sudo rm is denied" deny Bash 'true && /bin/sudo rm x'
+  c10 "/usr/bin/env -S is judged" deny Bash "true && /usr/bin/env -S 'rm x'"
+  c10 "/usr/bin/git log is a read (control)" silent Bash 'true && /usr/bin/git log'
+
+  # R3c. env -S judges the split string together with the remaining words.
+  c10 "env -S 'bash -c' 'rm x' is judged" deny Bash "env -S 'bash -c' 'rm x'"
+  c10 "env --split 'rm x' is judged" deny Bash "env --split 'rm x'"
+  c10 "env --split-s 'rm x' (a prefix) is judged" deny Bash "env --split-s 'rm x'"
+  c10 "env -S '-i FOO=1' rm x is judged (control)" deny Bash "env -S '-i FOO=1' rm x"
+  c10 "env -S 'git log' is a read (control)" silent Bash "env -S 'git log'"
+  c10 "env -S 'FOO=1' git log is a read (control)" silent Bash "env -S 'FOO=1' git log"
+
+  # R3c. Process substitution bodies are commands.
+  c10 "cat <(rm -rf build) runs the body" deny Bash 'cat <(rm -rf build)'
+  c10 "ls >(rm x) runs the body" deny Bash 'ls >(rm x)'
+  c10 "diff <(git log) <(git log -1) is a read (control)" silent Bash 'diff <(git log) <(git log -1)'
+  c10 "a quoted <(rm x) is text (control)" silent Bash 'echo "<(rm x)" ">(rm y)"'
+  c10 "a single-quoted <(rm x) is text (control)" silent Bash "echo '<(rm x)'"
+
+  # R3c. stdbuf, watch, script, flock and the other launchers.
+  c10 "stdbuf -o L rm is denied" deny Bash 'stdbuf -o L rm -rf x'
+  c10 "stdbuf -oL rm is denied (control)" deny Bash 'stdbuf -oL rm x'
+  c10 "stdbuf --output=L rm is denied (control)" deny Bash 'stdbuf --output=L rm x'
+  c10 "stdbuf --output L rm is denied" deny Bash 'stdbuf --output L rm x'
+  c10 "stdbuf -i0 -o L -e0 rm is denied" deny Bash 'stdbuf -i0 -o L -e0 rm x'
+  c10 "stdbuf -oL git log is a read (control)" silent Bash 'stdbuf -oL git log'
+  c10 "watch -n1 'rm x' is judged" deny Bash "watch -n1 'rm x'"
+  c10 "watch -n 1 rm x is judged" deny Bash 'watch -n 1 rm x'
+  c10 "watch --interval 2 rm x is judged" deny Bash 'watch --interval 2 rm x'
+  c10 "watch git log is a read (control)" silent Bash 'watch git log'
+  c10 "watch -n 2 'git status' is a read (control)" silent Bash "watch -n 2 'git status'"
+  c10 "script -qc 'rm x' /dev/null is judged" deny Bash "script -qc 'rm x' /dev/null"
+  c10 "script --command 'rm x' /dev/null is judged" deny Bash "script --command 'rm x' /dev/null"
+  c10 "script -c without a file writes typescript" deny Bash "script -c 'git log'"
+  c10 "script -c into a file writes it" deny Bash "script -qc 'git log' out.txt"
+  c10 "script -O writes a log" deny Bash "script -O out.txt -c 'git log' /dev/null"
+  c10 "script -qc 'git log' /dev/null is a read (control)" silent Bash "script -qc 'git log' /dev/null"
+  c10 "flock creates its lock file" deny Bash 'flock /tmp/x.lock git log'
+  c10 "timeout 5 rm is denied (control)" deny Bash 'timeout 5 rm x'
+  c10 "nice -n 5 rm is denied (control)" deny Bash 'nice -n 5 rm x'
+  c10 "ionice -c 3 rm is denied (control)" deny Bash 'ionice -c 3 rm x'
+  c10 "chrt -f 10 rm is denied" deny Bash 'chrt -f 10 rm x'
+  c10 "taskset -c 0 rm is denied" deny Bash 'taskset -c 0 rm x'
+  c10 "taskset 0x1 rm is denied" deny Bash 'taskset 0x1 rm x'
+  c10 "busybox rm is denied" deny Bash 'busybox rm x'
+  c10 "busybox xargs rm is denied" deny Bash 'busybox xargs rm x'
+  c10 "nice -n 5 git log is a read (control)" silent Bash 'nice -n 5 git log'
+  c10 "taskset -c 0 git log is a read (control)" silent Bash 'taskset -c 0 git log'
+  c10 "chrt -f 10 git log is a read (control)" silent Bash 'chrt -f 10 git log'
+  c10 "busybox ls is a read (control)" silent Bash 'busybox ls'
+
+  # R3c. ripgrep can run a preprocessor.
+  c10 "rg --pre <cmd> is denied" deny Bash 'rg --pre rm . .'
+  c10 "rg --pre=<cmd> is denied" deny Bash 'rg --pre=rm foo .'
+  c10 "rg --hostname-bin is denied" deny Bash 'rg --hostname-bin x foo'
+  c10 "rg -n foo src is a read (control)" silent Bash 'rg -n foo src'
+
+  # R3c. Package manager config, cache and pack subcommands.
+  c10 "npm --audit-level info install is an install" deny Bash 'npm --audit-level info install x'
+  c10 "npm --audit-level high audit is a read (control)" silent Bash 'npm --audit-level high audit'
+  c10 "npm config set is a write" deny Bash 'npm config set registry x'
+  c10 "npm config delete is a write" deny Bash 'npm config delete registry'
+  c10 "npm config edit is a write" deny Bash 'npm config edit'
+  c10 "npm config get is a read (control)" silent Bash 'npm config get registry'
+  c10 "npm config list is a read (control)" silent Bash 'npm config list'
+  c10 "yarn config set is a write" deny Bash 'yarn config set x y'
+  c10 "pnpm config delete is a write" deny Bash 'pnpm config delete x'
+  c10 "pip config set is a write" deny Bash 'pip config set global.x y'
+  c10 "npm cache clean is a write" deny Bash 'npm cache clean --force'
+  c10 "pip cache purge is a write" deny Bash 'pip cache purge'
+  c10 "pip cache dir is a read (control)" silent Bash 'pip cache dir'
+  c10 "npm pack writes a tarball" deny Bash 'npm pack'
+  c10 "npm pack --dry-run is a read (control)" silent Bash 'npm pack --dry-run'
+  c10 "cargo fmt rewrites files" deny Bash 'cargo fmt'
+  c10 "cargo fmt --check is a read (control)" silent Bash 'cargo fmt --check'
+  c10 "cargo clippy --fix rewrites files" deny Bash 'cargo clippy --fix'
+  c10 "cargo clippy is a read (control)" silent Bash 'cargo clippy'
+  c10 "cargo package writes an archive" deny Bash 'cargo package'
+  c10 "cargo package --list is a read (control)" silent Bash 'cargo package --list'
+
+  # R3c. PowerShell and Windows file commands.
+  c10 "(Get-Item f).Delete() is a write" deny PowerShell '(Get-Item f).Delete()'
+  c10 "\$d.MoveTo( is a write" deny PowerShell '$d.MoveTo("x")'
+  c10 "\$f.CopyTo( is a write" deny PowerShell '$f.CopyTo("y")'
+  c10 "Expand-Archive is a write" deny PowerShell 'Expand-Archive a.zip out'
+  c10 "Compress-Archive is a write" deny PowerShell 'Compress-Archive a b.zip'
+  c10 "robocopy in PowerShell is a write" deny PowerShell 'robocopy a b'
+  c10 "xcopy in PowerShell is a write" deny PowerShell 'xcopy a b'
+  c10 "robocopy in bash is a write" deny Bash 'robocopy a b'
+  c10 "\$s.Replace on a string is a read (control)" silent PowerShell $'$s.Replace(\'a\',\'b\')'
+
+  # R3d. cp keeps the mode of its source with --preserve.
+  c10 "cp --preserve=mode is denied" deny Bash "cp --preserve=mode /work/proj/a $MEM/a"
+  c10 "cp --preserve (all defaults) is denied" deny Bash "cp --preserve /work/proj/a $MEM/a"
+  c10 "cp --preserve=timestamps is allowed (control)" silent Bash "cp --preserve=timestamps /work/proj/a $MEM/a"
+  c10 "cp of an executable into the memory dir is the documented allowance (control)" silent Bash "cp /bin/rm $MEM/r"
+  c10 "GIT_PAGER=cat git log stays denied by design (control)" deny Bash 'GIT_PAGER=cat git log'
 fi
 echo ""
 
