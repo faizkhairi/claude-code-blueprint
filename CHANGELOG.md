@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and the 
 
 ## [Unreleased]
 
+### Fixed
+- `hooks/protect-config.sh` and `hooks/protect-claude-settings.sh` now emit the documented `hookSpecificOutput.permissionDecision` `"ask"` shape. The old top-level `decision: "ask"` is not a documented PreToolUse value (only `approve` and `block` map, to allow and deny), so the confirm prompt could be skipped. Decision tests added to `hooks/test-hooks.sh`.
+
 ## [1.3.0] - 2026-11-12
 
 ### Added

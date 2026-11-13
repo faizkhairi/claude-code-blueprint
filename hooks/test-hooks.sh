@@ -328,6 +328,46 @@ else
   expect "guard-exit-plan: deny carries a reason" yes \
     "$([ -f "$HOOKS_DIR/$GEP" ] && printf '%s' '{"tool_name":"ExitPlanMode","tool_input":{"plan":"x"}}' | bash "$HOOKS_DIR/$GEP" 2>/dev/null | grep -q 'self-audit' && echo yes)"
 
+  # protect-config.sh and protect-claude-settings.sh prompt (permissionDecision "ask").
+  # The documented PreToolUse shape is hookSpecificOutput.permissionDecision; a top-level
+  # {"decision":"ask"} is not, so these cases read the decision through that path.
+  PCF=protect-config.sh
+  expect "protect-config: a linter config edit asks" ask \
+    "$(guard_decision $PCF '{"tool_name":"Edit","tool_input":{"file_path":"/work/proj/eslint.config.js","old_string":"a","new_string":"b"}}')"
+  expect "protect-config: a tsconfig edit asks" ask \
+    "$(guard_decision $PCF '{"tool_name":"Write","tool_input":{"file_path":"/work/proj/tsconfig.json","content":"{}"}}')"
+  expect "protect-config: an ordinary source file stays silent" silent \
+    "$(guard_decision $PCF '{"tool_name":"Edit","tool_input":{"file_path":"/work/proj/src/app.ts","old_string":"a","new_string":"b"}}')"
+  expect "protect-config: malformed input exits silently" silent \
+    "$(guard_decision $PCF 'not json {{{')"
+
+  PCS=protect-claude-settings.sh
+  SET=/home/u/.claude/settings.json
+  expect "protect-claude-settings: editing defaultMode asks" ask \
+    "$(guard_decision $PCS '{"tool_name":"Edit","tool_input":{"file_path":"'"$SET"'","old_string":"\"defaultMode\": \"default\"","new_string":"\"defaultMode\": \"bypassPermissions\""}}')"
+  expect "protect-claude-settings: editing the deny list asks" ask \
+    "$(guard_decision $PCS '{"tool_name":"Edit","tool_input":{"file_path":"'"$SET"'","old_string":"\"deny\": [\"Bash(rm -rf *)\"]","new_string":"\"deny\": []"}}')"
+  expect "protect-claude-settings: adding an Edit() allow rule inside .claude asks" ask \
+    "$(guard_decision $PCS '{"tool_name":"Edit","tool_input":{"file_path":"'"$SET"'","old_string":"\"allow\": []","new_string":"\"allow\": [\"Edit(~/.claude/**)\"]"}}')"
+  expect "protect-claude-settings: adding a Write() allow rule inside .claude asks" ask \
+    "$(guard_decision $PCS '{"tool_name":"Write","tool_input":{"file_path":"'"$SET"'","content":"{\"permissions\":{\"allow\":[\"Write(/home/u/.claude/**)\"]}}"}}')"
+  expect "protect-claude-settings: a theme-only edit stays silent" silent \
+    "$(guard_decision $PCS '{"tool_name":"Edit","tool_input":{"file_path":"'"$SET"'","old_string":"\"theme\": \"dark\"","new_string":"\"theme\": \"light\""}}')"
+  expect "protect-claude-settings: an edit to another file stays silent" silent \
+    "$(guard_decision $PCS '{"tool_name":"Edit","tool_input":{"file_path":"/work/proj/settings.json","old_string":"a","new_string":"\"defaultMode\""}}')"
+  expect "protect-claude-settings: malformed input exits silently" silent \
+    "$(guard_decision $PCS 'not json {{{')"
+  expect "protect-config and protect-claude-settings: ask output parses and carries a reason" yes \
+    "$(for h in "$PCF" "$PCS"; do
+        if [ "$h" = "$PCF" ]; then p='{"tool_name":"Edit","tool_input":{"file_path":"/w/biome.json","old_string":"a","new_string":"b"}}'
+        else p='{"tool_name":"Edit","tool_input":{"file_path":"'"$SET"'","old_string":"a","new_string":"\"disableAllHooks\": true"}}'; fi
+        printf '%s' "$p" | bash "$HOOKS_DIR/$h" 2>/dev/null | "$PYTHON" -c "
+import sys, json
+d = json.load(sys.stdin)['hookSpecificOutput']
+assert d['hookEventName'] == 'PreToolUse' and d['permissionDecisionReason']
+print('ok')" 2>/dev/null
+      done | tr -d '\r' | paste -sd, | sed 's/^ok,ok$/yes/')"
+
   # Missing Python: both guards warn on stderr and exit 0 without a decision.
   BASH_BIN=$(command -v bash)
   for g in $AWG $GEP; do
