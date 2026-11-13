@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and the 
 
 ## [Unreleased]
 
+### Changed
+- The Japanese, Korean and Simplified Chinese READMEs are back in sync with v1.3: six missing hook rows, the `diagnose-before-finding` skill row, the global Quick Start, the preset banner and the read-only-by-intent and model-alias notes.
+
+### Added
+- `tests/count-check.sh` now checks that each translated README's hooks and skills tables list the same scripts and skills, in the same order and row count, as the English README.
+
 ### Fixed
 - `hooks/protect-config.sh` and `hooks/protect-claude-settings.sh` now emit the documented `hookSpecificOutput.permissionDecision` `"ask"` shape. The old top-level `decision: "ask"` is not a documented PreToolUse value (only `approve` and `block` map, to allow and deny), so the confirm prompt could be skipped. Decision tests added to `hooks/test-hooks.sh`.
 
