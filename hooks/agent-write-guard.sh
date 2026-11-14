@@ -28,20 +28,54 @@
 #     `cmd /c`, $(...) and backticks (also inside double quotes), loops and if bodies,
 #     a heredoc fed to a shell, and after wrappers such as xargs, env, sudo and timeout.
 #     A heredoc body is text only for the plain one-line shape `<reader> [args] <<[-]DELIM`
-#     (a reader is cat, grep, egrep, fgrep, head, tail, wc, jq, sort, less, more, nl or `:`;
-#     DELIM may be quoted, and so may the receiver word), optionally followed by > file or
+#     (a reader is the bare name cat, grep, egrep, fgrep, head, tail, wc, jq, sort, nl or
+#     `:`, first on its line: no path, quote or leading backslash, and nothing before it such
+#     as VAR=value, PATH=... or `!`; DELIM may be quoted), optionally followed by > file or
 #     >> file, and nothing else, with a delimiter that closes. The text before << has no
 #     ( ) $ backtick backslash | ; & < or quote, and no line ends in a backslash (a
-#     continuation can hide a pipe). Every other shape (a shell, tee, an interpreter, an
-#     escaped or variable receiver, a heredoc inside $(...), <(...) or backticks, a pipe or
-#     a second command on the line, `<<` inside $[...] or a[...]= arithmetic) means the body
-#     is judged as commands, as bash may run it. The $(...), ${...} and backticks of an
+#     continuation can hide a pipe). less and more are not readers (-o, --log-file and +!cmd
+#     write or run). A command that defines a function or alias (function, name() {, alias,
+#     shopt, enable, hash, Set-Alias, New-Alias) or sets PATH, LD_PRELOAD, BASH_ENV or IFS has
+#     no heredoc data, as a reader name could then be anything. Every other shape (a shell,
+#     tee, an interpreter, an escaped, quoted, path or variable receiver, a heredoc inside
+#     $(...), <(...) or backticks, a pipe or a second command on the line, `<<` inside $[...]
+#     or a[...]= arithmetic) means the body is judged as commands, as bash may run it.
+#     `cat<<EOF` with no space is the same heredoc as `cat <<EOF`. A <<< here-string follows
+#     the same rule (a bare reader or `read` receives it, and it is not piped on). A command
+#     that uses `eval`, or an unquoted heredoc body with a line that ends in an odd number of
+#     backslashes (a continuation can end it early), has no heredoc data either. The $(...), ${...} and backticks of an
 #     unquoted body that is text are judged too. Nothing is counted: a decoy quote or
 #     parenthesis cannot change the verdict, because any of them makes the shape not plain.
 #     $HOME, ${HOME}, "$HOME"/... and ~ expand in a target path. A memory-dir target
-#     must be a plain path (no quote, backslash, $, glob, brace, `..` component, or a
-#     comma in PowerShell), the allowance never applies under xargs, parallel or find
-#     -exec, and cp takes only -r -R -p -f -v -n and -t. Reads, searches, tests and
+#     must be a plain absolute path or one rooted at $HOME, ${HOME}, "$HOME" or ~ (a relative
+#     or quoted path never qualifies; no backslash, $, glob, brace, `..` component, ~ or :
+#     inside the path, or a comma in PowerShell). The allowance is off for the whole command
+#     when it changes the directory (cd, pushd, popd, Set-Location, sl, Push-Location,
+#     chdir, env -C, sudo -D) or assigns HOME (HOME=, export HOME, declare HOME, $env:HOME,
+#     Set-Variable HOME), because a path then means another place. It never applies under
+#     xargs, parallel or find -exec, and cp takes only -r -R -p -f -v -n and -t. Link
+#     creation is denied everywhere: ln, mklink (also via cmd /c), junction, fsutil
+#     hardlink and reparsepoint, and New-Item of any type. HOME counts by word: any use of
+#     HOME, USERPROFILE, HOMEDRIVE or HOMEPATH other than a $HOME or ${HOME} expansion (for
+#     HOME in, read HOME, unset HOME, printf -v HOME) turns the allowance off too. These
+#     checks, and the function and alias check, run on the raw text and on a copy with quotes,
+#     backslashes and line continuations (PowerShell: backticks) removed, so a word split as
+#     HO''ME is seen. The allowance is also off for eval, read, mapfile, readarray, printf -v,
+#     declare, typeset or local with -n, ${!name}, and PowerShell Set-Variable, sv,
+#     New-Variable, nv, Set-Item or si on variable: or env:, and SetEnvironmentVariable (they
+#     set a variable by a name the text does not show). An unquoted $HOME or ${HOME} is split
+#     and globbed by bash, so it counts only when HOME has no whitespace and none of *?[ ; ~
+#     and "$HOME" always count.
+#     Nothing in the agent memory dir is run: a .claude/agent-memory path (any spelling, .. and
+#     . resolved) is denied as the command (after env, sudo, command, exec, nohup, xargs and
+#     the other wrappers), as the argument of source or `.`, as the program file of bash, sh,
+#     zsh, dash, ksh, fish, python*, py, node, deno, bun, perl, ruby, php, pwsh, powershell,
+#     cmd or wsl (options and their values are skipped), and as the < input of those.
+#     `trap` with an action is denied (bare trap, trap -l and trap -p are reads). `start` is
+#     denied in Bash; in PowerShell iex, Invoke-Expression, Start-Process (saps, start),
+#     Invoke-Command (icm), Start-Job (sajb), Start-ThreadJob, Invoke-Item (ii),
+#     Invoke-WmiMethod, Invoke-CimMethod, [scriptblock]::Create and New-Object -ComObject are
+#     denied. Reads, searches, tests and
 #     `2>&1` / `2>/dev/null` stay allowed. git fetch is allowed (it moves remote-tracking
 #     refs only) without --upload-pack or --recurse-submodules. `GIT_TERMINAL_PROMPT=0`
 #     is denied like any GIT_ variable (the hook cannot tell the harmless ones apart).
@@ -63,17 +97,22 @@
 # set|delete|edit`, `npm cache clean`, `npm pack`, `cargo fmt` (without --check) and a
 # PowerShell .Delete(, .MoveTo( or .CopyTo( call. cp refuses a bare --preserve and one with mode or all.
 #
-# Limits, stated plainly: this stops honest mistakes, it is not a sandbox. An
+# Limits, stated plainly: this stops honest mistakes, it is not a sandbox. Deliberately
+# obfuscated commands are out of scope: the allowances are kept narrow so that obfuscation
+# falls back to deny where it can be seen. A word such as eval, read or cd anywhere in the
+# command turns the memory-dir allowance off, except inside the body of a plain heredoc with
+# a quoted delimiter (<<'EOF', <<"EOF", <<\EOF; a bare reader starts the line and the
+# delimiter closes): bash never expands or runs that body, so a note may mention them. An
 # interpreter that writes a file itself (python -c, node -e, a heredoc fed to python),
-# a script file run by name, an archive tool, a git alias, a curl -K config file (denied
+# a script file run by name (outside the memory dir), a memory-dir file reached through
+# eval "$(cat file)", a glob spelling of the memory path, an archive tool, a git alias, a curl -K config file (denied
 # unseen), `curl --output-dir`, tools that name an output as a later operand (uniq in
 # out), other launchers (strace, chroot, unshare, nsenter, systemd-run, su -c), or text
 # piped into a shell from anything but a heredoc is not seen. A path is judged as text: a
-# symlink inside the memory dir, a variable other than HOME and a `cd` before a relative
-# path are not followed (an unresolved one is denied), and a HOME that the same command
-# reassigns is not modelled. A file copied into the memory dir keeps its mode, so a copied
-# executable stays executable. A heredoc is data only for a reader that does not run its
-# input, but `less !cmd` runs a command when a person types it. Comment parsing follows
+# symlink inside the memory dir (none can be made here, but an earlier one is not followed)
+# and a variable other than HOME are not followed (an unresolved path is denied). A file
+# copied into the memory dir keeps its mode, so a copied executable stays executable. A
+# heredoc is data only for a reader that does not run its input. Comment parsing follows
 # bash; $'...' escapes and PowerShell backtick escapes are not modelled. Monitor is
 # covered here, but the
 # settings matcher must route it to this script: add Monitor to the matcher if your Claude
@@ -205,7 +244,7 @@ GIT_READ = {"status", "log", "show", "diff", "blame", "grep", "ls-files", "ls-tr
             "verify-commit", "verify-tag"}
 WRITE_CMDS = {"tee", "rm", "rmdir", "mv", "cp", "touch", "mkdir", "truncate", "ln",
               "chmod", "chown", "dd", "install", "unlink", "rsync", "patch", "shred",
-              "robocopy", "xcopy", "flock"}
+              "robocopy", "xcopy", "flock", "mklink", "junction"}
 PS_WRITE = {"set-content", "add-content", "out-file", "new-item", "remove-item",
             "move-item", "copy-item", "rename-item", "clear-content", "set-item",
             "set-itemproperty", "tee-object", "export-csv", "export-clixml", "set-acl",
@@ -287,11 +326,11 @@ MEM_CMDS = {
            "t", {"target-directory"}),
 }
 # Commands that only read their heredoc. A heredoc body is text only when its receiver is one
-# of these and the heredoc line has the plain shape heredoc_is_data describes; any other
-# receiver or shape (a shell, tee, a variable name, an interpreter, a pipe) means the body is
-# judged as commands.
-READERS = {":", "cat", "grep", "egrep", "fgrep", "head", "tail", "wc", "jq", "sort", "less",
-           "more", "nl"}
+# of these, written as a bare name that starts the line, and the line has the plain shape
+# heredoc_is_data describes; any other receiver or shape (a shell, tee, a path, a quoted or
+# variable name, an interpreter, a prefix, a pipe) means the body is judged as commands.
+# less and more are left out: they can write (-o, -O, --log-file) and run commands (+!).
+READERS = {":", "cat", "grep", "egrep", "fgrep", "head", "tail", "wc", "jq", "sort", "nl"}
 SHELLS = {"bash", "sh", "zsh", "dash", "ksh", "pwsh", "powershell", "cmd", "source", "."}
 PS_SHELLS = {"pwsh", "powershell", "cmd"}
 GIT_VAR = re.compile(r"^GIT_[A-Za-z0-9_]*=", re.I)
@@ -310,7 +349,8 @@ PS_FILE_WRITE = re.compile(
 PS_GIT_ENV = re.compile(
     r"\$env:GIT_\w*\s*=(?!=)|SetEnvironmentVariable\s*\(\s*[\"\x27]GIT_", re.I)
 HOME_VAR = re.compile(r"^\$(\{HOME\}|HOME)(?=/|$)")
-# "$HOME"/x reads as $HOME/x: the tokenizer would split it after the closing quote.
+# "$HOME"/x reads as ~/x (both expand to HOME and are never word-split): the tokenizer would
+# split it after the closing quote.
 QHOME_SUB = re.compile(r"\"\$(?:HOME|\{HOME\})\"(?=/)")
 # Shell words that come before a command without being one (if x; then rm y; fi).
 KEYWORDS = {"if", "then", "do", "else", "elif", "while", "until", "{", "}", "!",
@@ -333,6 +373,96 @@ WRAPPERS = {"sudo": {"-u", "-g", "-C", "-D", "-h", "-p", "-r", "-t", "-U", "--us
             "time": {"-f", "--format"}, "exec": {"-a"}}
 SAFE_TARGETS = {"/dev/null", "/dev/stdout", "/dev/stderr", "nul", "$null"}
 
+# The memory-dir allowance is off for a whole command that changes the directory or HOME: a
+# relative path or $HOME then names another place. The scan is over the raw text, so a cd
+# inside bash -c or a quoted string counts too (it can only turn an allowance off).
+CHDIR_RE = re.compile(
+    r"(?<![\w./-])(?:cd|pushd|popd|chdir|set-location|sl|push-location|pop-location)(?![\w./-])"
+    r"|\benv\b[^;&|\n]*?\s(?:-[A-Za-z]*C\b|--c)|\bsudo\b[^;&|\n]*?\s(?:-[A-Za-z]*D\b|--ch)", re.I)
+HOME_ASSIGN_RE = re.compile(
+    r"(?<![\w-])HOME\s*=(?!=)|\$\{?HOME\}?\s*=(?!=)"
+    r"|\b(?:export|declare|typeset|readonly|local|setenv|set-variable|new-variable|sv)\b[^;&|\n]*?\bHOME\b"
+    r"|\$env:(?:HOME|USERPROFILE|HOMEDRIVE|HOMEPATH)\b|(?<![\w-])(?:USERPROFILE|HOMEDRIVE|HOMEPATH)\s*=(?!=)"
+    r"|SetEnvironmentVariable[^;\n]*HOME", re.I)
+# A heredoc body is never data when the command defines a function or alias, or changes how
+# a command name is found (cat could then be anything).
+HD_OFF_RE = re.compile(
+    r"(?<![\w./-])(?:function|alias|unalias|shopt|enable|hash|set-alias|new-alias|sal|nal)(?![\w./-])"
+    r"|\x28\s*\x29\s*[{\x28]"
+    r"|(?<![\w-])(?:PATH|LD_PRELOAD|LD_LIBRARY_PATH|BASH_ENV|ENV|IFS|SHELLOPTS|BASHOPTS)\s*=(?!=)"
+    r"|\bexport\b[^;&|\n]*?\b(?:PATH|LD_PRELOAD|BASH_ENV|IFS)\b|\$env:(?:PATH|LD_PRELOAD|BASH_ENV)\b", re.I)
+HOME_WORD = re.compile(r"(?<![\w./\\~$-])(?:HOME|USERPROFILE|HOMEDRIVE|HOMEPATH)(?!\w)")
+
+def home_touched(command, ps):
+    """True when the word HOME (or USERPROFILE, HOMEDRIVE, HOMEPATH) appears anywhere but as
+    a $HOME or ${HOME} expansion: an assignment, for HOME in, read HOME, unset HOME, printf
+    -v HOME, local HOME and so on all change what a path rooted at $HOME or ~ means."""
+    ci = ps or re.search(r"\b(?:pwsh|powershell)\b", command, re.I)
+    fl = re.I if ci else 0
+    rest = re.sub(r"\$\{HOME\}|\$HOME(?!\w)", "", command, flags=fl)
+    return bool(re.search(HOME_WORD.pattern, rest, fl))
+
+# Words that set a variable by a name the text does not show, or that build code from text.
+# They turn the memory-dir allowance off (a path rooted at HOME or ~ could then mean anywhere).
+INDIRECT_RE = re.compile(
+    r"(?<![\w./-])(?:read|mapfile|readarray|eval|set-variable|sv|new-variable|nv)(?![\w./-])"
+    r"|\bprintf\b[^;&|\n]*\s-v"
+    r"|\b(?:declare|typeset|local)\b[^;&|\n]*\s-[A-Za-z]*n"
+    r"|\$\{!"
+    r"|\b(?:set-item|si)\b[^;&|\n]*\b(?:variable|env):"
+    r"|SetEnvironmentVariable"
+    r"|\b(?:export|declare|typeset|readonly|local|env)\b[^;&|\n]*\$\{?[A-Za-z_]\w*\}?\w*=", re.I)
+EVAL_RE = re.compile(r"(?<![\w./-])eval(?![\w./-])", re.I)
+
+def flatten(command, ps):
+    """The command with quotes, backslashes, line continuations (and, for PowerShell,
+    backticks) removed, so a word split by them reads as the word it becomes. Every
+    allowance check runs on the raw text and on this copy."""
+    t = command.replace("\\\r\n", "").replace("\\\n", "")
+    if ps:
+        t = t.replace("`\r\n", "").replace("`\n", "").replace("`", "")
+    return re.sub(r"[\"\x27\\]", "", t)
+
+def scan_text(command):
+    """The command without the body lines of each heredoc whose delimiter is quoted, whose
+    receiver is a bare reader that starts the line and whose delimiter closes on an exact
+    line: bash never expands or runs such a body, so words in it (a note that mentions cd,
+    HOME or eval) are not commands. The delimiter lines stay, and so does every other
+    heredoc body (an unquoted one can expand, and a continuation can end it early)."""
+    cmd = command.replace("\r", "")
+    drop = []
+    try:
+        strip_comments(cmd, drop)
+    except Exception:
+        return command
+    out, last = [], 0
+    for a, b in drop:
+        out.append(cmd[last:a]); last = b
+    out.append(cmd[last:])
+    return "".join(out)
+
+def allowance_off(command, ps):
+    """(MEM_OFF, HD_OFF): the memory-dir allowance is off for a command that changes the
+    directory or HOME, sets a variable indirectly or uses eval; a heredoc body is never data
+    when the command defines a function or alias or uses eval. Raw and flattened text, with
+    the bodies of quoted-delimiter plain heredocs left out (scan_text)."""
+    def scan(text):
+        mem = hd = False
+        for t in (text, flatten(text, ps)):
+            mem = mem or bool(CHDIR_RE.search(t) or HOME_ASSIGN_RE.search(t)
+                              or home_touched(t, ps) or INDIRECT_RE.search(t))
+            hd = hd or bool(HD_OFF_RE.search(t) or EVAL_RE.search(t))
+        return mem, hd
+    base = scan_text(command)
+    mem, hd = scan(base)
+    if hd and base != command:
+        mem, hd = scan(command)     # a definition outside the body can make it run: words count
+    return mem, hd
+
+MEM_OFF = False
+HD_OFF = False
+ABS_PATH = re.compile(r"^(?:/|[A-Za-z]:/|~(?:/|$))")
+
 def unq(t):
     if len(t) >= 2 and t[0] == t[-1] and t[0] in "\"\x27":
         return t[1:-1]
@@ -351,14 +481,28 @@ def shell_path(raw):
     return t
 
 def shell_ok(raw, ps=False):
-    """True when a shell word names a path inside the agent own memory dir. Only a plain
-    path is judged: a quote, backslash (bash), $ (after the leading HOME), glob character,
-    brace, backtick, a comma (PowerShell: it makes a list) or a .. component makes the word
-    unresolvable here, so it is not allowed."""
+    """True when a shell word names a path inside the agent own memory dir. Only a plain,
+    absolute path is judged: it must start with / or a drive letter, or be rooted at $HOME,
+    ${HOME}, "$HOME" or ~ (a relative path never qualifies, as the working directory can
+    differ). A quote (except the "$HOME/..." form), backslash (bash), $ (after the leading
+    HOME), glob character, brace, backtick, a comma (PowerShell: it makes a list), a ~ or
+    : inside the path (8.3 short names, streams) or a component of only dots and spaces
+    (.., ...) makes the word unresolvable here, so it is not allowed. The whole allowance is
+    off for a command that changes directory or HOME (CHDIR_RE, HOME_ASSIGN_RE)."""
+    if MEM_OFF:
+        return False
+    if raw[:1] in ("\"", "\x27") and not (raw[:1] == "\"" and HOME_VAR.match(unq(raw))):
+        return False
+    if not ps and raw[:1] not in ("\"", "\x27") and HOME_VAR.match(raw) and re.search(
+            r"[\s*?\[]", home):
+        return False                # bash splits and globs an unquoted $HOME that has these
     t = shell_path(raw)
+    tt = t.replace("\\", "/")
+    if not ABS_PATH.match(tt) or "~" in tt[1:] or ":" in tt[2:]:
+        return False
     if re.search(r"[{}`$\"\x27*?\[]", t) or (ps and "," in t) or (not ps and "\\" in t):
         return False
-    if ".." in re.split(r"[\\/]+", t):
+    if any(c.strip(". ") == "" and c not in ("", ".") for c in re.split(r"[\\/]+", t)):
         return False
     return allowed_path(t)
 
@@ -475,21 +619,25 @@ def subst_raw(s):
         i += 1
     return out
 
+READER_GLUE = re.compile(
+    r"(?:^|[ \t;&|(])(?:" + "|".join(re.escape(r) for r in sorted(READERS)) + r")$", re.I)
 HD_BAD = re.compile(r"[()$`\\|;&<\"\x27]")
 HD_TAIL = re.compile(
-    r"^-?[ \t]*(?:\x27[^\x27\"\\\s;&|()<>$`]+\x27|\"[^\x27\"\\\s;&|()<>$`]+\"|[A-Za-z0-9_.+-]+)"
+    r"^-?[ \t]*(?:\x27[^\x27\"\\\s;&|()<>$`]+\x27|\"[^\x27\"\\\s;&|()<>$`]+\"|\\[A-Za-z0-9_.+-]+|[A-Za-z0-9_.+-]+)"
     r"[ \t]*(?:>>?[ \t]*[^\s;&|()<>$`\\\x27\"=]+)?[ \t]*$")
-HD_ASSIGN = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*=[^\s]*$")
 
-def heredoc_is_data(cmd, i):
+def heredoc_is_data(cmd, i, use_off=True):
     """True only for the plain shape: the physical line that holds the << reads
     <reader> [args] <<[-]DELIM, DELIM optionally quoted, then at most > file or >> file.
-    The text before << has no ( ) $ backtick backslash | ; & < or quote (a quoted receiver
-    word such as "cat" is the one exception), and nothing follows the delimiter but that
-    redirect. A backslash at the end of the line, or at the end of the line before it, means a
+    The receiver is a bare reader name that starts the line (no path, quote, backslash or
+    VAR=value before it), the command defines no function or alias (HD_OFF_RE), the text
+    before << has no ( ) $ backtick backslash | ; & < or quote, and nothing follows the
+    delimiter but that redirect. A backslash at the end of the line, or at the end of the line before it, means a
     continuation that may hide a pipe. Any other shape (a shell, tee, an interpreter, a
     variable receiver, a heredoc inside $(...), <(...) or backticks, a pipe or a second
     command on the line) means the body may run, so it is judged as commands."""
+    if use_off and HD_OFF:
+        return False
     p = cmd.rfind("\n", 0, i) + 1
     if p > 1 and cmd[p - 2] == "\\":
         return False
@@ -499,23 +647,13 @@ def heredoc_is_data(cmd, i):
         return False
     before, after = line[:i - p], line[i - p + 2:]
     words = before.split()
-    while words and (words[0] in KEYWORDS or HD_ASSIGN.match(words[0])):
-        words = words[1:]
-    if not words:
+    if not words or words[0].lower() not in READERS:    # a bare name that starts the line
         return False
-    recv = words[0]
-    m = re.match(r"^([\"\x27])([^\"\x27]*)\1$", recv)
-    bare = m.group(2) if m else recv
-    n = posixpath.basename(bare).lower()
-    if n.endswith(".exe"):
-        n = n[:-4]
-    if n not in READERS:
-        return False
-    if HD_BAD.search(before.replace(recv, bare, 1)):
+    if HD_BAD.search(before):
         return False
     return bool(HD_TAIL.match(after))
 
-def strip_comments(cmd):
+def strip_comments(cmd, drop=None):
     """Drop shell comments (a # that starts a word, outside quotes, to end of line) and
     heredoc bodies that are plain text. Returns the text and the bodies that may run, each
     (text, ps) with ps None for the caller own setting: the whole body unless the receiver is
@@ -543,12 +681,13 @@ def strip_comments(cmd):
             continue
         elif cmd[i:i + 3] == "<<<":          # a here-string is not a heredoc
             out.append("<<<"); prev = "<"; i += 3; continue
-        elif (cmd[i:i + 2] == "<<" and prev in " \t\n;&|(" and brk == 0
+        elif (cmd[i:i + 2] == "<<" and (prev in " \t\n;&|(" or READER_GLUE.search(cmd[ls:i]))
+              and brk == 0
               and cmd[ls:i].count("((") <= cmd[ls:i].count("))")):
             # (not the << of $((1<<3)), $[1<<3] or a[1<<3]=1 arithmetic, nor x<<y)
             d = heredoc_delim(cmd, i + 2)
             if d:
-                pending.append(d + (heredoc_is_data(cmd, i),))
+                pending.append(d + (heredoc_is_data(cmd, i, drop is None),))
             out.append("<<"); prev = "<"; i += 2; continue
         elif c == "[":
             brk += 1
@@ -561,16 +700,20 @@ def strip_comments(cmd):
             body_ps = None if shell is None else shell in PS_SHELLS
             out.append("\n"); i += 1
             for delim, quoted, strip, data in pending:
-                body, found = [], False
+                body, found, b0, b1 = [], False, i, i
                 while i < n:
                     j = cmd.find("\n", i)
                     j = n if j < 0 else j
-                    line = cmd[i:j]; i = j + 1
+                    line = cmd[i:j]; b1 = i; i = j + 1
                     if (line.lstrip("\t") if strip else line) == delim:
                         found = True
                         break
                     body.append(line)
+                if drop is not None and quoted and found and data:
+                    drop.append((b0, b1))       # bash never expands or runs this body
                 text = "\n".join(body)
+                if not quoted and any((len(b) - len(b.rstrip("\\"))) % 2 for b in body):
+                    data = False            # a continuation can join lines, ending it early
                 if not (found and data):         # a body that may run, or no closing line
                     bodies.append((text, body_ps))
                 elif not quoted:
@@ -967,9 +1110,97 @@ def cname(tok):
             n = n[:-len(suffix)]
     return n
 
-def check_segment(words, ps, wrapped=False):
+# A file in the agent memory dir is data, never a program. A path is a memory-dir path when,
+# after quotes are dropped, backslashes turned into slashes and the dots resolved, it has a
+# .claude/agent-memory component (any spelling: absolute, ~, $HOME, /c/..., relative), or it
+# resolves into the agent own memory dir from the working directory.
+MEM_PATH_RE = re.compile(r"(?:^|/)\.claude/agent-memory(?:-local)?(?:/|$)", re.I)
+
+def mem_ref(raw, cmdword=False):
+    t = re.sub(r"[\"\x27]", "", raw).replace("\\", "/")
+    if not t:
+        return False
+    if MEM_PATH_RE.search(t) or MEM_PATH_RE.search(posixpath.normpath(t)):
+        return True
+    if (cmdword and "/" not in t) or "$" in t or "`" in t:
+        return False                        # a bare command name is looked up, not opened
+    return allowed_path(t)
+
+# Interpreters, with the options that take a value and the options that end the search for a
+# program file (the program is then a string or a module, not a file).
+INTERP_KIND = {"bash": "sh", "sh": "sh", "zsh": "sh", "dash": "sh", "ksh": "sh", "ash": "sh",
+               "csh": "sh", "tcsh": "sh", "fish": "sh", "py": "py", "node": "node",
+               "deno": "deno", "bun": "deno", "perl": "perl", "ruby": "perl", "php": "php",
+               "pwsh": "pwsh", "powershell": "pwsh", "cmd": "cmd", "wsl": "wsl"}
+INTERP_VAL = {"sh": {"-o", "+o", "-O", "+O", "--rcfile", "--init-file", "-C", "--init-command"},
+              "py": {"-W", "-X", "-Q"},
+              "node": {"-r", "--require", "--import", "--loader", "--experimental-loader",
+                       "-C", "--conditions", "--env-file"},
+              "perl": {"-I", "-r", "-C"}, "php": {"-d", "-c"},
+              "pwsh": {"-executionpolicy", "-ep", "-windowstyle", "-w", "-workingdirectory",
+                       "-wd", "-configurationname", "-config", "-inputformat",
+                       "-outputformat", "-version", "-v"},
+              "wsl": {"-d", "--distribution", "-u", "--user", "--cd"}, "deno": set(),
+              "cmd": set()}
+INTERP_CODE = {"sh": re.compile(r"^-[A-Za-z]*c[A-Za-z]*$"),
+               "py": re.compile(r"^-[BbdEiIOPqRsSuvVx]*[cm]"),
+               "node": re.compile(r"^(?:-[pe]{1,2}|--eval|--print)(?:=|$)"),
+               "perl": re.compile(r"^-[A-Za-z0-9]*[eE]"), "php": re.compile(r"^-r"),
+               "pwsh": re.compile(r"^-c(?:o(?:m(?:m(?:a(?:n(?:d)?)?)?)?)?)?$", re.I)}
+
+def interp_kind(name):
+    if re.match(r"^pythonw?[0-9.]*$", name):
+        return "py"
+    return INTERP_KIND.get(name)
+
+def interp_script(kind, args):
+    """The word an interpreter runs as its program file: the first operand after its options
+    (an option that takes a value is skipped with its value). None when the program is code on
+    the command line (-c, -e, -m) or stdin."""
+    i, subs = 0, kind == "deno"
+    while i < len(args):
+        a = unq(args[i]); i += 1
+        if a == "--":
+            continue
+        if a == "-":
+            return None
+        if kind == "cmd":
+            if re.match(r"^/[A-Za-z?](?::\S*)?$", a):
+                if a.lower() in ("/c", "/k", "/r"):
+                    return None
+                continue
+        elif a.startswith("-") or (kind == "sh" and a.startswith("+")):
+            if kind in INTERP_CODE and INTERP_CODE[kind].match(a):
+                return None
+            if (kind == "php" and a == "-f") or (kind == "pwsh" and a.lower() in ("-file", "-f")):
+                return args[i] if i < len(args) else None
+            if (a.lower() if kind == "pwsh" else a) in INTERP_VAL.get(kind, ()):
+                i += 1
+            continue
+        if subs and a in ("run", "x", "exec", "test", "bench"):
+            subs = False
+            continue
+        if kind == "deno" and a in ("eval", "repl"):
+            return None
+        return args[i - 1]
+    return None
+
+# PowerShell commands that run a program or text as code.
+PS_EXEC = {"iex", "invoke-expression", "start-process", "saps", "start", "invoke-command", "icm",
+           "start-job", "sajb", "start-threadjob", "invoke-item", "ii", "invoke-wmimethod",
+           "iwmi", "invoke-cimmethod"}
+PS_COMOBJ = re.compile(r"^-c(?:o(?:m(?:o(?:b(?:j(?:e(?:c(?:t)?)?)?)?)?)?)?)?(?::|$)", re.I)
+PS_SCRIPTBLOCK = re.compile(r"\[(?:system\.management\.automation\.)?scriptblock\]\s*::\s*create", re.I)
+# Here-string receivers: the readers, plus read (which never runs its input).
+HERESTR_OK = READERS | {"read"}
+
+def check_segment(words, ps, wrapped=False, stdin=(), herestr=False):
     """wrapped is True when the words run under xargs, parallel or find -exec, which add
-    operands of their own; the memory-dir allowance never applies there."""
+    operands of their own; the memory-dir allowance never applies there. stdin holds the
+    words after a < redirect, and herestr is True when the segment has a <<< here-string."""
+    if herestr and words and (HD_OFF or words[0].lower() not in HERESTR_OK):
+        deny("a here-string is text only for a plain reader (cat, grep, head, ...), as any "
+             "other command may run it.")
     while words:
         w = unq(words[0]).lower()
         cn = cname(words[0])
@@ -1047,6 +1278,27 @@ def check_segment(words, ps, wrapped=False):
         deny("`rg --pre` and `--hostname-bin` run a program.")
     if name == "script":
         check_script(args, ps)
+    if name == "fsutil" and uargs and re.match(r"^(hard|reparse)", uargs[0].lower()):
+        deny("`fsutil %s` creates links." % uargs[0])
+    if name == "trap" and not all(a in ("-l", "-p") for a in uargs):
+        deny("`trap` runs its action later (only a bare `trap`, `trap -l` and `trap -p` are allowed).")
+    if name == "start" or (ps and name in PS_EXEC):
+        deny("`%s` starts a program or runs text as code." % words[0])
+    if ps and name == "new-object" and any(PS_COMOBJ.match(a) for a in uargs):
+        deny("`New-Object -ComObject` can run programs.")
+    # A file in the agent memory dir is data, never a program: not as the command, not
+    # sourced, not as the file an interpreter runs, and not as its stdin.
+    why_mem = ("running a file from the agent memory dir is blocked: it is data, "
+               "and a file written there must not be run.")
+    if mem_ref(words[0], True):
+        deny(why_mem)
+    if name in ("source", ".") and args and mem_ref(args[0]):
+        deny(why_mem)
+    kind = interp_kind(name)
+    if kind:
+        script = interp_script(kind, args)
+        if (script is not None and mem_ref(script)) or any(mem_ref(f) for f in stdin):
+            deny(why_mem)
     if ps and name in PS_WRITE:
         deny("`%s` writes or removes files." % words[0])
     if ps and any(a.lower() == "-outfile" for a in uargs):
@@ -1087,7 +1339,7 @@ def check_segment(words, ps, wrapped=False):
 
 def check_command(cmd, ps):
     text, bodies = strip_comments(cmd.replace("\r", ""))
-    text = QHOME_SUB.sub("$HOME", text)
+    text = QHOME_SUB.sub("~", text)            # "$HOME" is not word-split, so it reads as ~
     for body, body_ps in bodies:
         check_command(body, ps if body_ps is None else body_ps)
     for body in subst_bodies(text, ps):
@@ -1096,13 +1348,18 @@ def check_command(cmd, ps):
         deny("a PowerShell .NET file call writes or removes files.")
     if ps and PS_GIT_ENV.search(text):
         deny(GIT_DENY)
+    if ps and PS_SCRIPTBLOCK.search(text):
+        deny("`[scriptblock]::Create` turns text into code.")
     toks = tokens(text)
-    seg = []
+    seg, stdin, herestr = [], [], False
     i = 0
     while i < len(toks):
         t = toks[i]
         if is_sep(t):
-            check_segment(seg, ps); seg = []; i += 1; continue
+            if herestr and t in ("|", "|&"):
+                deny("a here-string piped into another command may run as code.")
+            check_segment(seg, ps, False, stdin, herestr)
+            seg, stdin, herestr = [], [], False; i += 1; continue
         if t and set(t) <= set("<>&|") and ">" in t:
             nxt = toks[i + 1] if i + 1 < len(toks) else ""
             if t in (">&", "&>") or t.endswith("&"):
@@ -1112,14 +1369,19 @@ def check_command(cmd, ps):
             if target.lower() in SAFE_TARGETS or shell_ok(nxt, ps):
                 i += 2; continue
             deny("the shell redirect into %s writes a file." % (target or "a file"))
+        if t == "<" and i + 1 < len(toks) and not is_sep(toks[i + 1]) and not (
+                set(toks[i + 1]) <= set("<>&|")):
+            stdin.append(toks[i + 1]); i += 2; continue     # the file an input redirect reads
         if t and set(t) <= set("<>&|"):
-            i += 1; continue                # input redirect or heredoc marker
+            herestr = herestr or t == "<<<"
+            i += 1; continue                # input redirect, here-string or heredoc marker
         seg.append(t)
         i += 1
-    check_segment(seg, ps)
+    check_segment(seg, ps, False, stdin, herestr)
 
 command = tin.get("command") or ""
 if isinstance(command, str) and command.strip():
+    MEM_OFF, HD_OFF = allowance_off(command, tool == "PowerShell")
     try:
         check_command(command, ps=(tool == "PowerShell"))
     except Exception:
