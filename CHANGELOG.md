@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and the 
 
 ## [Unreleased]
 
+## [1.3.2] - 2026-11-14
+
+### Added
+- `docs/CASE-STUDIES.md` has its first entry: the maintainer's own setup, labelled as such, and `docs/ROADMAP.md` marks it done.
+
 ### Fixed
 - All 16 Python-based hooks, `setup.sh`, `tests/judge-eval.sh`, `tests/install-matrix.sh` and `hooks/test-hooks.sh` now skip the Windows Store `python3` stub (a `python3` under `WindowsApps` that exits 49 without running anything). Before, the guards ran nothing and let the call through. A candidate on that path is run once with `-c ''`, then `python` and `py` are tried. The detection snippet in `hooks/README.md`, `TROUBLESHOOTING.md` and `GETTING-STARTED.md` is updated.
 - `hooks/verify-subagent-findings.sh` no longer says a report was received when a background agent has only been launched (`tool_response.status` of `async_launched`). It sends Claude a short "launched, no report yet" note instead.
@@ -188,7 +193,8 @@ Initial public release.
 - A beginner guide, cross-tool guide, FAQ, troubleshooting guide, and four framework-specific CLAUDE.md examples.
 - Battle-story documentation (`docs/WHY.md`) explaining the reasoning behind each component.
 
-[Unreleased]: https://github.com/faizkhairi/claude-code-blueprint/compare/v1.3.1...HEAD
+[Unreleased]: https://github.com/faizkhairi/claude-code-blueprint/compare/v1.3.2...HEAD
+[1.3.2]: https://github.com/faizkhairi/claude-code-blueprint/compare/v1.3.1...v1.3.2
 [1.3.1]: https://github.com/faizkhairi/claude-code-blueprint/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/faizkhairi/claude-code-blueprint/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/faizkhairi/claude-code-blueprint/compare/v1.1.0...v1.2.0
