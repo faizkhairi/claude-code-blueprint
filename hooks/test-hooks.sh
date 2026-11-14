@@ -12,9 +12,12 @@
 # cases: block-git-push, pre-commit-secret-scan (against a fake gitleaks, plus a real-gitleaks
 # smoke case that is skipped when gitleaks is absent) and post-commit-review run against
 # throwaway git repos, the protect hooks against path spellings, a diff of the shared parser
-# and path-normaliser blocks, and a twice-run setup.sh merge into a temp HOME. A case labelled
-# "control" passes before and after its fix. The dash-checker fixtures contain the pattern
-# they test, on purpose.
+# and path-normaliser blocks, and a twice-run setup.sh merge into a temp HOME. Section 10
+# holds the agent-write-guard read-only gaps (GIT_ variables, fetch and grep options,
+# backticks, package runners, download tools, Monitor, PowerShell .NET writes) and its false
+# positives (heredoc bodies, $HOME in a path, own-memory-dir rm, cp, touch and mkdir). A
+# case labelled "control" passes before and after its fix. The dash-checker fixtures contain
+# the pattern they test, on purpose.
 
 PASS=0
 FAIL=0
@@ -1022,6 +1025,9 @@ FAKEEOF
   }
   RA=$(mkrepo ra); mkdir -p "$RA/prisma"; echo m > "$RA/prisma/schema.prisma"
   gq -C "$RA" add -A; gq -C "$RA" commit -qm "feat: schema" 2>/dev/null
+  # The hook reports only a commit under 120 s old, and a slow runner can take longer than
+  # that between here and a later case, so cases far below make a fresh commit first.
+  fresh_commit() { echo "$RANDOM" >> "$1/refresh.txt"; gq -C "$1" add -A; gq -C "$1" commit -qm "chore: refresh" 2>/dev/null; }
   RB=$(mkrepo rb); echo m > "$RB/schemaXprisma.txt"
   gq -C "$RB" add -A; gq -C "$RB" commit -qm "feat: lookalike" 2>/dev/null
   contains "post-commit-review: control, a fresh plain commit is reported" "$(review "$RA" 'git commit -m x')" 'Commit created: '
@@ -1063,6 +1069,7 @@ FAKEEOF
   nomark "pre-commit-secret-scan: the fsmonitor program was not run by the hook"
   push "git -c core.fsmonitor=<program> push origin is judged as a push" block "$RP" "git -c $FSMC push origin"
   nomark "block-git-push: the fsmonitor program was not run by the hook"
+  fresh_commit "$RA"
   contains "post-commit-review: git -c core.fsmonitor=<program> commit is still a commit" "$(review "$RA" "git -c $FSMC commit -m x")" 'Commit created: '
   nomark "post-commit-review: the fsmonitor program was not run by the hook"
   argv $BGP "$RQ" "git -c $FSMC -c Push.Default=current -c remote.origin.pushurl=https://example.org/z.git -c url.https://example.org/.insteadOf=u: push origin"
@@ -1103,6 +1110,7 @@ FAKEEOF
     push 'git {push,pull} origin main is blocked' block "$RQ" 'git {push,pull} origin main'
     push 'control: git status $(date) is not a push' allow "$RP" 'git status $(date)'
     scan 'a variable as the subcommand (S=commit; git $S -m x) is scanned as a commit' block "$S1" 'S=commit; git $S -m x'
+    fresh_commit "$RA"
     contains 'post-commit-review: a variable as the subcommand is reviewed as a commit' "$(review "$RA" 'S=commit; git $S -m x')" 'Commit created: '
   }
   # Aliases defined on the command line.
@@ -1110,6 +1118,7 @@ FAKEEOF
   push "control: git -c alias.p=push p gh resolves the alias and judges gh" allow "$RP" 'git -c alias.p=push p gh'
   push "an unknown subcommand while an alias is defined is blocked" block "$RQ" 'git -c alias.a=push foo origin main'
   scan "git -c 'alias.c=!git commit -am x' c scans the commit it runs" block "$S2" "git -c 'alias.c=!git commit -am x' c"
+  fresh_commit "$RA"
   contains "post-commit-review: git -c 'alias.c=!git commit -am x' c is reviewed as a commit" "$(review "$RA" "git -c 'alias.c=!git commit -am x' c")" 'Commit created: '
   # PowerShell: a trailing backslash is part of a path, not a line continuation.
   NL=$'\n'; CRNL=$'\r\n'
@@ -1384,6 +1393,855 @@ print("ok" if not bad else "; ".join(bad))
 
   rm -rf "$T9"
   unset GIT_AUTHOR_NAME GIT_AUTHOR_EMAIL GIT_COMMITTER_NAME GIT_COMMITTER_EMAIL
+fi
+echo ""
+
+# 10. PR C: agent-write-guard read-only gaps and false positives. Each case replays one
+# command (none of it is executed) as the read-only code-reviewer and checks the decision:
+# deny, or silent for an allowed call. A case labelled "control" passes before and after
+# the fix and pins behaviour that must not change. Written as one named case per channel.
+echo "--- Regression: agent-write-guard read-only gaps and false positives ---"
+# The $ in the single-quoted commands below must reach the hook unexpanded.
+# shellcheck disable=SC2016 # literal $HOME and $(...) text is the input under test
+if [ -z "$PYTHON" ]; then
+  skip "agent-write-guard gap checks need Python"
+else
+  c10() {  # c10 <name> <expected> <tool> <command>
+    local json
+    json=$("$PYTHON" -c 'import json,sys; print(json.dumps({"agent_type":"code-reviewer","tool_name":sys.argv[1],"cwd":"/work/proj","tool_input":{"command":sys.argv[2]}}))' "$3" "$4")
+    expect "agent-write-guard: $1" "$2" "$(guard_decision "$AWG" "$json" "${GENV[@]}")"
+  }
+  c10u() {  # like c10, but the payload is raw UTF-8 JSON (no \u escapes); @UXXXX@ in the command is that code point
+    local json
+    json=$("$PYTHON" -c 'import json,re,sys
+cmd = re.sub(r"@U([0-9A-Fa-f]{4})@", lambda m: chr(int(m.group(1), 16)), sys.argv[2])
+sys.stdout.buffer.write(json.dumps({"agent_type":"code-reviewer","tool_name":sys.argv[1],"cwd":"/work/proj","tool_input":{"command":cmd}}, ensure_ascii=False).encode("utf-8"))' "$3" "$4")
+    expect "agent-write-guard: $1" "$2" "$(guard_decision "$AWG" "$json" "${GENV[@]}")"
+  }
+  c10h() {  # like c10, but HOME is a path with a space (a Windows profile such as C:/Users/dev user)
+    local json
+    json=$("$PYTHON" -c 'import json,sys; print(json.dumps({"agent_type":"code-reviewer","tool_name":sys.argv[1],"cwd":"/work/proj","tool_input":{"command":sys.argv[2]}}))' "$3" "$4")
+    expect "agent-write-guard: $1" "$2" "$(guard_decision "$AWG" "$json" "${GENV[@]}" "HOME=C:/Users/dev user")"
+  }
+  # c10n: like c10, with HOME pinned to a path without spaces, for cases that use an unquoted $HOME.
+  case "$PY_HOME" in [A-Za-z]:*) NOSP_HOME=C:/Users/dev ;; *) NOSP_HOME=/home/dev ;; esac
+  c10n() {
+    local json
+    json=$("$PYTHON" -c 'import json,sys; print(json.dumps({"agent_type":"code-reviewer","tool_name":sys.argv[1],"cwd":"/work/proj","tool_input":{"command":sys.argv[2]}}))' "$3" "$4")
+    expect "agent-write-guard: $1" "$2" "$(guard_decision "$AWG" "$json" "${GENV[@]}" "HOME=$NOSP_HOME")"
+  }
+
+  # a. A GIT_ variable makes read-only git run a program.
+  c10 "GIT_EXTERNAL_DIFF prefix before git diff is denied" deny Bash 'GIT_EXTERNAL_DIFF=touch git diff'
+  c10 "quoted GIT_PAGER prefix before git log is denied" deny Bash 'GIT_PAGER="touch pwn" git log'
+  c10 "env GIT_PAGER before git log is denied" deny Bash 'env GIT_PAGER=touch git log'
+  c10 "env -S with a GIT_ variable is denied" deny Bash 'env -S "GIT_PAGER=touch git log"'
+  c10 "env -S with a write is denied" deny Bash 'env -S "rm x"'
+  c10 "export GIT_PAGER is denied" deny Bash 'export GIT_PAGER=touch; git log'
+  c10 "PowerShell \$env:GIT_PAGER assignment is denied" deny PowerShell '$env:GIT_PAGER = "touch pwn"; git log'
+  c10 "a non-GIT variable prefix before git log (control)" silent Bash 'FOO=1 git log'
+  c10 "the text GIT_PAGER as an argument (control)" silent Bash 'echo GIT_PAGER=x'
+
+  # b. git fetch and ls-remote can run a program through --upload-pack.
+  c10 "git fetch --upload-pack=<cmd> is denied" deny Bash 'git fetch --upload-pack="touch pwn" origin'
+  c10 "git fetch --upload-pack <cmd> (separate value) is denied" deny Bash 'git fetch --upload-pack touch origin'
+  c10 "git fetch --recurse-submodules is denied" deny Bash 'git fetch --recurse-submodules origin'
+  c10 "git fetch --recurse-submodules=on-demand is denied" deny Bash 'git fetch --recurse-submodules=on-demand'
+  c10 "git ls-remote --upload-pack is denied" deny Bash 'git ls-remote --upload-pack=touch origin'
+  c10 "plain git fetch (control)" silent Bash 'git fetch origin'
+  c10 "git fetch --prune (control)" silent Bash 'git fetch --prune origin'
+
+  # c. git grep -O runs a pager program.
+  c10 "git grep -O<cmd> is denied" deny Bash 'git grep -O"touch pwn" foo'
+  c10 "git grep -O <cmd> is denied" deny Bash 'git grep -O touch foo'
+  c10 "git grep -nO<cmd> in a cluster is denied" deny Bash 'git grep -nOtouch foo'
+  c10 "git grep --open-files-in-pager=<cmd> is denied" deny Bash 'git grep --open-files-in-pager=touch foo'
+  c10 "plain git grep -n (control)" silent Bash 'git grep -n foo -- src'
+
+  # d. Leading git global options that run programs.
+  c10 "git --exec-path=<dir> status is denied" deny Bash 'git --exec-path=/x status'
+  c10 "git --exec-path status is denied" deny Bash 'git --exec-path status'
+  c10 "git --config-env status is denied (control)" deny Bash 'git --config-env=core.pager=X status'
+  c10 "git --no-pager status (control)" silent Bash 'git --no-pager status'
+  c10 "git -C <dir> status (control)" silent Bash 'git -C /work/proj status'
+
+  # e. Backticks are command substitution, like $(...), also inside double quotes.
+  c10 "a backtick substitution is judged" deny Bash 'echo `touch pwned.txt`'
+  c10 "a backtick substitution inside double quotes is judged" deny Bash 'echo "`touch pwned.txt`"'
+  c10 "a quoted \$(...) substitution is judged" deny Bash 'echo "$(touch pwned.txt)"'
+  c10 "a backtick inside single quotes is text (control)" silent Bash 'echo '\''`touch pwned.txt`'\'''
+  c10 "a read-only backtick substitution (control)" silent Bash 'echo `date`'
+  c10 "a PowerShell backtick is an escape, not a substitution (control)" silent PowerShell 'Write-Output "a`nb"'
+
+  # f. Package runners fetch and run registry code.
+  c10 "npx is a package runner" deny Bash 'npx cowsay hi'
+  c10 "bunx is a package runner" deny Bash 'bunx cowsay hi'
+  c10 "pnpm dlx is a package runner" deny Bash 'pnpm dlx cowsay'
+  c10 "yarn dlx is a package runner" deny Bash 'yarn dlx cowsay'
+  c10 "npm exec is a package runner" deny Bash 'npm exec cowsay'
+  c10 "npm run build is not a runner (control)" silent Bash 'npm run build'
+
+  # g. Package-manager subcommand parsing.
+  c10 "npm --prefix . install skips the option value" deny Bash 'npm --prefix . install lodash'
+  c10 "pnpm --filter web add skips the option value" deny Bash 'pnpm --filter web add lodash'
+  c10 "npm version changes package.json" deny Bash 'npm version patch'
+  c10 "npm pkg set changes package.json" deny Bash 'npm pkg set a=b'
+  c10 "npm publish is denied" deny Bash 'npm publish'
+  c10 "npm init is denied" deny Bash 'npm init -y'
+  c10 "python -m pip install is denied" deny Bash 'python -m pip install requests'
+  c10 "python3 -m pip install is denied" deny Bash 'python3 -m pip install requests'
+  c10 "uv pip install is denied (control)" deny Bash 'uv pip install requests'
+  c10 "npm install (control)" deny Bash 'npm install'
+  c10 "bare yarn (control)" deny Bash 'yarn'
+  c10 "npm view <pkg> version is a read (control)" silent Bash 'npm view lodash version'
+  c10 "npm ls (control)" silent Bash 'npm ls --depth=0'
+  c10 "npm run test with args (control)" silent Bash 'npm run test -- --watch=false'
+  c10 "pip list (control)" silent Bash 'pip list'
+  c10 "python -m pytest (control)" silent Bash 'python -m pytest -q'
+  c10 "cargo test (control)" silent Bash 'cargo test'
+
+  # h. Download and output options that write a file. A target in the agent own memory
+  # dir stays allowed.
+  c10 "curl -o <file> is a write" deny Bash 'curl -o x.txt https://example.com'
+  c10 "curl -sSLo <file> in a cluster is a write" deny Bash 'curl -sSLo x.txt https://example.com'
+  c10 "curl -O is a write" deny Bash 'curl -O https://example.com/a.tgz'
+  c10 "curl --output <file> is a write" deny Bash 'curl --output x.txt https://example.com'
+  c10 "curl -D <file> is a write" deny Bash 'curl -D h.txt https://example.com'
+  c10 "wget <url> is a write" deny Bash 'wget https://example.com/a.tgz'
+  c10 "wget -O <file> is a write" deny Bash 'wget -O out.txt https://example.com'
+  c10 "sort -o <file> is a write" deny Bash 'sort -o out.txt in.txt'
+  c10 "sort --output=<file> is a write" deny Bash 'sort in.txt --output=out.txt'
+  c10 "sort --compress-program runs a program" deny Bash 'sort --compress-program=touch in.txt'
+  c10 "curl -o outside the memory dir is denied" deny Bash "curl -o $MEM/../x.txt https://example.com"
+  c10 "curl -s with no output option (control)" silent Bash 'curl -s https://example.com'
+  c10 "curl -sI (control)" silent Bash 'curl -sI https://example.com'
+  c10 "curl -o /dev/null (control)" silent Bash 'curl -s -o /dev/null https://example.com'
+  c10 "curl -o into the memory dir (control)" silent Bash "curl -s -o $MEM/page.html https://example.com"
+  c10 "wget -qO- to stdout (control)" silent Bash 'wget -qO- https://example.com'
+  c10 "wget -O into the memory dir (control)" silent Bash "wget -O $MEM/page.html https://example.com"
+  c10 "sort -o into the memory dir (control)" silent Bash "sort -o $MEM/sorted.txt in.txt"
+  c10 "sort without -o (control)" silent Bash 'sort -k2 -t, in.txt'
+
+  # i. The Monitor tool carries a shell command in tool_input.command.
+  c10 "Monitor with rm is denied" deny Monitor 'rm -rf x'
+  c10 "Monitor with a redirect into a file is denied" deny Monitor 'echo a > x.txt'
+  c10 "Monitor with a read-only command (control)" silent Monitor 'tail -n 5 log.txt'
+
+  # j. PowerShell .NET file calls.
+  c10 "[IO.File]::WriteAllText is a write" deny PowerShell "[IO.File]::WriteAllText('x.txt','a')"
+  c10 "[System.IO.File]::AppendAllText is a write" deny PowerShell "[System.IO.File]::AppendAllText('x.txt','a')"
+  c10 "[System.IO.File]::WriteAllBytes is a write" deny PowerShell "[System.IO.File]::WriteAllBytes('x.bin',\$b)"
+  c10 "[IO.File]::WriteAllText inside pwsh -Command is a write" deny Bash 'pwsh -Command "[IO.File]::WriteAllText(\"x.txt\",\"a\")"'
+  c10 "[IO.File]::ReadAllText is a read (control)" silent PowerShell "[IO.File]::ReadAllText('x.txt')"
+
+  # FP1. A heredoc body is data. Redirects and shells on the command line still count.
+  c10 "a heredoc body with rm is data" silent Bash $'cat <<EOF\nrm -rf foo\nEOF'
+  c10 "a quoted-delimiter heredoc body with \$(...) is data" silent Bash $'cat <<\'EOF\'\n$(touch x)\nEOF'
+  c10 "a <<- heredoc with tab-indented body and end is data" silent Bash $'cat <<-EOF\n\trm x\n\tEOF'
+  c10 "a heredoc body with # and an apostrophe is data" silent Bash $'cat <<EOF\n# it\'s rm time\nrm x\nEOF'
+  c10 "a heredoc into the memory dir is allowed" silent Bash "cat > $MEM/n.md <<EOF"$'\nrm x\nEOF'
+  c10 "a heredoc redirected to a file outside memory is a write (control)" deny Bash $'cat <<EOF > out.txt\nhello\nEOF'
+  c10 "a command after the heredoc is still judged (control)" deny Bash $'cat <<EOF\ntext\nEOF\nrm x'
+  c10 "an unquoted heredoc runs \$(...) in its body (control)" deny Bash $'cat <<EOF\n$(touch x)\nEOF'
+  c10 "a heredoc fed to bash runs its body (control)" deny Bash $'bash <<EOF\nrm -rf x\nEOF'
+  c10 "a heredoc piped to sh runs its body (control)" deny Bash $'cat <<EOF | sh\nrm x\nEOF'
+  c10 "a heredoc fed to pwsh runs its body as PowerShell" deny Bash $'pwsh -Command - <<EOF\nRemove-Item x\nEOF'
+  c10 "\$((1<<3)) arithmetic does not hide the next line (control)" deny Bash $'echo $((1<<3))\nrm x'
+  c10 "a here-string is not a heredoc (control)" deny Bash $'cat <<<abc\nrm x'
+
+  # FP2. $HOME, ${HOME} and ~ expand in a redirect target.
+  c10n "a redirect to \$HOME/.claude/agent-memory/<agent> is allowed" silent Bash 'cat x > $HOME/.claude/agent-memory/code-reviewer/n.md'
+  c10 "a redirect to \${HOME}/... memory is allowed" silent Bash 'cat x > ${HOME}/.claude/agent-memory/code-reviewer/n.md'
+  c10 "a redirect to \"\$HOME/...\" memory is allowed" silent Bash 'cat x > "$HOME/.claude/agent-memory/code-reviewer/n.md"'
+  c10 "a redirect to ~/... memory is allowed (control)" silent Bash 'cat x > ~/.claude/agent-memory/code-reviewer/n.md'
+  c10 "a redirect to \$HOME/.claude/settings.json is denied (control)" deny Bash 'cat x > $HOME/.claude/settings.json'
+  c10 "a redirect to \$HOME memory of another agent is denied (control)" deny Bash 'cat x > $HOME/.claude/agent-memory/security-reviewer/n.md'
+  c10 "a redirect to \$HOME memory with .. is denied (control)" deny Bash 'cat x > $HOME/.claude/agent-memory/code-reviewer/../../settings.json'
+  c10 "a single-quoted \$HOME is literal and denied (control)" deny Bash 'cat x > '\''$HOME/.claude/agent-memory/code-reviewer/n.md'\'''
+  c10 "an unknown variable in a target is denied (control)" deny Bash 'cat x > $OTHER/.claude/agent-memory/code-reviewer/n.md'
+  c10 "a brace list that escapes the memory dir is denied" deny Bash 'cat x > ~/.claude/agent-memory/code-reviewer/{../../x,y}'
+
+  # FP3. mkdir, cp, touch and rm are judged by target: the agent own memory dir is allowed.
+  c10 "mkdir -p inside the memory dir is allowed" silent Bash "mkdir -p $MEM/notes"
+  c10 "touch inside the memory dir is allowed" silent Bash "touch $MEM/n.md"
+  c10 "cp into the memory dir is allowed" silent Bash "cp /work/proj/a.md $MEM/a.md"
+  c10 "cp -t into the memory dir is allowed" silent Bash "cp -t $MEM /work/proj/a.md"
+  c10 "rm inside the memory dir is allowed" silent Bash "rm $MEM/old.md"
+  c10 "rm -rf inside the memory dir is allowed" silent Bash "rm -rf $MEM/old"
+  c10 "rm of a glob inside the memory dir is denied (a glob is not resolved)" deny Bash "rm $MEM/*.md"
+  c10n "rm through \$HOME inside the memory dir is allowed" silent Bash 'rm $HOME/.claude/agent-memory/code-reviewer/old.md'
+  c10 "mkdir then touch, both in the memory dir, is allowed" silent Bash "mkdir -p $MEM/a && touch $MEM/a/b.md"
+  c10 "rm -rf build outside memory is denied (control)" deny Bash 'rm -rf build'
+  c10 "mkdir outside memory is denied (control)" deny Bash 'mkdir newdir'
+  c10 "touch with one target outside memory is denied (control)" deny Bash "touch $MEM/a.md /work/proj/b.md"
+  c10 "cp out of the memory dir is denied (control)" deny Bash "cp $MEM/a.md /work/proj/a.md"
+  c10 "cp -t outside the memory dir is denied (control)" deny Bash "cp -t /work/proj $MEM/a.md"
+  c10 "rm with .. out of the memory dir is denied (control)" deny Bash "rm $MEM/../x"
+  c10 "rm in another agent memory dir is denied (control)" deny Bash 'rm $HOME/.claude/agent-memory/security-reviewer/old.md'
+  c10 "rm with an unknown option is denied (control)" deny Bash "rm --no-such-flag $MEM/old.md"
+  c10 "rm of a variable path is denied (control)" deny Bash 'rm $X/old.md'
+  c10 "rm of a path built by command substitution is denied (control)" deny Bash "rm \$(echo /work/proj/a.md)"
+  c10 "xargs rm with operands from stdin is denied (control)" deny Bash 'ls | xargs rm'
+  c10 "rm with no operand is denied (control)" deny Bash 'rm -rf'
+  c10 "mv inside the memory dir stays denied (control)" deny Bash "mv $MEM/a $MEM/b"
+  c10 "tee into the memory dir stays denied (control)" deny Bash "echo x | tee $MEM/n.md"
+
+  # Round 2. Cases from a cold review. Red on the previous hook unless marked "control".
+  # A1. The memory-dir allowance never applies under a wrapper that adds operands.
+  c10 "find | xargs rm with a memory path is denied" deny Bash "find / -name '*.pyc' | xargs rm -f $MEM/x"
+  c10 "xargs cp with a memory path is denied" deny Bash "echo /etc/hosts | xargs cp $MEM/a"
+  c10 "find -exec rm is denied" deny Bash "find /work -name x -exec rm {} +"
+  c10 "find -execdir rm with a memory path is denied" deny Bash "find /work -execdir rm $MEM/x ';'"
+  c10 "find -ok rm is denied" deny Bash "find /work -ok rm {} ';'"
+  c10 "parallel rm is denied" deny Bash "parallel rm ::: $MEM/a"
+  c10 "xargs -I{} rm is denied" deny Bash "ls | xargs -I{} rm $MEM/{}"
+  c10 "sudo rm inside the memory dir is judged by target (control)" silent Bash "sudo rm $MEM/old.md"
+
+  # A2. A memory-dir operand must be a plain path.
+  c10 "rm with ..'' components is denied" deny Bash "rm $MEM/..''/..''/settings.json"
+  c10 "cp with .\\./ components is denied" deny Bash "cp $MEM/p $MEM/.\\./.\\./settings.json"
+  c10 "rm with a quote inside the operand is denied" deny Bash "rm $MEM/a'b'/../../x"
+  c10 "rm with a backslash in the operand is denied" deny Bash "rm $MEM/a\\ b"
+  c10 "rm with a variable in the operand is denied" deny Bash "rm $MEM/\$X"
+  c10 "rm with a ? glob is denied" deny Bash "rm $MEM/?.md"
+  c10 "rm with a [ glob is denied" deny Bash "rm $MEM/[a].md"
+  c10 "rm with a brace list is denied" deny Bash "rm $MEM/{a,b}"
+  c10 "rm with a .. in the middle is denied" deny Bash "rm $MEM/sub/../old.md"
+  c10 "PowerShell rm with a comma list is denied" deny PowerShell "rm $MEM/a,C:\\Users\\x\\f.txt"
+  c10 "redirect with a .. component is denied" deny Bash "echo x > $MEM/sub/../../x.md"
+  c10 "rm of a quoted memory path (a space in it) is not judged, so it is denied" deny Bash "rm \"$MEM/old note.md\""
+
+  # A3. cp links and other options.
+  c10 "cp -s is denied" deny Bash "cp -s ~/.claude/settings.json $MEM/s"
+  c10 "cp -l is denied" deny Bash "cp -l /work/proj/a $MEM/a"
+  c10 "cp --symbolic-link is denied" deny Bash "cp --symbolic-link /work/proj/a $MEM/a"
+  c10 "cp --link is denied" deny Bash "cp --link /work/proj/a $MEM/a"
+  c10 "cp -a is denied" deny Bash "cp -a /work/proj/a $MEM/a"
+  c10 "ln -s into the memory dir is denied (control)" deny Bash "ln -s /etc/hosts $MEM/h"
+  c10 "cp -rp into the memory dir (control)" silent Bash "cp -rp /work/proj/a $MEM/a"
+  c10 "cp -n into the memory dir (control)" silent Bash "cp -n /work/proj/a $MEM/a"
+
+  # A5, A6. A heredoc body is text only for a plain reader with nothing piping it on.
+  c10 "a quoted sh receiver runs the body" deny Bash $'\'sh\' <<EOF\nrm x\nEOF'
+  c10 "an escaped bash receiver runs the body" deny Bash $'\\bash <<EOF\nrm x\nEOF'
+  c10 "a \$SHELL receiver runs the body" deny Bash $'$SHELL <<EOF\nrm x\nEOF'
+  c10 "a pipe on the next line after the heredoc line runs the body" deny Bash $'cat <<EOF |\nrm x\nEOF\nsh'
+  c10 "an interpreter receiver is judged as commands" deny Bash $'python <<EOF\nrm x\nEOF'
+  c10 "\$[1<<3] is not a heredoc" deny Bash $'echo $[1<<3]\nrm x'
+  c10 "a[1<<3]= is not a heredoc" deny Bash $'a[1<<3]=1\nrm x'
+  c10 "cat<<EOF (no space) is the same plain heredoc as cat <<EOF (round 5)" silent Bash $'cat<<EOF\nrm x\nEOF'
+  c10 "an unclosed delimiter judges the body as commands" deny Bash $'cat <<EOF\nrm x'
+  c10 "a different closing line leaves the heredoc unclosed" deny Bash $'cat <<EOF\nrm x\nEOF2'
+  c10 "a quoted cat receiver is not a reader (round 4)" deny Bash $'\'cat\' <<EOF\nrm x\nEOF'
+  c10 "grep with a heredoc body (control)" silent Bash $'grep -c x <<EOF\nrm -rf y\nEOF'
+  c10 "sort with a heredoc body (control)" silent Bash $'sort <<EOF\nb\na\nEOF'
+  c10 ": <<'EOF' comment block (control)" silent Bash $': <<\'EOF\'\nrm x\nEOF'
+  c10 "cat <<EOF into /dev/null (control)" silent Bash $'cat <<EOF > /dev/null\nrm x\nEOF'
+  c10 "cat <<EOF appended to a memory file (control)" silent Bash "cat <<EOF >> $MEM/n.md"$'\nrm x\nEOF'
+  c10 "bash <(cat <<EOF) runs the body" deny Bash $'bash <(cat <<EOF\nrm x\nEOF\n)'
+  c10 "sh -c \"\$(cat <<EOF)\" runs the body" deny Bash $'sh -c "$(cat <<EOF\nrm x\nEOF\n)"'
+  c10 "eval \"\$(cat <<'EOF')\" runs the body" deny Bash $'eval "$(cat <<\'EOF\'\nrm x\nEOF\n)"'
+
+  # A7, D. The checker fails closed.
+  DEEP=$("$PYTHON" -c 'print("echo " + "$(" * 1200 + "rm x" + ")" * 1200)')
+  c10 "1200 nested \$( levels are denied, not allowed by a crash" deny Bash "$DEEP"
+  expect "agent-write-guard: no temp dir still denies a write (control: the -c fallback works here)" deny \
+    "$(guard_decision "$AWG" '{"agent_type":"code-reviewer","tool_name":"Bash","cwd":"/work/proj","tool_input":{"command":"rm -rf build"}}' "${GENV[@]}" TMPDIR=/nonexistent/awg-none)"
+  expect "agent-write-guard: no temp file and no working Python is a deny for a guarded agent" deny \
+    "$(guard_decision "$AWG" '{"agent_type":"code-reviewer","tool_name":"Bash","cwd":"/work/proj","tool_input":{"command":"git log"}}' "${GENV[@]}" TMPDIR=/nonexistent/awg-none AGENT_WRITE_GUARD_TEST_NO_CHECKER=1)"
+  expect "agent-write-guard: no working Python leaves an unguarded agent alone (control)" silent \
+    "$(guard_decision "$AWG" '{"agent_type":"general-purpose","tool_name":"Bash","cwd":"/work/proj","tool_input":{"command":"rm -rf build"}}' "${GENV[@]}" AGENT_WRITE_GUARD_TEST_NO_CHECKER=1)"
+
+  # B. False positives.
+  c10 "git grep -eOpen is a pattern, not -O" silent Bash 'git grep -eOpen foo'
+  c10 "git grep -e Open (control)" silent Bash 'git grep -e Open foo'
+  c10 "git grep -nA3 -e <pat> (control)" silent Bash 'git grep -nA3 -e foo'
+  c10 "git grep -e <pat> -O<cmd> is still denied (control)" deny Bash 'git grep -e foo -Otouch'
+  c10 "npm pkg get is a read" silent Bash 'npm pkg get name'
+  c10 "npm pkg get with two keys is a read" silent Bash 'npm pkg get name version'
+  c10 "bare npm version is a read" silent Bash 'npm version'
+  c10 "npm version --json is a read" silent Bash 'npm version --json'
+  c10 "npm version patch is a write (control)" deny Bash 'npm version patch'
+  c10 "npm version 1.2.3 is a write (control)" deny Bash 'npm version 1.2.3'
+  c10 "npm pkg set is a write (control)" deny Bash 'npm pkg set name=x'
+  c10 "npm pkg delete is a write (control)" deny Bash 'npm pkg delete scripts'
+  c10 "npm pkg fix is a write (control)" deny Bash 'npm pkg fix'
+  c10 "GIT_TERMINAL_PROMPT=0 git fetch stays denied (control)" deny Bash 'GIT_TERMINAL_PROMPT=0 git fetch'
+  reason=$("$PYTHON" -c 'import json,sys; print(json.dumps({"agent_type":"code-reviewer","tool_name":"Bash","cwd":"/work/proj","tool_input":{"command":"GIT_TERMINAL_PROMPT=0 git fetch"}}))' | env "${GENV[@]}" bash "$HOOKS_DIR/$AWG" 2>/dev/null)
+  case "$reason" in
+    *"harmless ones"*"Set it in the environment"*) pass "agent-write-guard: the GIT_ deny message says why and what to do instead" ;;
+    *) fail "agent-write-guard: the GIT_ deny message says why and what to do instead (got: ${reason:-<empty>})" ;;
+  esac
+
+  # C. Gaps that were already there.
+  c10 "env -S with an attached quoted command is denied" deny Bash "env -S'rm x'"
+  c10 "env -iS with a command is denied" deny Bash 'env -iS "rm x"'
+  c10 "env --split-string=<cmd> is denied" deny Bash "env --split-string='rm x'"
+  c10 "python -mpip install is denied" deny Bash 'python -mpip install x'
+  c10 "python -Im pip install is denied" deny Bash 'python -Im pip install x'
+  c10 "uv pip install is denied" deny Bash 'uv pip install x'
+  c10 "python -m uv pip install is denied" deny Bash 'python -m uv pip install x'
+  for a in in i inst isntall add ci un uninstall rm r update up link ln; do
+    c10 "npm $a is a package change" deny Bash "npm $a x"
+  done
+  c10 "yarn global add is denied" deny Bash 'yarn global add x'
+  c10 "yarn global remove is denied" deny Bash 'yarn global remove x'
+  for a in "i" "add -g x" "up" "rm x" "un x" "remove x" "install" "update" "link"; do
+    c10 "pnpm $a is a package change" deny Bash "pnpm $a"
+  done
+  for a in "add x" "i" "install" "remove x" "update" "link" "a x"; do
+    c10 "bun $a is a package change" deny Bash "bun $a"
+  done
+  c10 "an unknown option value does not hide npm install" deny Bash 'npm --maxsockets 5 install x'
+  c10 "an unknown option value does not hide npm i" deny Bash 'npm --foo bar i x'
+  c10 "yarn --cwd <dir> add is denied" deny Bash 'yarn --cwd /work/proj add x'
+  c10 "npm view <pkg> install is a read (control)" silent Bash 'npm view lodash install'
+  c10 "yarn global list (control)" silent Bash 'yarn global list'
+  c10 "yarn test (control)" silent Bash 'yarn test'
+  c10 "bun test (control)" silent Bash 'bun test'
+  c10 "git grep --op=<cmd> is denied" deny Bash 'git grep --op=touch foo'
+  c10 "git grep --ope <cmd> is denied" deny Bash 'git grep --ope touch foo'
+  c10 "git grep --only-matching (control)" silent Bash 'git grep --only-matching foo'
+  c10 "git grep -e a --or -e b (control)" silent Bash 'git grep -e a --or -e b'
+  c10 "git fetch --u=<cmd> is denied" deny Bash 'git fetch --u=touch origin'
+  c10 "git fetch --up=<cmd> is denied" deny Bash 'git fetch --up=touch origin'
+  c10 "git fetch --upl=<cmd> is denied" deny Bash 'git fetch --upl=touch origin'
+  c10 "git ls-remote --up=<cmd> is denied" deny Bash 'git ls-remote --up=touch origin'
+  c10 "git fetch --unshallow (control)" silent Bash 'git fetch --unshallow'
+  c10 "curl -w with %output{} is denied" deny Bash "curl -w '%output{x.txt}hi' https://example.com"
+  c10 "curl --write-out with %output{} is denied" deny Bash "curl --write-out '%output{x.txt}' https://example.com"
+  c10 "curl --write-out=%output{} is denied" deny Bash "curl --write-out=%output{x.txt} https://example.com"
+  c10 "curl -w %{http_code} (control)" silent Bash "curl -s -o /dev/null -w '%{http_code}' https://example.com"
+  c10 "[IO.File]::Open is a write" deny PowerShell "[IO.File]::Open('x','Create')"
+  c10 "[IO.File]::OpenWrite is a write" deny PowerShell "[IO.File]::OpenWrite('x')"
+  c10 "[IO.File]::OpenOrCreate is a write" deny PowerShell "[IO.File]::OpenOrCreate('x')"
+  c10 "New-Object IO.FileStream is a write" deny PowerShell "New-Object IO.FileStream('x','Create')"
+  c10 "New-Object System.IO.FileStream is a write" deny PowerShell "New-Object System.IO.FileStream('x','Create')"
+  c10 "[IO.FileInfo] .Create() is a write" deny PowerShell "[IO.FileInfo]::new('x').Create()"
+  c10 "[IO.FileInfo] .CreateText() is a write" deny PowerShell "([IO.FileInfo]'x').CreateText()"
+  c10 "New-Object IO.FileInfo .AppendText() is a write" deny PowerShell "(New-Object IO.FileInfo 'x').AppendText()"
+  c10 "[IO.File]::OpenText is a read (control)" silent PowerShell "[IO.File]::OpenText('x')"
+  c10 "[IO.File]::OpenRead is a read (control)" silent PowerShell "[IO.File]::OpenRead('x')"
+  c10 "[IO.FileInfo] .Length is a read (control)" silent PowerShell "([IO.FileInfo]'x').Length"
+  c10 "an unquoted heredoc \$(...) after an apostrophe is judged" deny Bash $'cat <<EOF\nit\'s $(touch pwn)\nEOF'
+  c10 "an unquoted heredoc backtick after an apostrophe is judged" deny Bash $'cat <<EOF\nit\'s `touch pwn`\nEOF'
+  c10 "an unquoted heredoc \${x:-\$(...)} is judged" deny Bash $'cat <<EOF\n${x:-$(touch y)}\nEOF'
+  c10 "an escaped \\\$(...) in an unquoted heredoc is text (control)" silent Bash $'cat <<EOF\n\\$(touch x)\nEOF'
+  c10 "a quoted-delimiter heredoc keeps an apostrophe and \$(...) as data (control)" silent Bash $'cat <<\'EOF\'\nit\'s $(touch pwn)\nEOF'
+  c10 "a quoted \"\$HOME\"/... memory redirect is allowed" silent Bash 'cat x > "$HOME"/.claude/agent-memory/code-reviewer/n.md'
+  c10 "a quoted \"\$HOME\"/... redirect with .. is denied (control)" deny Bash 'cat x > "$HOME"/.claude/agent-memory/code-reviewer/../../x'
+  c10 "a quoted \"\$HOME\"/.claude/settings.json redirect is denied (control)" deny Bash 'cat x > "$HOME"/.claude/settings.json'
+  c10u "a raw UTF-8 comment (bytes C4 81) does not hide the command (control)" deny Bash 'rm x # @U0101@'
+  c10u "a raw UTF-8 comment (byte C1 as U+00C1) does not hide the command (control)" deny Bash 'rm -rf x # @U00C1@'
+  c10u "a raw UTF-8 comment on a harmless command stays allowed (control)" silent Bash 'git log # @U0101@'
+  c10 "a non-ASCII comment through escaped JSON does not hide the command (control)" deny Bash $'rm x # \xc4\x81'
+
+  # ---- Round 3 ----
+  # R3a. The heredoc-as-data rule is strict: only the plain one-line shape is data.
+  c10 "decoy )) and \$(( before a nested heredoc: the body runs" deny Bash $'echo "))" $((cat <<3))\nrm -rf x\n3'
+  c10 "decoy quote and paren before a heredoc in <(...): the body runs" deny Bash $'bash <(echo ")" >&2; cat <<EOF\nrm x\nEOF\n)'
+  c10 "a pipe behind a backslash-newline after the delimiter: the body runs" deny Bash $'cat <<EOF \\\n| sh\nrm x\nEOF'
+  c10 "a backslash-newline before the heredoc line is not the plain shape (control)" deny Bash $'echo a \\\ncat <<EOF\nrm x\nEOF'
+  c10 "a command before ; on the heredoc line is not the plain shape" deny Bash $'ls; cat <<EOF\nrm x\nEOF'
+  c10 "a second command after the delimiter is not the plain shape" deny Bash $'cat <<EOF; sh\nrm x\nEOF'
+  c10 "a quoted argument before << is not the plain shape" deny Bash $'cat "a" <<EOF\nrm x\nEOF'
+  c10 "cat <<EOF then an fd redirect is not the plain shape" deny Bash $'cat <<EOF 2>&1\nrm x\nEOF'
+  c10 "plain cat <<EOF is data (control)" silent Bash $'cat <<EOF\nrm x\nEOF'
+  c10 "plain cat <<-EOF with tabs is data (control)" silent Bash $'cat <<-EOF\n\trm x\n\tEOF'
+  c10 'cat <<"EOF" is data (control)' silent Bash $'cat <<"EOF"\nrm x\nEOF'
+  c10 "cat > /dev/null <<EOF is data (control)" silent Bash $'cat > /dev/null <<EOF\nrm x\nEOF'
+  c10 "FOO=1 cat <<EOF is not the plain shape (round 4)" deny Bash $'FOO=1 cat <<EOF\nrm x\nEOF'
+
+  # R3b. A string method on a FileInfo is not a file write.
+  c10 "\$f.Name.Replace after a [IO.FileInfo] cast is a read" silent PowerShell $'$f=[IO.FileInfo]\'x\'; $f.Name.Replace(\'a\',\'b\')'
+  c10 "\$f.Name.Substring after a [IO.FileInfo] cast is a read" silent PowerShell $'$f=[IO.FileInfo]\'x\'; $f.Name.Substring(1)'
+  c10 "[IO.FileInfo] .Open( is a write (control)" deny PowerShell $'([IO.FileInfo]\'x\').Open(\'Create\')'
+  c10 "[IO.FileInfo] .Delete() is a write (control)" deny PowerShell $'([IO.FileInfo]\'x\').Delete()'
+
+  # R3c. Names: directory, backslash and quotes are removed before a command is matched.
+  c10 "/usr/bin/xargs rm is denied" deny Bash 'ls | /usr/bin/xargs rm -rf'
+  c10 "\\xargs rm is denied" deny Bash "\\xargs rm $MEM/x"
+  c10 "a quoted xargs wrapper is still a wrapper (control)" deny Bash "ls | 'xargs' rm $MEM/x"
+  c10 "/bin/sudo rm is denied" deny Bash 'true && /bin/sudo rm x'
+  c10 "/usr/bin/env -S is judged" deny Bash "true && /usr/bin/env -S 'rm x'"
+  c10 "/usr/bin/git log is a read (control)" silent Bash 'true && /usr/bin/git log'
+
+  # R3c. env -S judges the split string together with the remaining words.
+  c10 "env -S 'bash -c' 'rm x' is judged" deny Bash "env -S 'bash -c' 'rm x'"
+  c10 "env --split 'rm x' is judged" deny Bash "env --split 'rm x'"
+  c10 "env --split-s 'rm x' (a prefix) is judged" deny Bash "env --split-s 'rm x'"
+  c10 "env -S '-i FOO=1' rm x is judged (control)" deny Bash "env -S '-i FOO=1' rm x"
+  c10 "env -S 'git log' is a read (control)" silent Bash "env -S 'git log'"
+  c10 "env -S 'FOO=1' git log is a read (control)" silent Bash "env -S 'FOO=1' git log"
+
+  # R3c. Process substitution bodies are commands.
+  c10 "cat <(rm -rf build) runs the body" deny Bash 'cat <(rm -rf build)'
+  c10 "ls >(rm x) runs the body" deny Bash 'ls >(rm x)'
+  c10 "diff <(git log) <(git log -1) is a read (control)" silent Bash 'diff <(git log) <(git log -1)'
+  c10 "a quoted <(rm x) is text (control)" silent Bash 'echo "<(rm x)" ">(rm y)"'
+  c10 "a single-quoted <(rm x) is text (control)" silent Bash "echo '<(rm x)'"
+
+  # R3c. stdbuf, watch, script, flock and the other launchers.
+  c10 "stdbuf -o L rm is denied" deny Bash 'stdbuf -o L rm -rf x'
+  c10 "stdbuf -oL rm is denied (control)" deny Bash 'stdbuf -oL rm x'
+  c10 "stdbuf --output=L rm is denied (control)" deny Bash 'stdbuf --output=L rm x'
+  c10 "stdbuf --output L rm is denied" deny Bash 'stdbuf --output L rm x'
+  c10 "stdbuf -i0 -o L -e0 rm is denied" deny Bash 'stdbuf -i0 -o L -e0 rm x'
+  c10 "stdbuf -oL git log is a read (control)" silent Bash 'stdbuf -oL git log'
+  c10 "watch -n1 'rm x' is judged" deny Bash "watch -n1 'rm x'"
+  c10 "watch -n 1 rm x is judged" deny Bash 'watch -n 1 rm x'
+  c10 "watch --interval 2 rm x is judged" deny Bash 'watch --interval 2 rm x'
+  c10 "watch git log is a read (control)" silent Bash 'watch git log'
+  c10 "watch -n 2 'git status' is a read (control)" silent Bash "watch -n 2 'git status'"
+  c10 "script -qc 'rm x' /dev/null is judged" deny Bash "script -qc 'rm x' /dev/null"
+  c10 "script --command 'rm x' /dev/null is judged" deny Bash "script --command 'rm x' /dev/null"
+  c10 "script -c without a file writes typescript" deny Bash "script -c 'git log'"
+  c10 "script -c into a file writes it" deny Bash "script -qc 'git log' out.txt"
+  c10 "script -O writes a log" deny Bash "script -O out.txt -c 'git log' /dev/null"
+  c10 "script -qc 'git log' /dev/null is a read (control)" silent Bash "script -qc 'git log' /dev/null"
+  c10 "flock creates its lock file" deny Bash 'flock /tmp/x.lock git log'
+  c10 "timeout 5 rm is denied (control)" deny Bash 'timeout 5 rm x'
+  c10 "nice -n 5 rm is denied (control)" deny Bash 'nice -n 5 rm x'
+  c10 "ionice -c 3 rm is denied (control)" deny Bash 'ionice -c 3 rm x'
+  c10 "chrt -f 10 rm is denied" deny Bash 'chrt -f 10 rm x'
+  c10 "taskset -c 0 rm is denied" deny Bash 'taskset -c 0 rm x'
+  c10 "taskset 0x1 rm is denied" deny Bash 'taskset 0x1 rm x'
+  c10 "busybox rm is denied" deny Bash 'busybox rm x'
+  c10 "busybox xargs rm is denied" deny Bash 'busybox xargs rm x'
+  c10 "nice -n 5 git log is a read (control)" silent Bash 'nice -n 5 git log'
+  c10 "taskset -c 0 git log is a read (control)" silent Bash 'taskset -c 0 git log'
+  c10 "chrt -f 10 git log is a read (control)" silent Bash 'chrt -f 10 git log'
+  c10 "busybox ls is a read (control)" silent Bash 'busybox ls'
+
+  # R3c. ripgrep can run a preprocessor.
+  c10 "rg --pre <cmd> is denied" deny Bash 'rg --pre rm . .'
+  c10 "rg --pre=<cmd> is denied" deny Bash 'rg --pre=rm foo .'
+  c10 "rg --hostname-bin is denied" deny Bash 'rg --hostname-bin x foo'
+  c10 "rg -n foo src is a read (control)" silent Bash 'rg -n foo src'
+
+  # R3c. Package manager config, cache and pack subcommands.
+  c10 "npm --audit-level info install is an install" deny Bash 'npm --audit-level info install x'
+  c10 "npm --audit-level high audit is a read (control)" silent Bash 'npm --audit-level high audit'
+  c10 "npm config set is a write" deny Bash 'npm config set registry x'
+  c10 "npm config delete is a write" deny Bash 'npm config delete registry'
+  c10 "npm config edit is a write" deny Bash 'npm config edit'
+  c10 "npm config get is a read (control)" silent Bash 'npm config get registry'
+  c10 "npm config list is a read (control)" silent Bash 'npm config list'
+  c10 "yarn config set is a write" deny Bash 'yarn config set x y'
+  c10 "pnpm config delete is a write" deny Bash 'pnpm config delete x'
+  c10 "pip config set is a write" deny Bash 'pip config set global.x y'
+  c10 "npm cache clean is a write" deny Bash 'npm cache clean --force'
+  c10 "pip cache purge is a write" deny Bash 'pip cache purge'
+  c10 "pip cache dir is a read (control)" silent Bash 'pip cache dir'
+  c10 "npm pack writes a tarball" deny Bash 'npm pack'
+  c10 "npm pack --dry-run is a read (control)" silent Bash 'npm pack --dry-run'
+  c10 "cargo fmt rewrites files" deny Bash 'cargo fmt'
+  c10 "cargo fmt --check is a read (control)" silent Bash 'cargo fmt --check'
+  c10 "cargo clippy --fix rewrites files" deny Bash 'cargo clippy --fix'
+  c10 "cargo clippy is a read (control)" silent Bash 'cargo clippy'
+  c10 "cargo package writes an archive" deny Bash 'cargo package'
+  c10 "cargo package --list is a read (control)" silent Bash 'cargo package --list'
+
+  # R3c. PowerShell and Windows file commands.
+  c10 "(Get-Item f).Delete() is a write" deny PowerShell '(Get-Item f).Delete()'
+  c10 "\$d.MoveTo( is a write" deny PowerShell '$d.MoveTo("x")'
+  c10 "\$f.CopyTo( is a write" deny PowerShell '$f.CopyTo("y")'
+  c10 "Expand-Archive is a write" deny PowerShell 'Expand-Archive a.zip out'
+  c10 "Compress-Archive is a write" deny PowerShell 'Compress-Archive a b.zip'
+  c10 "robocopy in PowerShell is a write" deny PowerShell 'robocopy a b'
+  c10 "xcopy in PowerShell is a write" deny PowerShell 'xcopy a b'
+  c10 "robocopy in bash is a write" deny Bash 'robocopy a b'
+  c10 "\$s.Replace on a string is a read (control)" silent PowerShell $'$s.Replace(\'a\',\'b\')'
+
+  # R3d. cp keeps the mode of its source with --preserve.
+  c10 "cp --preserve=mode is denied" deny Bash "cp --preserve=mode /work/proj/a $MEM/a"
+  c10 "cp --preserve (all defaults) is denied" deny Bash "cp --preserve /work/proj/a $MEM/a"
+  c10 "cp --preserve=timestamps is allowed (control)" silent Bash "cp --preserve=timestamps /work/proj/a $MEM/a"
+  c10 "cp of an executable into the memory dir is the documented allowance (control)" silent Bash "cp /bin/rm $MEM/r"
+  c10 "GIT_PAGER=cat git log stays denied by design (control)" deny Bash 'GIT_PAGER=cat git log'
+
+  # ---- Round 4 ----
+  # A cold adversarial run found that the round-3 allowances were too wide. They are narrowed:
+  # a heredoc body is data only for a bare reader name that starts the line, in a command that
+  # defines no function or alias; the memory-dir allowance needs an absolute or $HOME-rooted
+  # path and a command that changes neither directory nor HOME; links are denied outright.
+  # R4a. A heredoc receiver that is not a bare reader name runs the body.
+  c10 "a ./cat receiver is not a reader" deny Bash $'./cat <<EOF\nrm x\nEOF'
+  c10 "a path-qualified cat in the memory dir is not a reader" deny Bash "$MEM/cat <<EOF"$'\nrm x\nEOF'
+  c10 "a /tmp/x/cat receiver is not a reader" deny Bash $'echo hi\n/tmp/x/cat <<EOF\nrm x\nEOF'
+  c10 "a \$HOME/cat receiver is not a reader (control)" deny Bash $'$HOME/cat <<EOF\nrm x\nEOF'
+  c10 "a quoted cat receiver is not a reader" deny Bash $'\'cat\' <<EOF\nrm x\nEOF'
+  c10 "a double-quoted cat receiver is not a reader" deny Bash $'"cat" <<EOF\nrm x\nEOF'
+  c10 "a backslash cat receiver is not a reader (control)" deny Bash $'\\cat <<EOF\nrm x\nEOF'
+  c10 "a ! before cat is not the plain shape" deny Bash $'! cat <<EOF\nrm x\nEOF'
+  c10 "a FOO=1 prefix before cat is not the plain shape" deny Bash $'FOO=1 cat <<EOF\nrm x\nEOF'
+  c10 "PATH=/tmp/x before cat is not the plain shape (control)" deny Bash $'PATH=/tmp/x:/usr/bin cat <<EOF\nrm x\nEOF'
+  c10 "PATH= pointing into the memory dir before cat is not the plain shape" deny Bash "PATH=$MEM cat <<EOF"$'\nrm x\nEOF'
+  c10 "less is not a reader (-o writes)" deny Bash $'less -o /tmp/log <<EOF\nrm x\nEOF'
+  c10 "less is not a reader (+! runs a command)" deny Bash $'less +!rm <<EOF\nrm x\nEOF'
+  c10 "less is not a reader (--log-file writes)" deny Bash $'less --log-file=/tmp/l <<EOF\nrm x\nEOF'
+  c10 "more is not a reader" deny Bash $'more +/x <<EOF\nrm x\nEOF'
+  c10 "a function named cat makes the heredoc body commands" deny Bash $'function cat { bash; }\ncat <<EOF\nrm x\nEOF'
+  c10 "a cat() function makes the heredoc body commands" deny Bash $'cat() { ash; }\ncat <<EOF\nrm x\nEOF'
+  c10 "an alias for cat makes the heredoc body commands" deny Bash $'shopt -s expand_aliases\nalias cat=ash\ncat <<EOF\nrm x\nEOF'
+  c10 "an alias for grep makes the heredoc body commands" deny Bash $'alias grep=ash\ngrep x <<EOF\nrm x\nEOF'
+  c10 "a cd then a path-qualified cat runs the body" deny Bash "cd $MEM"$'\n./cat <<EOF\nrm x\nEOF'
+  c10 "Set-Alias in PowerShell makes the heredoc body commands" deny PowerShell $'Set-Alias cat bash\ncat <<EOF\nrm x\nEOF'
+  c10 "a PowerShell function named cat makes the heredoc body commands" deny PowerShell $'function cat { bash }\ncat <<EOF\nrm x\nEOF'
+  c10 "plain cat <<EOF stays data (control)" silent Bash $'cat <<EOF\nplain text\nEOF'
+  c10 "plain head -n 1 <<EOF stays data (control)" silent Bash $'head -n 1 <<EOF\nrm x\nEOF'
+  c10 "plain wc -l <<EOF stays data (control)" silent Bash $'wc -l <<EOF\nrm x\nEOF'
+
+  # R4b. The memory-dir allowance is off in a command that changes the directory.
+  c10 "cd then rm of a relative memory path is denied" deny Bash 'cd /tmp && rm .claude/agent-memory/code-reviewer/x'
+  c10 "cd on its own line then touch of a relative memory path is denied" deny Bash $'cd /\ntouch .claude/agent-memory/code-reviewer/x'
+  c10 "pushd then rm -rf of a relative memory path is denied" deny Bash 'pushd /etc; rm -rf ./.claude/agent-memory/code-reviewer'
+  c10 "cd then mkdir -p of a relative memory path is denied" deny Bash 'cd /tmp; mkdir -p .claude/agent-memory/code-reviewer/x'
+  c10 "cd then cp to a relative memory path is denied" deny Bash 'cd /tmp; cp a .claude/agent-memory/code-reviewer/x'
+  c10 "cd then rm of an absolute memory path is denied (allowance off)" deny Bash "cd /tmp && rm $MEM/x"
+  c10 "cd then a redirect into \$HOME memory is denied (allowance off)" deny Bash 'cd /tmp; echo x > $HOME/.claude/agent-memory/code-reviewer/f'
+  c10 "env -C then rm of a relative memory path is denied" deny Bash 'env -C /tmp rm .claude/agent-memory/code-reviewer/x'
+  c10 "env --chdir= then rm of a relative memory path is denied" deny Bash 'env --chdir=/tmp rm .claude/agent-memory/code-reviewer/x'
+  c10 "env --chdir then touch of a relative memory path is denied" deny Bash 'env --chdir /tmp touch .claude/agent-memory/code-reviewer/x'
+  c10 "sudo -D then rm of a relative memory path is denied" deny Bash 'sudo -D /tmp rm .claude/agent-memory/code-reviewer/x'
+  c10 "a relative memory path in rm is denied even without a cd" deny Bash 'rm .claude/agent-memory/code-reviewer/x'
+  c10 "PowerShell cd then rm of a relative memory path is denied" deny PowerShell 'cd C:\tmp; rm .claude\agent-memory\code-reviewer\x'
+  c10 "PowerShell Set-Location then cp to a relative memory path is denied" deny PowerShell 'Set-Location C:\tmp; cp a .claude\agent-memory\code-reviewer\x'
+  c10 "PowerShell sl then mkdir of a relative memory path is denied" deny PowerShell 'sl C:\tmp; mkdir .claude\agent-memory\code-reviewer\x'
+  c10 "PowerShell Push-Location then rm of an absolute memory path is denied" deny PowerShell "Push-Location C:\\tmp; rm $MEM/x"
+
+  # R4c. The memory-dir allowance is off in a command that changes HOME.
+  c10 "export HOME then touch under \$HOME is denied" deny Bash 'export HOME=/tmp/q; touch $HOME/.claude/agent-memory/code-reviewer/f'
+  c10 "HOME= on its own line then rm -rf under \$HOME is denied" deny Bash $'HOME=/tmp/q\nrm -rf $HOME/.claude/agent-memory/code-reviewer'
+  c10 "HOME=; then mkdir -p under \$HOME is denied" deny Bash 'HOME=/tmp/q; mkdir -p $HOME/.claude/agent-memory/code-reviewer/d'
+  c10 "HOME= before bash -c touch is denied" deny Bash "HOME=/tmp/q bash -c 'touch \$HOME/.claude/agent-memory/code-reviewer/f'"
+  c10 "env HOME= before sh -c rm is denied" deny Bash "env HOME=/tmp/q sh -c 'rm -rf \$HOME/.claude/agent-memory/code-reviewer'"
+  c10 "declare -x HOME then cp under \$HOME is denied" deny Bash 'declare -x HOME=/tmp/q; cp a $HOME/.claude/agent-memory/code-reviewer/x'
+  c10 "export HOME then a redirect under \$HOME is denied" deny Bash 'export HOME=/tmp/q; echo x > $HOME/.claude/agent-memory/code-reviewer/f'
+  c10 "PowerShell \$HOME assignment then rm is denied" deny PowerShell '$HOME=''C:\tmp''; rm $HOME/.claude/agent-memory/code-reviewer/x'
+  c10 "PowerShell \$env:HOME assignment then rm is denied" deny PowerShell '$env:HOME=''C:\tmp''; rm ~/.claude/agent-memory/code-reviewer/x'
+  c10 "PowerShell Set-Variable HOME then rm is denied" deny PowerShell 'Set-Variable HOME C:\tmp; rm $HOME/.claude/agent-memory/code-reviewer/x'
+
+  # R4d. A quoted or non-absolute memory path is not judged.
+  c10 "a single-quoted absolute memory path in rm is denied" deny Bash "rm '$MEM/x'"
+  c10 "a double-quoted absolute memory path in rm is denied" deny Bash "rm \"$MEM/x\""
+  c10 "a backslash-escaped memory path in rm is denied (control)" deny Bash 'rm C:\Users\dev\.claude\agent-memory\code-reviewer\x'
+
+  # R4e. Links are denied everywhere: a link into the memory dir reaches any file.
+  c10 "mklink is denied" deny Bash 'mklink /J C:\Users\dev\.claude\agent-memory\code-reviewer\l C:\Windows'
+  c10 "cmd /c mklink is denied" deny Bash 'cmd /c mklink C:\Users\dev\.claude\agent-memory\code-reviewer\l C:\Windows\x'
+  c10 "cmd /c mklink /J is denied" deny Bash 'cmd /c mklink /J C:\Users\dev\.claude\agent-memory\code-reviewer\l C:\Windows'
+  c10 "mklink in PowerShell is denied" deny PowerShell 'mklink /J C:\Users\dev\.claude\agent-memory\code-reviewer\l C:\Windows'
+  c10 "cmd /c mklink /D in PowerShell is denied" deny PowerShell 'cmd /c mklink /D C:\Users\dev\.claude\agent-memory\code-reviewer\l C:\Windows'
+  c10 "fsutil hardlink create is denied" deny Bash 'fsutil hardlink create C:\Users\dev\.claude\agent-memory\code-reviewer\h C:\Windows\x'
+  c10 "fsutil reparsepoint is denied" deny Bash 'fsutil reparsepoint set C:\x'
+  c10 "junction is denied" deny Bash 'junction C:\Users\dev\.claude\agent-memory\code-reviewer\j C:\Windows'
+  c10 "ln -s into the memory dir is denied (control)" deny Bash "ln -s /etc/hosts $MEM/h"
+  c10 "New-Item -ItemType SymbolicLink is denied (control: New-Item is a write already)" deny PowerShell "New-Item -ItemType SymbolicLink -Path $MEM/l -Target C:/Windows"
+  c10 "New-Item -ItemType Junction is denied (control: New-Item is a write already)" deny PowerShell "New-Item -ItemType Junction -Path $MEM/j -Target C:/Windows"
+  c10 "New-Item -ItemType HardLink is denied (control: New-Item is a write already)" deny PowerShell "New-Item -ItemType HardLink -Path $MEM/h -Target C:/Windows/x"
+  c10 "ni -it sym (abbreviated) is denied (control: New-Item is a write already)" deny PowerShell "ni -it sym -Path $MEM/l -Target C:/Windows"
+
+  # R4f. Allow controls: the plain, documented forms still pass.
+  c10 "mkdir -p under ~/.claude/agent-memory/<agent> is allowed (control)" silent Bash 'mkdir -p ~/.claude/agent-memory/code-reviewer/x'
+  c10 "cp into \"\$HOME\"/.claude/agent-memory/<agent>/ is allowed (control)" silent Bash 'cp a.txt "$HOME"/.claude/agent-memory/code-reviewer/'
+  c10 "rm of an absolute memory path is allowed (control)" silent Bash "rm $MEM/old.md"
+  c10 "touch of an absolute memory path is allowed (control)" silent Bash "touch $MEM/n.md"
+  c10 "PowerShell mkdir of an absolute memory path is allowed (control)" silent PowerShell "mkdir $MEM/x"
+  c10 "cat <<EOF with a plain body is data (control)" silent Bash $'cat <<EOF\nrm x\nplain text\nEOF'
+  c10 "a command with cd but no memory path is judged as before (control)" silent Bash 'cd /work/proj && git log'
+
+  # ---- Round 5 ----
+  # A cross-check found that a file written into the memory dir could be run, that HOME could
+  # be changed by words other than an assignment, that a here-string or trap runs text, and
+  # that PowerShell has exec primitives. Red on the round-4 hook unless marked "control".
+  # R5a. Nothing in the agent memory dir is run: not as the command, not sourced, not as the
+  # program file of an interpreter, not as its stdin.
+  c10 "a memory-dir file as the command is denied" deny Bash "$MEM/b -c 'rm x'"
+  c10 "cp of a binary into memory, then running it, is denied" deny Bash "cp /usr/bin/bash $MEM/b && $MEM/b -c 'rm x'"
+  c10 "a script written into memory, then run with bash, is denied" deny Bash "echo hi > $MEM/s.sh; bash $MEM/s.sh"
+  c10 "source of a memory-dir file is denied" deny Bash "source $MEM/s.sh"
+  c10 ". of a memory-dir file is denied" deny Bash ". $MEM/s.sh"
+  c10 "sh with a memory-dir file as stdin is denied" deny Bash "sh < $MEM/s.sh"
+  c10 "bash with a memory-dir file as its program is denied" deny Bash "bash $MEM/s.sh"
+  c10 "bash -x with a memory-dir file is denied (option skipped)" deny Bash "bash -x $MEM/s.sh"
+  c10 "bash -O extglob with a memory-dir file is denied (option value skipped)" deny Bash "bash -O extglob $MEM/s.sh"
+  c10 "python with a memory-dir file is denied" deny Bash "python $MEM/s.py"
+  c10 "python3.12 -W ignore with a memory-dir file is denied" deny Bash "python3.12 -W ignore $MEM/s.py"
+  c10 "node with a memory-dir file is denied" deny Bash "node $MEM/s.js"
+  c10 "perl with a memory-dir file is denied" deny Bash "perl $MEM/s.pl"
+  c10 "deno run with a memory-dir file is denied" deny Bash "deno run $MEM/s.ts"
+  c10 "pwsh -File with a memory-dir file is denied" deny Bash "pwsh -File $MEM/s.ps1"
+  c10 "zsh with a memory-dir file is denied" deny Bash "zsh $MEM/s.sh"
+  # shellcheck disable=SC2088  # a literal ~ is the spelling under test
+  c10 "a ~ spelling as the command is denied" deny Bash '~/.claude/agent-memory/code-reviewer/b -c x'
+  c10 "a \$HOME spelling as the command is denied" deny Bash '$HOME/.claude/agent-memory/code-reviewer/b -c x'
+  c10 "a \"\$HOME\" spelling as the command is denied" deny Bash 'true && "$HOME"/.claude/agent-memory/code-reviewer/b -c x'
+  c10 "a backslash spelling as the command is denied" deny Bash 'C:\Users\dev\.claude\agent-memory\code-reviewer\b -c x'
+  c10 "a /c/ spelling as the command is denied" deny Bash 'true && /c/Users/dev/.claude/agent-memory/code-reviewer/b -c x'
+  c10 "a relative spelling run with sh is denied" deny Bash 'sh .claude/agent-memory/code-reviewer/s.sh'
+  c10 "a .. detour into memory run with bash is denied" deny Bash 'bash ~/.claude/x/../agent-memory/code-reviewer/s.sh'
+  c10 "a memory-dir file under env is denied" deny Bash "env FOO=1 $MEM/b"
+  c10 "a memory-dir file under sudo is denied" deny Bash "sudo $MEM/b"
+  c10 "a memory-dir file under nohup is denied" deny Bash "nohup $MEM/b"
+  c10 "a memory-dir file under xargs is denied" deny Bash "ls | xargs $MEM/b"
+  c10 "a memory-dir file under find -exec is denied" deny Bash "find . -exec $MEM/b {} \\;"
+  c10 "PowerShell & with a memory-dir file is denied" deny PowerShell "& $MEM/s.ps1"
+  c10 "PowerShell dot-sourcing a memory-dir file is denied" deny PowerShell ". $MEM/s.ps1"
+  c10 "PowerShell with a memory-dir path as the command is denied" deny PowerShell "$MEM/s.ps1"
+  c10 "PowerShell & with a quoted backslash memory path is denied" deny PowerShell "& 'C:\\Users\\dev\\.claude\\agent-memory\\code-reviewer\\s.ps1'"
+  c10 "PowerShell pwsh -File with a memory-dir file is denied" deny PowerShell "pwsh -File $MEM/s.ps1"
+  c10 "bash hooks/test-hooks.sh is a read of a repo file (control)" silent Bash 'bash hooks/test-hooks.sh'
+  c10 "python -m json.tool on a memory file is a read (control)" silent Bash "python -m json.tool $MEM/data.json"
+  c10 "cat of a memory file is a read (control)" silent Bash "cat $MEM/n.md"
+  c10 "grep reading a memory file on stdin is a read (control)" silent Bash "grep x < $MEM/n.md"
+  c10 "< file before the command is a read (control)" silent Bash "< $MEM/n.md cat"
+  c10 "ls of the memory dir is a read (control)" silent Bash "ls $MEM"
+  c10 "cat > memory file with a quoted heredoc is allowed (control)" silent Bash $'cat > ~/.claude/agent-memory/code-reviewer/n.md <<\'EOF\'\n# notes\nrm is only text here\nEOF'
+
+  # R5b. HOME is judged by word: any use of the name that is not a $HOME expansion turns the
+  # memory-dir allowance off for the command.
+  c10 "for HOME in then rm under \$HOME is denied" deny Bash 'for HOME in /tmp; do rm $HOME/.claude/agent-memory/code-reviewer/a; done'
+  c10 "read HOME then rm under \$HOME is denied" deny Bash $'read HOME < /tmp/f\nrm $HOME/.claude/agent-memory/code-reviewer/a'
+  c10 "unset HOME then rm under \$HOME is denied" deny Bash 'unset HOME; rm $HOME/.claude/agent-memory/code-reviewer/a'
+  c10 "printf -v HOME then rm under \$HOME is denied" deny Bash 'printf -v HOME /tmp; rm $HOME/.claude/agent-memory/code-reviewer/a'
+  c10 "getopts HOME then rm under \$HOME is denied" deny Bash 'getopts a HOME; rm $HOME/.claude/agent-memory/code-reviewer/a'
+  c10 "mapfile HOME then rm under ~ is denied" deny Bash 'mapfile -t HOME < /tmp/f; rm ~/.claude/agent-memory/code-reviewer/a'
+  c10 "unset USERPROFILE then rm under ~ is denied" deny Bash 'unset USERPROFILE; rm ~/.claude/agent-memory/code-reviewer/a'
+  c10 "PowerShell Remove-Variable HOME then rm is denied" deny PowerShell 'Remove-Variable HOME -Force; rm $HOME/.claude/agent-memory/code-reviewer/x'
+  c10 "PowerShell lower-case remove-variable home then rm is denied" deny PowerShell 'remove-variable home; rm ~/.claude/agent-memory/code-reviewer/x'
+  c10 "pwsh -c with a lower-case home assignment then rm is denied (control)" deny Bash 'pwsh -c "$home=1"; rm ~/.claude/agent-memory/code-reviewer/x'
+  c10n "rm \$HOME/... memory with no HOME word is allowed (control)" silent Bash 'rm $HOME/.claude/agent-memory/code-reviewer/x'
+  c10 "rm \${HOME}/... memory with no HOME word is allowed (control)" silent Bash 'rm ${HOME}/.claude/agent-memory/code-reviewer/x'
+  c10 "a /home/ path word does not turn the allowance off (control)" silent PowerShell 'ls /home/x; rm ~/.claude/agent-memory/code-reviewer/x'
+
+  # R5c. A here-string or a trap runs text.
+  c10 "bash <<< 'rm x' is denied" deny Bash "bash <<< 'rm x'"
+  c10 "sh <<<\"rm x\" is denied" deny Bash 'sh <<<"rm x"'
+  c10 "zsh <<< text is denied" deny Bash 'zsh <<< "rm x"'
+  c10 "python <<< text is denied" deny Bash "python <<< 'print(1)'"
+  c10 "a pwsh here-string is denied" deny Bash "pwsh -Command - <<< 'Remove-Item x'"
+  c10 "a here-string piped on to sh is denied" deny Bash "cat <<< 'rm x' | sh"
+  c10 "a VAR= prefix before a here-string receiver is denied" deny Bash "FOO=1 cat <<< 'rm x'"
+  c10 "a function named cat makes a here-string a shell input" deny Bash $'cat() { sh; }\ncat <<< \'rm x\''
+  c10 "trap 'rm x' EXIT is denied" deny Bash "trap 'rm x' EXIT"
+  c10 "trap with a double-quoted action is denied" deny Bash 'trap "ls" ERR'
+  c10 "trap with an empty action is denied" deny Bash "trap '' INT"
+  c10 "trap in the second command is denied" deny Bash "ls; trap 'touch x' EXIT"
+  c10 "cat <<< text is a read (control)" silent Bash "cat <<< 'rm x'"
+  c10 "grep <<< text is a read (control)" silent Bash "grep -c x <<< 'rm x'"
+  c10 "read x <<< text is a read (control)" silent Bash 'read -r a b <<< "x y"'
+  c10 "a bare trap is a read (control)" silent Bash 'trap'
+  c10 "trap -l is a read (control)" silent Bash 'trap -l'
+  c10 "trap -p is a read (control)" silent Bash 'trap -p'
+
+  # R5d. PowerShell commands that run a program or text as code.
+  c10 "iex is denied" deny PowerShell "iex 'rm x'"
+  c10 "Invoke-Expression is denied" deny PowerShell "Invoke-Expression 'rm x'"
+  c10 "Start-Process is denied" deny PowerShell "Start-Process cmd -ArgumentList '/c del x'"
+  c10 "saps is denied" deny PowerShell "saps cmd '/c del x'"
+  c10 "start is denied in PowerShell" deny PowerShell 'start notepad'
+  c10 "start is denied in Bash" deny Bash 'start notepad'
+  c10 "cmd /c start is denied" deny Bash 'cmd /c start notepad'
+  c10 "Invoke-Command is denied" deny PowerShell "Invoke-Command -ScriptBlock { ls }"
+  c10 "icm is denied" deny PowerShell "icm { ls }"
+  c10 "Start-Job is denied" deny PowerShell "Start-Job { ls }"
+  c10 "sajb is denied" deny PowerShell "sajb { ls }"
+  c10 "Start-ThreadJob is denied" deny PowerShell "Start-ThreadJob { ls }"
+  c10 "Invoke-Item is denied" deny PowerShell 'Invoke-Item x.exe'
+  c10 "ii is denied" deny PowerShell 'ii x.exe'
+  c10 "[scriptblock]::Create is denied" deny PowerShell "[scriptblock]::Create('rm x')"
+  c10 "New-Object -ComObject is denied" deny PowerShell 'New-Object -ComObject WScript.Shell'
+  c10 "New-Object -com (abbreviated) is denied" deny PowerShell 'New-Object -com Shell.Application'
+  c10 "Invoke-WmiMethod is denied" deny PowerShell 'Invoke-WmiMethod -Class Win32_Process -Name Create'
+  c10 "iex inside pwsh -Command is denied" deny Bash "pwsh -Command \"iex 'rm x'\""
+  c10 "Get-Process is a read (control)" silent PowerShell 'Get-Process'
+  c10 "New-Object System.Text.StringBuilder is a read (control)" silent PowerShell 'New-Object System.Text.StringBuilder'
+  c10 "echo start is text (control)" silent Bash 'echo start'
+  c10 "git log is a read (control)" silent PowerShell 'git log --oneline'
+
+  # R5e. cat<<EOF with no space is the same heredoc as cat <<EOF.
+  c10 "cat<<EOF with a plain body is data" silent Bash $'cat<<EOF\nrm x\nplain text\nEOF'
+  c10 "cat<<'EOF' with a quoted delimiter is data" silent Bash $'cat<<\'EOF\'\n$(touch x)\nEOF'
+  c10 "cat<<-EOF with tabs is data" silent Bash $'cat<<-EOF\n\trm x\n\tEOF'
+  c10 "cat<<EOF with an unquoted \$(...) body is judged (control)" deny Bash $'cat<<EOF\n$(touch x)\nEOF'
+  c10 "cat<<EOF with a command after the delimiter is judged (control)" deny Bash $'cat<<EOF\nx\nEOF\nrm y'
+  c10 "cat<<EOF | sh runs the body (control)" deny Bash $'cat<<EOF | sh\nrm x\nEOF'
+  c10 "sh<<EOF runs the body (control)" deny Bash $'sh<<EOF\nrm x\nEOF'
+  c10 "echo<<EOF is not a reader, so the body is judged as commands (control)" deny Bash $'echo<<EOF\nrm x\nEOF'
+
+  # R6a. A backslash at the end of a body line of an unquoted heredoc can join lines, so the
+  # delimiter may be reached early and the lines after it run.
+  c10 "an unquoted heredoc whose delimiter is split by backslash-newline is judged" deny Bash $'cat <<EOF\nbody\nEO\\\nF\nrm x\nEOF'
+  c10 "an unquoted heredoc body line that ends in a backslash joins the next one, which stays text (control)" silent Bash $'cat <<EOF\nabc\\\nrm x\nEOF'
+  c10 "an unquoted heredoc body line that ends in three backslashes is judged" deny Bash $'cat <<EOF\nabc\\\\\\\nrm x\nEOF'
+  c10 "an unquoted <<-EOF delimiter split by backslash-newline is judged" deny Bash $'cat <<-EOF\nx\nEO\\\nF\nrm y\nEOF'
+  c10 "a split delimiter with a memory-dir redirect is judged" deny Bash $'cat > ~/.claude/agent-memory/code-reviewer/n.md <<EOF\nEO\\\nF\nrm x\nEOF'
+  c10 "a body line that ends in two backslashes is data (control)" silent Bash $'cat <<EOF\nabc\\\\\nrm x\nEOF'
+  c10 "a quoted delimiter body line that ends in a backslash is data (control)" silent Bash $'cat <<\'EOF\'\nabc\\\nrm x\nEOF'
+  c10 "a quoted delimiter body line that ends in two backslashes is data (control)" silent Bash $'cat <<\'EOF\'\nabc\\\\\nrm x\nEOF'
+  c10 "a split delimiter under a quoted delimiter is data (control)" silent Bash $'cat <<\'EOF\'\nbody\nEO\\\nF\nEOF'
+  c10 "a plain cat <<EOF with a plain body is data (control)" silent Bash $'cat <<EOF\nrm x\nplain text\nEOF'
+  c10 "a plain memory-dir redirect with a quoted heredoc is allowed (control)" silent Bash $'cat > ~/.claude/agent-memory/code-reviewer/n.md <<\'EOF\'\nnotes about the review\nEOF'
+  c10 "a plain memory-dir redirect with an unquoted heredoc is allowed (control)" silent Bash $'cat > ~/.claude/agent-memory/code-reviewer/n.md <<EOF\nnotes about the review\nEOF'
+
+  # R6b. A function or alias keyword split by quotes, or anything inside eval, is not seen as
+  # text, so the flattened copy and an eval word are judged as well.
+  c10 "eval of a function definition split by quotes then cat <<EOF is judged" deny Bash $'eval "fun""ction cat { sh; }"\ncat <<EOF\nrm x\nEOF'
+  c10 "eval of a split function name then cat <<EOF is judged (control)" deny Bash $'eval \'ca\'\'t(){ sh; }\'\ncat <<EOF\nrm x\nEOF'
+  c10 "any eval turns heredoc data off" deny Bash $'eval "echo hi"\ncat <<EOF\nrm x\nEOF'
+  c10 "a quoted eval word turns heredoc data off" deny Bash $'ev""al "echo hi"\ncat <<EOF\nrm x\nEOF'
+  c10 "a split alias keyword then cat <<EOF is judged" deny Bash $'ali\'\'as cat=sh\ncat <<EOF\nrm x\nEOF'
+  c10 "a backslash-split function keyword then cat <<EOF is judged" deny Bash $'fun\\ction cat { sh; }\ncat <<EOF\nrm x\nEOF'
+  c10 "a split PATH assignment then cat <<EOF is judged" deny Bash $'PA""TH=/tmp\ncat <<EOF\nrm x\nEOF'
+  c10 "eval turns the memory-dir allowance off" deny Bash 'eval "echo hi"; rm ~/.claude/agent-memory/code-reviewer/x'
+  c10 "an eval word turns the allowance off for a redirect" deny Bash 'eval "x=1"; echo hi > ~/.claude/agent-memory/code-reviewer/n.md'
+  c10 "the word evaluate is not eval (control)" silent Bash 'echo evaluate; rm ~/.claude/agent-memory/code-reviewer/x'
+
+  # R6c. The name HOME split or built indirectly, and indirect assignments.
+  c10 "export HO''ME then rm under ~ is denied" deny Bash $'export HO\'\'ME=/tmp; rm ~/.claude/agent-memory/code-reviewer/a'
+  c10 "export HO\"\"ME then rm under \$HOME is denied" deny Bash 'export HO""ME=/tmp; rm $HOME/.claude/agent-memory/code-reviewer/a'
+  c10 "a backslash-split HO\\ME assignment then rm under ~ is denied" deny Bash 'HO\ME=/tmp; rm ~/.claude/agent-memory/code-reviewer/a'
+  c10 "a line-continuation split HOME assignment then rm is denied" deny Bash $'HO\\\nME=/tmp; rm ~/.claude/agent-memory/code-reviewer/a'
+  c10 "eval of a split HOME assignment then rm is denied" deny Bash $'eval \'HO\'\'ME=/tmp\'; rm $HOME/.claude/agent-memory/code-reviewer/a'
+  c10 "printf -v with an indirect name then rm is denied" deny Bash 'n=HO; printf -v ${n}ME /tmp; rm $HOME/.claude/agent-memory/code-reviewer/a'
+  c10 "declare -n with a split name then rm is denied" deny Bash 'declare -n r=HO"ME"; r=/tmp; rm $HOME/.claude/agent-memory/code-reviewer/a'
+  c10 "declare -rn then rm is denied" deny Bash 'declare -rn r=x; rm ~/.claude/agent-memory/code-reviewer/a'
+  c10 "typeset -n then rm is denied" deny Bash 'typeset -n r=x; rm ~/.claude/agent-memory/code-reviewer/a'
+  c10 "local -n then rm is denied" deny Bash 'f() { local -n r=x; }; rm ~/.claude/agent-memory/code-reviewer/a'
+  c10 "a \${!name} indirection then rm is denied" deny Bash 'n=x; echo ${!n}; rm ~/.claude/agent-memory/code-reviewer/a'
+  c10 "export of an indirect name then rm is denied" deny Bash 'n=HO; export ${n}ME=/tmp; rm ~/.claude/agent-memory/code-reviewer/a'
+  c10 "env with an indirect name, then rm under ~, is denied" deny Bash 'n=HO; env ${n}ME=/tmp true && rm ~/.claude/agent-memory/code-reviewer/a'
+  c10 "read then rm under ~ is denied" deny Bash 'read x < /tmp/f; rm ~/.claude/agent-memory/code-reviewer/a'
+  c10 "mapfile then rm under ~ is denied" deny Bash 'mapfile -t a < /tmp/f; rm ~/.claude/agent-memory/code-reviewer/a'
+  c10 "readarray then a memory redirect is denied" deny Bash 'readarray a < /tmp/f; echo x > ~/.claude/agent-memory/code-reviewer/n.md'
+  c10 "PowerShell Set-Variable with a built name then rm is denied" deny PowerShell "Set-Variable -Name ('HO'+'ME') -Value C:/tmp; rm \$HOME/.claude/agent-memory/code-reviewer/a"
+  c10 "PowerShell sv with a built name then rm is denied" deny PowerShell "sv -Name ('HO'+'ME') C:/tmp; rm ~/.claude/agent-memory/code-reviewer/a"
+  c10 "PowerShell New-Variable then rm is denied" deny PowerShell 'New-Variable -Name x -Value 1; rm ~/.claude/agent-memory/code-reviewer/a'
+  c10 "PowerShell nv then rm is denied" deny PowerShell 'nv x 1; rm ~/.claude/agent-memory/code-reviewer/a'
+  c10 "PowerShell Set-Item variable: then rm is denied (control)" deny PowerShell "Set-Item -Path ('variable:HO'+'ME') C:/tmp; rm ~/.claude/agent-memory/code-reviewer/a"
+  c10 "PowerShell si env: then rm is denied" deny PowerShell 'si env:x 1; rm ~/.claude/agent-memory/code-reviewer/a'
+  c10 "PowerShell SetEnvironmentVariable with a built name then rm is denied" deny PowerShell $'[Environment]::SetEnvironmentVariable((\'HO\'+\'ME\'),\'C:/tmp\'); rm ~/.claude/agent-memory/code-reviewer/a'
+  c10 "PowerShell backtick-split \$env:HOME assignment then rm is denied" deny PowerShell '$env:HO`ME=''C:\tmp''; rm ~/.claude/agent-memory/code-reviewer/a'
+  c10 "PowerShell backtick-split Set-Variable HOME then rm is denied" deny PowerShell 'Set-Variable HO`ME C:/tmp; rm $HOME/.claude/agent-memory/code-reviewer/a'
+  c10 "pwsh -c with a split HOME assignment then rm is denied" deny Bash $'pwsh -c "Set-Variable HO\'\'ME x"; rm ~/.claude/agent-memory/code-reviewer/a'
+  c10 "rm under ~ with no variable word is allowed (control)" silent Bash 'rm ~/.claude/agent-memory/code-reviewer/x'
+  c10 "a redirect under ~ with no variable word is allowed (control)" silent Bash 'echo hi > ~/.claude/agent-memory/code-reviewer/n.md'
+  c10 "PowerShell rm under ~ is allowed (control)" silent PowerShell 'rm ~/.claude/agent-memory/code-reviewer/x'
+  c10 "PowerShell Get-Variable is a read (control)" silent PowerShell 'Get-Variable x; rm ~/.claude/agent-memory/code-reviewer/x'
+  c10 "the word printf without -v is not an assignment (control)" silent Bash 'printf "%s" hi > ~/.claude/agent-memory/code-reviewer/n.md'
+  c10 "declare -x of a plain name is not a nameref (control)" silent Bash 'declare -x FOO=1; rm ~/.claude/agent-memory/code-reviewer/x'
+  c10 "bash hooks/test-hooks.sh is a run of the test script (control)" silent Bash 'bash hooks/test-hooks.sh'
+
+  # R6d. An unquoted $HOME or ${HOME} is word-split and globbed by bash: with a HOME that has a
+  # space (common on Windows) or a glob character it is not one path. ~ and "$HOME" are safe.
+  c10h "rm -r under an unquoted \$HOME is denied when HOME has a space" deny Bash 'rm -r $HOME/.claude/agent-memory/code-reviewer/x'
+  c10h "rm under an unquoted \${HOME} is denied when HOME has a space" deny Bash 'rm ${HOME}/.claude/agent-memory/code-reviewer/x'
+  c10h "a redirect to an unquoted \$HOME memory path is denied when HOME has a space" deny Bash 'echo hi > $HOME/.claude/agent-memory/code-reviewer/n.md'
+  c10h "cp into an unquoted \$HOME memory dir is denied when HOME has a space" deny Bash 'cp a $HOME/.claude/agent-memory/code-reviewer/'
+  c10h "rm under \"\$HOME\"/... is allowed when HOME has a space (control)" silent Bash 'rm "$HOME"/.claude/agent-memory/code-reviewer/x'
+  c10h "rm under \"\$HOME/...\" is allowed when HOME has a space (control)" silent Bash 'rm "$HOME/.claude/agent-memory/code-reviewer/x"'
+  c10h "rm under \"\${HOME}\"/... is allowed when HOME has a space (control)" silent Bash 'rm "${HOME}"/.claude/agent-memory/code-reviewer/x'
+  c10h "rm under ~ is allowed when HOME has a space (control)" silent Bash 'rm ~/.claude/agent-memory/code-reviewer/x'
+  c10h "a redirect under ~ is allowed when HOME has a space (control)" silent Bash 'echo hi > ~/.claude/agent-memory/code-reviewer/n.md'
+  c10h "PowerShell does not split \$HOME, so rm under it is allowed (control)" silent PowerShell 'rm $HOME/.claude/agent-memory/code-reviewer/x'
+  c10h "rm under \$HOME in another agent memory dir is denied (control)" deny Bash 'rm "$HOME"/.claude/agent-memory/security-reviewer/x'
+  c10n "rm under an unquoted \$HOME is allowed when HOME has no space (control)" silent Bash 'rm -r $HOME/.claude/agent-memory/code-reviewer/x'
+  c10 "rm under \"\$HOME\"/... with a .. is denied (control)" deny Bash 'rm "$HOME"/.claude/agent-memory/code-reviewer/../../x'
+
+  # R7. Words in the body of a quoted-delimiter heredoc do not count: bash never expands or runs
+  # it, so a memory note that mentions cd, HOME or eval stays allowed. Anything outside it counts.
+  c10 "a quoted-delimiter note that mentions read and cd is allowed" silent Bash $'cat > ~/.claude/agent-memory/code-reviewer/n.md <<\'EOF\'\n# notes\nread the config first, then cd into src\nEOF'
+  c10 "a quoted-delimiter note that mentions HOME and eval is allowed" silent Bash $'cat > ~/.claude/agent-memory/code-reviewer/n.md <<\'EOF\'\nHOME page uses eval\nEOF'
+  c10 "a quoted-delimiter note that mentions alias and function is allowed (control)" silent Bash $'cat > ~/.claude/agent-memory/code-reviewer/n.md <<\'EOF\'\nuse an alias or a function for it\nEOF'
+  c10 "a quoted-delimiter note that defines cat() as text is allowed" silent Bash $'cat > ~/.claude/agent-memory/code-reviewer/n.md <<\'EOF\'\nfunction cat() { sh; }\nHOME=/tmp\nEOF'
+  c10 "a double-quoted delimiter note that mentions cd is allowed" silent Bash $'cat > ~/.claude/agent-memory/code-reviewer/n.md <<"EOF"\ncd into src, read the config, HOME, eval\nEOF'
+  c10 "a backslash-quoted delimiter note that mentions cd is allowed" silent Bash $'cat > ~/.claude/agent-memory/code-reviewer/n.md <<\\EOF\ncd into src, read the config, HOME, eval\nEOF'
+  c10 "a <<-'EOF' note with tabbed lines that mention cd is allowed" silent Bash $'cat > ~/.claude/agent-memory/code-reviewer/n.md <<-\'EOF\'\n\tcd into src\n\tEOF'
+  c10 "a PowerShell-tool note with a quoted heredoc that mentions cd is allowed" silent PowerShell $'cat > ~/.claude/agent-memory/code-reviewer/n.md <<\'EOF\'\ncd into src, HOME\nEOF'
+  c10 "an unquoted-delimiter note that says \$(cd /tmp) is denied (control)" deny Bash $'cat > ~/.claude/agent-memory/code-reviewer/n.md <<EOF\n# notes\n$(cd /tmp)\nEOF'
+  c10 "an unquoted-delimiter note that mentions read and cd keeps the allowance off (control)" deny Bash $'cat > ~/.claude/agent-memory/code-reviewer/n.md <<EOF\nread the config first, then cd into src\nEOF'
+  c10 "a quoted-delimiter note followed by a real cd line is denied (control)" deny Bash $'cat > ~/.claude/agent-memory/code-reviewer/n.md <<\'EOF\'\nnote\nEOF\ncd /tmp'
+  c10 "a quoted-delimiter note followed by eval is denied (control)" deny Bash $'cat > ~/.claude/agent-memory/code-reviewer/n.md <<\'EOF\'\nnote\nEOF\neval x'
+  c10 "a quoted-delimiter note followed by a HOME assignment is denied (control)" deny Bash $'cat > ~/.claude/agent-memory/code-reviewer/n.md <<\'EOF\'\nnote\nEOF\nHOME=/tmp'
+  c10 "a quoted-delimiter note after a cd line is denied (control)" deny Bash $'cd /tmp\ncat > ~/.claude/agent-memory/code-reviewer/n.md <<\'EOF\'\nnote\nEOF'
+  c10 "a quoted-delimiter note with cat() defined before it is denied (control)" deny Bash $'cat() { sh; }\ncat > ~/.claude/agent-memory/code-reviewer/n.md <<\'EOF\'\nrm x\nEOF'
+  c10 "a quoted-delimiter note with cat() defined before it and a plain body is denied (control)" deny Bash $'cat() { sh; }\ncat > ~/.claude/agent-memory/code-reviewer/n.md <<\'EOF\'\nread the config first, then cd into src\nEOF'
+  c10 "a quoted-delimiter note with an alias defined before it and a cd in the body is denied (control)" deny Bash $'alias cat=sh\ncat > ~/.claude/agent-memory/code-reviewer/n.md <<\'EOF\'\nread the config first, then cd into src\nEOF'
+  c10 "a quoted-delimiter note into tee (not a bare reader) that mentions cd is denied (control)" deny Bash $'tee ~/.claude/agent-memory/code-reviewer/n.md <<\'EOF\'\ncd into src\nEOF'
+  c10 "a quoted-delimiter note that never closes is denied (control)" deny Bash $'cat > ~/.claude/agent-memory/code-reviewer/n.md <<\'EOF\'\ncd into src\nread x'
+  c10 "a quoted-delimiter note into another file than memory is still denied (control)" deny Bash $'cat > /tmp/n.md <<\'EOF\'\ncd into src\nEOF'
+  # R8. A here-string feeds text to a reader or a plain text filter (not sed or awk, which can
+  # run it), also along a pipe of them;
+  # a preload, an rc file or a -f program file in the memory dir is run; code given with -c or
+  # -e makes < input data; and $HOME in a note's redirect target keeps the heredoc plain.
+  c10 "tr <<< text is a read" silent Bash 'tr a-z A-Z <<< "$x"'
+  c10 "cut <<< text is a read" silent Bash 'cut -d, -f1 <<< "$x"'
+  c10 "sed e <<< text is denied (sed runs text)" deny Bash "sed e <<< 'rm x'"
+  c10 "awk system() <<< text is denied (awk runs text)" deny Bash "awk '{system(\$0)}' <<< 'rm x'"
+  c10 "a here-string piped on to (sh) is denied" deny Bash "cat <<< 'rm x' | (sh)"
+  c10 "a here-string piped on to sh on the next line is denied" deny Bash $'cat <<< \'rm x\' |\nsh'
+  c10 "cat <<< text; then a separate sh is not fed the text (control)" silent Bash 'cat <<< x; sh'
+  c10 "grep <<< text piped to wc is a read" silent Bash 'grep a <<< "$x" | wc -l'
+  c10 "cut <<< text piped through sort to wc is a read" silent Bash 'cut -c1 <<< "$x" | sort | wc -l'
+  c10 "tr <<< text piped to bash is denied (control)" deny Bash "tr a b <<< 'rm x' | bash"
+  c10 "cut <<< text piped through sort to sh is denied (control)" deny Bash "cut -c1 <<< 'rm x' | sort | sh"
+  c10 "awk -f /dev/stdin <<< text is denied" deny Bash "awk -f /dev/stdin <<< 'BEGIN{print 1}'"
+  c10 "sed -f - <<< text is denied" deny Bash "sed -f - in.txt <<< 'w out'"
+  c10 "sed -nf - <<< text is denied" deny Bash "sed -nf - in.txt <<< 'w out'"
+  c10 "a loop fed by done <<< is denied (control)" deny Bash 'while read l; do echo "$l"; done <<< "$x"'
+  c10 "node -r with a memory-dir module is denied" deny Bash 'node -r ~/.claude/agent-memory/code-reviewer/p.js app.js'
+  c10 "node --require= with a memory-dir module is denied" deny Bash 'node --require=~/.claude/agent-memory/code-reviewer/p.js app.js'
+  c10 "node --import with a memory-dir module is denied" deny Bash 'node --import ~/.claude/agent-memory/code-reviewer/p.mjs app.js'
+  c10 "bash --rcfile from the memory dir is denied" deny Bash 'bash --rcfile ~/.claude/agent-memory/code-reviewer/rc -i'
+  c10 "sed -f with a memory-dir script is denied" deny Bash 'sed -f ~/.claude/agent-memory/code-reviewer/s.sed in.txt'
+  c10 "awk -f<file> from the memory dir is denied" deny Bash 'awk -f~/.claude/agent-memory/code-reviewer/a.awk in.txt'
+  c10 "make --file= from the memory dir is denied" deny Bash 'make --file=~/.claude/agent-memory/code-reviewer/Mk'
+  c10 "bash --init-file from the memory dir is denied" deny Bash 'bash --init-file ~/.claude/agent-memory/code-reviewer/rc'
+  c10 "node --experimental-loader from the memory dir is denied" deny Bash 'node --experimental-loader ~/.claude/agent-memory/code-reviewer/l.mjs app.js'
+  c10 "sed --file from the memory dir is denied" deny Bash 'sed --file ~/.claude/agent-memory/code-reviewer/s.sed in'
+  c10 "gawk -E from the memory dir is denied" deny Bash 'gawk -E ~/.claude/agent-memory/code-reviewer/a.awk in'
+  c10 "gawk -i from the memory dir is denied" deny Bash "gawk -i ~/.claude/agent-memory/code-reviewer/a.awk '{print}' in"
+  c10 "ruby -r from the memory dir is denied" deny Bash 'ruby -r ~/.claude/agent-memory/code-reviewer/x.rb -e 1'
+  c10 "awk -f /dev/stdin with a memory-dir file on < is denied" deny Bash 'awk -f /dev/stdin < ~/.claude/agent-memory/code-reviewer/p.awk'
+  c10 "sed -f - with a memory-dir file on < is denied" deny Bash 'sed -f - in.txt < ~/.claude/agent-memory/code-reviewer/s.sed'
+  c10 "make -f - with a memory-dir file on < is denied" deny Bash 'make -f - < ~/.claude/agent-memory/code-reviewer/Mk'
+  c10 "ruby -rset with a memory-dir program on < is denied" deny Bash 'ruby -rset < ~/.claude/agent-memory/code-reviewer/x.rb'
+  c10 "perl -MEnv with a memory-dir program on < is denied" deny Bash 'perl -MEnv < ~/.claude/agent-memory/code-reviewer/x.pl'
+  c10 "python -m code with a memory-dir file on < is denied" deny Bash 'python3 -m code < ~/.claude/agent-memory/code-reviewer/x.py'
+  c10 "pwsh -c - with a memory-dir file on < is denied" deny Bash 'pwsh -c - < ~/.claude/agent-memory/code-reviewer/x.ps1'
+  c10 "perl -le reads a memory-dir file on stdin as data" silent Bash "perl -le 'print 1' < ~/.claude/agent-memory/code-reviewer/d.txt"
+  c10 "a here-string piped on to |(sh) written together is denied" deny Bash "cat <<< 'rm x' |(sh)"
+  c10 "a subshell here-string piped on to sh is denied" deny Bash "(cat <<< 'rm x') | sh"
+  c10 "a subshell here-string then a separate sh is not fed the text (control)" silent Bash '(cat <<< x); sh'
+  c10 "a here-string inside a subshell is a read (control)" silent Bash '(cat <<< x)'
+  c10 "cat f piped into a subshell grep is a read (control)" silent Bash 'cat f | (grep x)'
+  c10 "gawk -i inplace edits files in place" deny Bash "gawk -i inplace '{print}' f"
+  c10 "gawk --include=inplace edits files in place" deny Bash "gawk --include=inplace '{print}' f"
+  c10 "ruby -pi edits files in place" deny Bash "ruby -pi -e 'x' f"
+  c10 "sed -bi edits files in place" deny Bash "sed -bi 's/a/b/' f"
+  c10 "a subshell here-string through 2>&1 into sh is denied" deny Bash "(cat <<< 'rm x') 2>&1 | sh"
+  c10 "awk -f /proc/self/fd/0 with a memory-dir file on < is denied" deny Bash 'awk -f /proc/self/fd/0 < ~/.claude/agent-memory/code-reviewer/p.awk'
+  c10 "gawk -i with another include file is a read (control)" silent Bash "gawk -i lib.awk '{print}' f"
+  c10 "perl -Ilib is not perl -i (control)" silent Bash "perl -Ilib -e 'print 1'"
+  c10 "perl -MList::Util is not perl -i (control)" silent Bash "perl -MList::Util=sum -e 'print sum(1,2)'"
+  c10 "perl -ne, -lane and -pe are reads (control)" silent Bash "perl -ne 'print if /x/' f; perl -lane 'print \$F[0]' f; perl -pe 's/a/b/' f"
+  c10 "ruby -e and python -m pytest are reads (control)" silent Bash 'ruby -e "puts 1"; python -m pytest tests'
+  c10 "python -m json.tool with a non-memory file on < is a read (control)" silent Bash 'python -m json.tool < other.json'
+  c10 "awk -v with a program is a read (control)" silent Bash "awk -v x=1 '{print}' f"
+  c10 "a memory-dir file as a script argument is data (control)" silent Bash 'python3 tool.py ~/.claude/agent-memory/code-reviewer/d.json'
+  c10 "sed -e with a memory-dir input file is a read (control)" silent Bash 'sed -e s/f/g/ ~/.claude/agent-memory/code-reviewer/d.txt'
+  c10 "python -c reads a memory-dir file on stdin as data" silent Bash "python3 -c 'import sys; print(sys.stdin.read())' < ~/.claude/agent-memory/code-reviewer/d.json"
+  c10 "node -e reads a memory-dir file on stdin as data" silent Bash "node -e 'x' < ~/.claude/agent-memory/code-reviewer/d.json"
+  c10 "python with a memory-dir file as stdin program is denied (control)" deny Bash 'python3 < ~/.claude/agent-memory/code-reviewer/d.py'
+  c10 "bash with a memory-dir file as stdin program is denied (control)" deny Bash 'bash < ~/.claude/agent-memory/code-reviewer/s.sh'
+  c10n "a \$HOME note that mentions read and cd is allowed" silent Bash $'cat > $HOME/.claude/agent-memory/code-reviewer/n.md <<\'EOF\'\nread the cd docs\nEOF'
+  c10h "a \"\$HOME\" note that mentions read and cd is allowed" silent Bash $'cat > "$HOME"/.claude/agent-memory/code-reviewer/n.md <<\'EOF\'\nread the cd docs\nEOF'
+  c10n "a \${HOME} note that mentions read and cd is allowed" silent Bash $'cat > ${HOME}/.claude/agent-memory/code-reviewer/n.md <<\'EOF\'\nread the cd docs\nEOF'
+  c10n "a \$HOMEX note is denied (control)" deny Bash $'cat > $HOMEX/.claude/agent-memory/code-reviewer/n.md <<\'EOF\'\nread the cd docs\nEOF'
+  c10n "a \$HOME note with \$(...) in the target is denied (control)" deny Bash $'cat > $HOME$(touch y)/n.md <<\'EOF\'\nhi\nEOF'
+  c10n "an unquoted \$HOME note body with \$(...) is denied (control)" deny Bash $'cat > $HOME/.claude/agent-memory/code-reviewer/n.md <<EOF\n$(touch y)\nEOF'
+  c10n "a \$HOME note outside the memory dir is denied (control)" deny Bash $'cat > $HOME/notes.md <<\'EOF\'\nhi\nEOF'
 fi
 echo ""
 
