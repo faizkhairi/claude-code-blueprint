@@ -1423,6 +1423,13 @@ sys.stdout.buffer.write(json.dumps({"agent_type":"code-reviewer","tool_name":sys
     json=$("$PYTHON" -c 'import json,sys; print(json.dumps({"agent_type":"code-reviewer","tool_name":sys.argv[1],"cwd":"/work/proj","tool_input":{"command":sys.argv[2]}}))' "$3" "$4")
     expect "agent-write-guard: $1" "$2" "$(guard_decision "$AWG" "$json" "${GENV[@]}" "HOME=C:/Users/dev user")"
   }
+  # c10n: like c10, with HOME pinned to a path without spaces, for cases that use an unquoted $HOME.
+  case "$PY_HOME" in [A-Za-z]:*) NOSP_HOME=C:/Users/dev ;; *) NOSP_HOME=/home/dev ;; esac
+  c10n() {
+    local json
+    json=$("$PYTHON" -c 'import json,sys; print(json.dumps({"agent_type":"code-reviewer","tool_name":sys.argv[1],"cwd":"/work/proj","tool_input":{"command":sys.argv[2]}}))' "$3" "$4")
+    expect "agent-write-guard: $1" "$2" "$(guard_decision "$AWG" "$json" "${GENV[@]}" "HOME=$NOSP_HOME")"
+  }
 
   # a. A GIT_ variable makes read-only git run a program.
   c10 "GIT_EXTERNAL_DIFF prefix before git diff is denied" deny Bash 'GIT_EXTERNAL_DIFF=touch git diff'
@@ -1543,7 +1550,7 @@ sys.stdout.buffer.write(json.dumps({"agent_type":"code-reviewer","tool_name":sys
   c10 "a here-string is not a heredoc (control)" deny Bash $'cat <<<abc\nrm x'
 
   # FP2. $HOME, ${HOME} and ~ expand in a redirect target.
-  c10 "a redirect to \$HOME/.claude/agent-memory/<agent> is allowed" silent Bash 'cat x > $HOME/.claude/agent-memory/code-reviewer/n.md'
+  c10n "a redirect to \$HOME/.claude/agent-memory/<agent> is allowed" silent Bash 'cat x > $HOME/.claude/agent-memory/code-reviewer/n.md'
   c10 "a redirect to \${HOME}/... memory is allowed" silent Bash 'cat x > ${HOME}/.claude/agent-memory/code-reviewer/n.md'
   c10 "a redirect to \"\$HOME/...\" memory is allowed" silent Bash 'cat x > "$HOME/.claude/agent-memory/code-reviewer/n.md"'
   c10 "a redirect to ~/... memory is allowed (control)" silent Bash 'cat x > ~/.claude/agent-memory/code-reviewer/n.md'
@@ -1562,7 +1569,7 @@ sys.stdout.buffer.write(json.dumps({"agent_type":"code-reviewer","tool_name":sys
   c10 "rm inside the memory dir is allowed" silent Bash "rm $MEM/old.md"
   c10 "rm -rf inside the memory dir is allowed" silent Bash "rm -rf $MEM/old"
   c10 "rm of a glob inside the memory dir is denied (a glob is not resolved)" deny Bash "rm $MEM/*.md"
-  c10 "rm through \$HOME inside the memory dir is allowed" silent Bash 'rm $HOME/.claude/agent-memory/code-reviewer/old.md'
+  c10n "rm through \$HOME inside the memory dir is allowed" silent Bash 'rm $HOME/.claude/agent-memory/code-reviewer/old.md'
   c10 "mkdir then touch, both in the memory dir, is allowed" silent Bash "mkdir -p $MEM/a && touch $MEM/a/b.md"
   c10 "rm -rf build outside memory is denied (control)" deny Bash 'rm -rf build'
   c10 "mkdir outside memory is denied (control)" deny Bash 'mkdir newdir'
@@ -2004,7 +2011,7 @@ sys.stdout.buffer.write(json.dumps({"agent_type":"code-reviewer","tool_name":sys
   c10 "PowerShell Remove-Variable HOME then rm is denied" deny PowerShell 'Remove-Variable HOME -Force; rm $HOME/.claude/agent-memory/code-reviewer/x'
   c10 "PowerShell lower-case remove-variable home then rm is denied" deny PowerShell 'remove-variable home; rm ~/.claude/agent-memory/code-reviewer/x'
   c10 "pwsh -c with a lower-case home assignment then rm is denied (control)" deny Bash 'pwsh -c "$home=1"; rm ~/.claude/agent-memory/code-reviewer/x'
-  c10 "rm \$HOME/... memory with no HOME word is allowed (control)" silent Bash 'rm $HOME/.claude/agent-memory/code-reviewer/x'
+  c10n "rm \$HOME/... memory with no HOME word is allowed (control)" silent Bash 'rm $HOME/.claude/agent-memory/code-reviewer/x'
   c10 "rm \${HOME}/... memory with no HOME word is allowed (control)" silent Bash 'rm ${HOME}/.claude/agent-memory/code-reviewer/x'
   c10 "a /home/ path word does not turn the allowance off (control)" silent PowerShell 'ls /home/x; rm ~/.claude/agent-memory/code-reviewer/x'
 
@@ -2139,7 +2146,7 @@ sys.stdout.buffer.write(json.dumps({"agent_type":"code-reviewer","tool_name":sys
   c10h "a redirect under ~ is allowed when HOME has a space (control)" silent Bash 'echo hi > ~/.claude/agent-memory/code-reviewer/n.md'
   c10h "PowerShell does not split \$HOME, so rm under it is allowed (control)" silent PowerShell 'rm $HOME/.claude/agent-memory/code-reviewer/x'
   c10h "rm under \$HOME in another agent memory dir is denied (control)" deny Bash 'rm "$HOME"/.claude/agent-memory/security-reviewer/x'
-  c10 "rm under an unquoted \$HOME is allowed when HOME has no space (control)" silent Bash 'rm -r $HOME/.claude/agent-memory/code-reviewer/x'
+  c10n "rm under an unquoted \$HOME is allowed when HOME has no space (control)" silent Bash 'rm -r $HOME/.claude/agent-memory/code-reviewer/x'
   c10 "rm under \"\$HOME\"/... with a .. is denied (control)" deny Bash 'rm "$HOME"/.claude/agent-memory/code-reviewer/../../x'
 
   # R7. Words in the body of a quoted-delimiter heredoc do not count: bash never expands or runs
@@ -2164,6 +2171,77 @@ sys.stdout.buffer.write(json.dumps({"agent_type":"code-reviewer","tool_name":sys
   c10 "a quoted-delimiter note into tee (not a bare reader) that mentions cd is denied (control)" deny Bash $'tee ~/.claude/agent-memory/code-reviewer/n.md <<\'EOF\'\ncd into src\nEOF'
   c10 "a quoted-delimiter note that never closes is denied (control)" deny Bash $'cat > ~/.claude/agent-memory/code-reviewer/n.md <<\'EOF\'\ncd into src\nread x'
   c10 "a quoted-delimiter note into another file than memory is still denied (control)" deny Bash $'cat > /tmp/n.md <<\'EOF\'\ncd into src\nEOF'
+  # R8. A here-string feeds text to a reader or a plain text filter (not sed or awk, which can
+  # run it), also along a pipe of them;
+  # a preload, an rc file or a -f program file in the memory dir is run; code given with -c or
+  # -e makes < input data; and $HOME in a note's redirect target keeps the heredoc plain.
+  c10 "tr <<< text is a read" silent Bash 'tr a-z A-Z <<< "$x"'
+  c10 "cut <<< text is a read" silent Bash 'cut -d, -f1 <<< "$x"'
+  c10 "sed e <<< text is denied (sed runs text)" deny Bash "sed e <<< 'rm x'"
+  c10 "awk system() <<< text is denied (awk runs text)" deny Bash "awk '{system(\$0)}' <<< 'rm x'"
+  c10 "a here-string piped on to (sh) is denied" deny Bash "cat <<< 'rm x' | (sh)"
+  c10 "a here-string piped on to sh on the next line is denied" deny Bash $'cat <<< \'rm x\' |\nsh'
+  c10 "cat <<< text; then a separate sh is not fed the text (control)" silent Bash 'cat <<< x; sh'
+  c10 "grep <<< text piped to wc is a read" silent Bash 'grep a <<< "$x" | wc -l'
+  c10 "cut <<< text piped through sort to wc is a read" silent Bash 'cut -c1 <<< "$x" | sort | wc -l'
+  c10 "tr <<< text piped to bash is denied (control)" deny Bash "tr a b <<< 'rm x' | bash"
+  c10 "cut <<< text piped through sort to sh is denied (control)" deny Bash "cut -c1 <<< 'rm x' | sort | sh"
+  c10 "awk -f /dev/stdin <<< text is denied" deny Bash "awk -f /dev/stdin <<< 'BEGIN{print 1}'"
+  c10 "sed -f - <<< text is denied" deny Bash "sed -f - in.txt <<< 'w out'"
+  c10 "sed -nf - <<< text is denied" deny Bash "sed -nf - in.txt <<< 'w out'"
+  c10 "a loop fed by done <<< is denied (control)" deny Bash 'while read l; do echo "$l"; done <<< "$x"'
+  c10 "node -r with a memory-dir module is denied" deny Bash 'node -r ~/.claude/agent-memory/code-reviewer/p.js app.js'
+  c10 "node --require= with a memory-dir module is denied" deny Bash 'node --require=~/.claude/agent-memory/code-reviewer/p.js app.js'
+  c10 "node --import with a memory-dir module is denied" deny Bash 'node --import ~/.claude/agent-memory/code-reviewer/p.mjs app.js'
+  c10 "bash --rcfile from the memory dir is denied" deny Bash 'bash --rcfile ~/.claude/agent-memory/code-reviewer/rc -i'
+  c10 "sed -f with a memory-dir script is denied" deny Bash 'sed -f ~/.claude/agent-memory/code-reviewer/s.sed in.txt'
+  c10 "awk -f<file> from the memory dir is denied" deny Bash 'awk -f~/.claude/agent-memory/code-reviewer/a.awk in.txt'
+  c10 "make --file= from the memory dir is denied" deny Bash 'make --file=~/.claude/agent-memory/code-reviewer/Mk'
+  c10 "bash --init-file from the memory dir is denied" deny Bash 'bash --init-file ~/.claude/agent-memory/code-reviewer/rc'
+  c10 "node --experimental-loader from the memory dir is denied" deny Bash 'node --experimental-loader ~/.claude/agent-memory/code-reviewer/l.mjs app.js'
+  c10 "sed --file from the memory dir is denied" deny Bash 'sed --file ~/.claude/agent-memory/code-reviewer/s.sed in'
+  c10 "gawk -E from the memory dir is denied" deny Bash 'gawk -E ~/.claude/agent-memory/code-reviewer/a.awk in'
+  c10 "gawk -i from the memory dir is denied" deny Bash "gawk -i ~/.claude/agent-memory/code-reviewer/a.awk '{print}' in"
+  c10 "ruby -r from the memory dir is denied" deny Bash 'ruby -r ~/.claude/agent-memory/code-reviewer/x.rb -e 1'
+  c10 "awk -f /dev/stdin with a memory-dir file on < is denied" deny Bash 'awk -f /dev/stdin < ~/.claude/agent-memory/code-reviewer/p.awk'
+  c10 "sed -f - with a memory-dir file on < is denied" deny Bash 'sed -f - in.txt < ~/.claude/agent-memory/code-reviewer/s.sed'
+  c10 "make -f - with a memory-dir file on < is denied" deny Bash 'make -f - < ~/.claude/agent-memory/code-reviewer/Mk'
+  c10 "ruby -rset with a memory-dir program on < is denied" deny Bash 'ruby -rset < ~/.claude/agent-memory/code-reviewer/x.rb'
+  c10 "perl -MEnv with a memory-dir program on < is denied" deny Bash 'perl -MEnv < ~/.claude/agent-memory/code-reviewer/x.pl'
+  c10 "python -m code with a memory-dir file on < is denied" deny Bash 'python3 -m code < ~/.claude/agent-memory/code-reviewer/x.py'
+  c10 "pwsh -c - with a memory-dir file on < is denied" deny Bash 'pwsh -c - < ~/.claude/agent-memory/code-reviewer/x.ps1'
+  c10 "perl -le reads a memory-dir file on stdin as data" silent Bash "perl -le 'print 1' < ~/.claude/agent-memory/code-reviewer/d.txt"
+  c10 "a here-string piped on to |(sh) written together is denied" deny Bash "cat <<< 'rm x' |(sh)"
+  c10 "a subshell here-string piped on to sh is denied" deny Bash "(cat <<< 'rm x') | sh"
+  c10 "a subshell here-string then a separate sh is not fed the text (control)" silent Bash '(cat <<< x); sh'
+  c10 "a here-string inside a subshell is a read (control)" silent Bash '(cat <<< x)'
+  c10 "cat f piped into a subshell grep is a read (control)" silent Bash 'cat f | (grep x)'
+  c10 "gawk -i inplace edits files in place" deny Bash "gawk -i inplace '{print}' f"
+  c10 "gawk --include=inplace edits files in place" deny Bash "gawk --include=inplace '{print}' f"
+  c10 "ruby -pi edits files in place" deny Bash "ruby -pi -e 'x' f"
+  c10 "sed -bi edits files in place" deny Bash "sed -bi 's/a/b/' f"
+  c10 "a subshell here-string through 2>&1 into sh is denied" deny Bash "(cat <<< 'rm x') 2>&1 | sh"
+  c10 "awk -f /proc/self/fd/0 with a memory-dir file on < is denied" deny Bash 'awk -f /proc/self/fd/0 < ~/.claude/agent-memory/code-reviewer/p.awk'
+  c10 "gawk -i with another include file is a read (control)" silent Bash "gawk -i lib.awk '{print}' f"
+  c10 "perl -Ilib is not perl -i (control)" silent Bash "perl -Ilib -e 'print 1'"
+  c10 "perl -MList::Util is not perl -i (control)" silent Bash "perl -MList::Util=sum -e 'print sum(1,2)'"
+  c10 "perl -ne, -lane and -pe are reads (control)" silent Bash "perl -ne 'print if /x/' f; perl -lane 'print \$F[0]' f; perl -pe 's/a/b/' f"
+  c10 "ruby -e and python -m pytest are reads (control)" silent Bash 'ruby -e "puts 1"; python -m pytest tests'
+  c10 "python -m json.tool with a non-memory file on < is a read (control)" silent Bash 'python -m json.tool < other.json'
+  c10 "awk -v with a program is a read (control)" silent Bash "awk -v x=1 '{print}' f"
+  c10 "a memory-dir file as a script argument is data (control)" silent Bash 'python3 tool.py ~/.claude/agent-memory/code-reviewer/d.json'
+  c10 "sed -e with a memory-dir input file is a read (control)" silent Bash 'sed -e s/f/g/ ~/.claude/agent-memory/code-reviewer/d.txt'
+  c10 "python -c reads a memory-dir file on stdin as data" silent Bash "python3 -c 'import sys; print(sys.stdin.read())' < ~/.claude/agent-memory/code-reviewer/d.json"
+  c10 "node -e reads a memory-dir file on stdin as data" silent Bash "node -e 'x' < ~/.claude/agent-memory/code-reviewer/d.json"
+  c10 "python with a memory-dir file as stdin program is denied (control)" deny Bash 'python3 < ~/.claude/agent-memory/code-reviewer/d.py'
+  c10 "bash with a memory-dir file as stdin program is denied (control)" deny Bash 'bash < ~/.claude/agent-memory/code-reviewer/s.sh'
+  c10n "a \$HOME note that mentions read and cd is allowed" silent Bash $'cat > $HOME/.claude/agent-memory/code-reviewer/n.md <<\'EOF\'\nread the cd docs\nEOF'
+  c10h "a \"\$HOME\" note that mentions read and cd is allowed" silent Bash $'cat > "$HOME"/.claude/agent-memory/code-reviewer/n.md <<\'EOF\'\nread the cd docs\nEOF'
+  c10n "a \${HOME} note that mentions read and cd is allowed" silent Bash $'cat > ${HOME}/.claude/agent-memory/code-reviewer/n.md <<\'EOF\'\nread the cd docs\nEOF'
+  c10n "a \$HOMEX note is denied (control)" deny Bash $'cat > $HOMEX/.claude/agent-memory/code-reviewer/n.md <<\'EOF\'\nread the cd docs\nEOF'
+  c10n "a \$HOME note with \$(...) in the target is denied (control)" deny Bash $'cat > $HOME$(touch y)/n.md <<\'EOF\'\nhi\nEOF'
+  c10n "an unquoted \$HOME note body with \$(...) is denied (control)" deny Bash $'cat > $HOME/.claude/agent-memory/code-reviewer/n.md <<EOF\n$(touch y)\nEOF'
+  c10n "a \$HOME note outside the memory dir is denied (control)" deny Bash $'cat > $HOME/notes.md <<\'EOF\'\nhi\nEOF'
 fi
 echo ""
 

@@ -18,8 +18,9 @@
 #     .claude/agent-memory-local/<name>/), denied anywhere else.
 #   - Bash/PowerShell/Monitor (Monitor is judged by its `command`, like Bash): denied on
 #     a redirect into a file (> or >>, except /dev/null and its memory dir), tee, sed -i,
-#     perl -i, mv/ln/chmod and similar, rm/cp/touch/mkdir unless every target is in its
-#     memory dir, curl -o/-O, wget and sort -o unless the target is in its memory dir,
+#     perl -i, ruby -i, gawk -i inplace, mv/ln/chmod and similar, rm/cp/touch/mkdir
+#     unless every target is in its memory dir, curl -o/-O, wget and sort -o unless the
+#     target is in its memory dir,
 #     package installs and runners (npm, pnpm, yarn, bun, pip, uv, cargo, npx, bunx,
 #     pnpm dlx, python -m pip, ...), git beyond a read-only allowlist (status, log, diff,
 #     show, blame, fetch, list forms of branch/tag/remote/stash, ...), any GIT_ variable
@@ -32,7 +33,8 @@
 #     `:`, first on its line: no path, quote or leading backslash, and nothing before it such
 #     as VAR=value, PATH=... or `!`; DELIM may be quoted), optionally followed by > file or
 #     >> file, and nothing else, with a delimiter that closes. The text before << has no
-#     ( ) $ backtick backslash | ; & < or quote, and no line ends in a backslash (a
+#     ( ) $ backtick backslash | ; & < or quote other than a $HOME, ${HOME} or "$HOME"
+#     expansion, and no line ends in a backslash (a
 #     continuation can hide a pipe). less and more are not readers (-o, --log-file and +!cmd
 #     write or run). A command that defines a function or alias (function, name() {, alias,
 #     shopt, enable, hash, Set-Alias, New-Alias) or sets PATH, LD_PRELOAD, BASH_ENV or IFS has
@@ -40,12 +42,15 @@
 #     tee, an interpreter, an escaped, quoted, path or variable receiver, a heredoc inside
 #     $(...), <(...) or backticks, a pipe or a second command on the line, `<<` inside $[...]
 #     or a[...]= arithmetic) means the body is judged as commands, as bash may run it.
-#     `cat<<EOF` with no space is the same heredoc as `cat <<EOF`. A <<< here-string follows
-#     the same rule (a bare reader or `read` receives it, and it is not piped on). A command
-#     that uses `eval`, or an unquoted heredoc body with a line that ends in an odd number of
-#     backslashes (a continuation can end it early), has no heredoc data either. The $(...), ${...} and backticks of an
-#     unquoted body that is text are judged too. Nothing is counted: a decoy quote or
-#     parenthesis cannot change the verdict, because any of them makes the shape not plain.
+#     `cat<<EOF` with no space is the same heredoc as `cat <<EOF`. A <<< here-string is text
+#     for a bare reader, `read` or a plain text filter (tr, cut, rev, fold, fmt, tac, column,
+#     paste, base64, od and the checksum tools; not sed or awk, which can run text), and a
+#     pipe may carry it on only to another reader or filter; a loop fed by `done <<<` is
+#     denied. A command that uses `eval`, or an unquoted heredoc body with a line that ends
+#     in an odd number of backslashes (a continuation can end it early), has no heredoc data
+#     either. The $(...), ${...} and backticks of an unquoted body that is text are judged
+#     too. Nothing is counted: a decoy quote or parenthesis cannot change the verdict,
+#     because any of them makes the shape not plain.
 #     $HOME, ${HOME}, "$HOME"/... and ~ expand in a target path. A memory-dir target
 #     must be a plain absolute path or one rooted at $HOME, ${HOME}, "$HOME" or ~ (a relative
 #     or quoted path never qualifies; no backslash, $, glob, brace, `..` component, ~ or :
@@ -70,7 +75,11 @@
 #     . resolved) is denied as the command (after env, sudo, command, exec, nohup, xargs and
 #     the other wrappers), as the argument of source or `.`, as the program file of bash, sh,
 #     zsh, dash, ksh, fish, python*, py, node, deno, bun, perl, ruby, php, pwsh, powershell,
-#     cmd or wsl (options and their values are skipped), and as the < input of those.
+#     cmd or wsl (options and their values are skipped), as a file they load through an
+#     option (node -r, --require, --import, --loader, bash --rcfile, --init-file, ruby -r),
+#     as the -f program of sed, awk or make (also gawk -E and -i, and -f - with the file on
+#     <), and as the < input of those interpreters (unless -c or -e gives the code on the
+#     command line, which makes the input data).
 #     `trap` with an action is denied (bare trap, trap -l and trap -p are reads). `start` is
 #     denied in Bash; in PowerShell iex, Invoke-Expression, Start-Process (saps, start),
 #     Invoke-Command (icm), Start-Job (sajb), Start-ThreadJob, Invoke-Item (ii),
@@ -105,7 +114,8 @@
 # delimiter closes): bash never expands or runs that body, so a note may mention them. An
 # interpreter that writes a file itself (python -c, node -e, a heredoc fed to python),
 # a script file run by name (outside the memory dir), a memory-dir file reached through
-# eval "$(cat file)", a glob spelling of the memory path, an archive tool, a git alias, a curl -K config file (denied
+# eval "$(cat file)", a glob spelling of the memory path, a sed or awk program (sed e, sed w,
+# awk system() and redirects), an archive tool, a git alias, a curl -K config file (denied
 # unseen), `curl --output-dir`, tools that name an output as a later operand (uniq in
 # out), other launchers (strace, chroot, unshare, nsenter, systemd-run, su -c), or text
 # piped into a shell from anything but a heredoc is not seen. A path is judged as text: a
@@ -626,6 +636,8 @@ HD_TAIL = re.compile(
     r"^-?[ \t]*(?:\x27[^\x27\"\\\s;&|()<>$`]+\x27|\"[^\x27\"\\\s;&|()<>$`]+\"|\\[A-Za-z0-9_.+-]+|[A-Za-z0-9_.+-]+)"
     r"[ \t]*(?:>>?[ \t]*[^\s;&|()<>$`\\\x27\"=]+)?[ \t]*$")
 
+HOME_EXP = re.compile(r"\"\$(?:HOME|\{HOME\})\"|\$(?:\{HOME\}|HOME(?![A-Za-z0-9_]))")
+
 def heredoc_is_data(cmd, i, use_off=True):
     """True only for the plain shape: the physical line that holds the << reads
     <reader> [args] <<[-]DELIM, DELIM optionally quoted, then at most > file or >> file.
@@ -649,7 +661,7 @@ def heredoc_is_data(cmd, i, use_off=True):
     words = before.split()
     if not words or words[0].lower() not in READERS:    # a bare name that starts the line
         return False
-    if HD_BAD.search(before):
+    if HD_BAD.search(HOME_EXP.sub("H", before)):     # $HOME only expands
         return False
     return bool(HD_TAIL.match(after))
 
@@ -1145,8 +1157,66 @@ INTERP_VAL = {"sh": {"-o", "+o", "-O", "+O", "--rcfile", "--init-file", "-C", "-
 INTERP_CODE = {"sh": re.compile(r"^-[A-Za-z]*c[A-Za-z]*$"),
                "py": re.compile(r"^-[BbdEiIOPqRsSuvVx]*[cm]"),
                "node": re.compile(r"^(?:-[pe]{1,2}|--eval|--print)(?:=|$)"),
-               "perl": re.compile(r"^-[A-Za-z0-9]*[eE]"), "php": re.compile(r"^-r"),
+               "perl": re.compile(r"^-[acdlnpsStTuUvwW0-9]*[eE]$"), "php": re.compile(r"^-r"),
                "pwsh": re.compile(r"^-c(?:o(?:m(?:m(?:a(?:n(?:d)?)?)?)?)?)?$", re.I)}
+
+# Options whose value is a file the program loads and runs before or instead of its input.
+INTERP_LOAD = {"sh": {"--rcfile", "--init-file"},
+               "node": {"-r", "--require", "--import", "--loader", "--experimental-loader"},
+               "perl": {"-r"}}
+SCRIPT_F = {"sed", "gsed", "awk", "gawk", "mawk", "nawk", "make", "gmake"}
+AWK_LOAD = {"-E", "--exec", "-i", "--include"}      # gawk program and include files
+
+def awk_inplace(args):
+    """True when gawk includes or loads its inplace library (-i inplace, -l inplace)."""
+    i = 0
+    while i < len(args):
+        a = args[i]; i += 1
+        v = None
+        if a in ("-i", "-l", "--include", "--load"):
+            v = args[i] if i < len(args) else ""
+        elif a.startswith(("--include=", "--load=")):
+            v = a.split("=", 1)[1]
+        elif re.match(r"^-[il].", a):
+            v = a[2:]
+        if v is not None and re.sub(r"\.awk$", "", v.replace("\\", "/").rsplit("/", 1)[-1]) == "inplace":
+            return True
+    return False
+
+def loaded_files(kind, name, args):
+    """The files an interpreter loads through an option (node -r, bash --rcfile) and the program
+    file of sed, awk or make given with -f (also --file and --makefile)."""
+    out, i = [], 0
+    while i < len(args):
+        a = unq(args[i]); i += 1
+        if a == "--":
+            break
+        opt, eq, val = a.partition("=")
+        if kind and opt in INTERP_LOAD.get(kind, ()):
+            if eq:
+                out.append(val)
+            elif i < len(args):
+                out.append(args[i]); i += 1
+        elif kind == "perl" and a.startswith("-r") and len(a) > 2:
+            out.append(a[2:])                   # ruby -r<file>
+        elif name in SCRIPT_F - {"sed", "gsed", "make", "gmake"} and opt in AWK_LOAD:
+            if eq:
+                out.append(val)
+            elif i < len(args):
+                out.append(args[i]); i += 1
+        elif name in SCRIPT_F and a.startswith("-"):
+            if opt in ("--file", "--makefile"):
+                if eq:
+                    out.append(val)
+                elif i < len(args):
+                    out.append(args[i]); i += 1
+            elif not a.startswith("--"):
+                m = re.match(r"^-[A-Za-z]*f(.*)$", a)
+                if m and m.group(1):
+                    out.append(m.group(1))
+                elif m and i < len(args):
+                    out.append(args[i]); i += 1
+    return out
 
 def interp_kind(name):
     if re.match(r"^pythonw?[0-9.]*$", name):
@@ -1155,8 +1225,8 @@ def interp_kind(name):
 
 def interp_script(kind, args):
     """The word an interpreter runs as its program file: the first operand after its options
-    (an option that takes a value is skipped with its value). None when the program is code on
-    the command line (-c, -e, -m) or stdin."""
+    (an option that takes a value is skipped with its value). "" when the program is code on
+    the command line (-c, -e, -m), so stdin is data; None when the program is stdin."""
     i, subs = 0, kind == "deno"
     while i < len(args):
         a = unq(args[i]); i += 1
@@ -1167,11 +1237,17 @@ def interp_script(kind, args):
         if kind == "cmd":
             if re.match(r"^/[A-Za-z?](?::\S*)?$", a):
                 if a.lower() in ("/c", "/k", "/r"):
-                    return None
+                    return ""
                 continue
         elif a.startswith("-") or (kind == "sh" and a.startswith("+")):
-            if kind in INTERP_CODE and INTERP_CODE[kind].match(a):
-                return None
+            m = INTERP_CODE.get(kind) and INTERP_CODE[kind].match(a)
+            if m:
+                # -m runs a module, which may read its code from stdin (python -m code), and
+                # pwsh -c - reads the command from stdin.
+                if (kind == "py" and m.group(0).endswith("m")) or (
+                        kind == "pwsh" and i < len(args) and unq(args[i]) == "-"):
+                    return None
+                return ""
             if (kind == "php" and a == "-f") or (kind == "pwsh" and a.lower() in ("-file", "-f")):
                 return args[i] if i < len(args) else None
             if (a.lower() if kind == "pwsh" else a) in INTERP_VAL.get(kind, ()):
@@ -1181,7 +1257,7 @@ def interp_script(kind, args):
             subs = False
             continue
         if kind == "deno" and a in ("eval", "repl"):
-            return None
+            return ""
         return args[i - 1]
     return None
 
@@ -1191,8 +1267,10 @@ PS_EXEC = {"iex", "invoke-expression", "start-process", "saps", "start", "invoke
            "iwmi", "invoke-cimmethod"}
 PS_COMOBJ = re.compile(r"^-c(?:o(?:m(?:o(?:b(?:j(?:e(?:c(?:t)?)?)?)?)?)?)?)?(?::|$)", re.I)
 PS_SCRIPTBLOCK = re.compile(r"\[(?:system\.management\.automation\.)?scriptblock\]\s*::\s*create", re.I)
-# Here-string receivers: the readers, plus read (which never runs its input).
-HERESTR_OK = READERS | {"read"}
+# Here-string receivers: the readers, read, and text filters that never run their input.
+# sed and awk are not here: their programs are not judged, and sed e or awk system() runs text.
+HERESTR_OK = READERS | {"read", "tr", "cut", "rev", "fold", "fmt", "tac", "column", "paste",
+                        "base64", "od", "cksum", "md5sum", "sha1sum", "sha256sum", "sha512sum"}
 
 def check_segment(words, ps, wrapped=False, stdin=(), herestr=False):
     """wrapped is True when the words run under xargs, parallel or find -exec, which add
@@ -1287,7 +1365,8 @@ def check_segment(words, ps, wrapped=False, stdin=(), herestr=False):
     if ps and name == "new-object" and any(PS_COMOBJ.match(a) for a in uargs):
         deny("`New-Object -ComObject` can run programs.")
     # A file in the agent memory dir is data, never a program: not as the command, not
-    # sourced, not as the file an interpreter runs, and not as its stdin.
+    # sourced, not as the file an interpreter runs or preloads, not as a -f program, and not
+    # as the stdin of an interpreter that reads its program there.
     why_mem = ("running a file from the agent memory dir is blocked: it is data, "
                "and a file written there must not be run.")
     if mem_ref(words[0], True):
@@ -1297,15 +1376,26 @@ def check_segment(words, ps, wrapped=False, stdin=(), herestr=False):
     kind = interp_kind(name)
     if kind:
         script = interp_script(kind, args)
-        if (script is not None and mem_ref(script)) or any(mem_ref(f) for f in stdin):
+        if (script and mem_ref(script)) or (script != "" and any(mem_ref(f) for f in stdin)):
             deny(why_mem)
+    loaded = loaded_files(kind, name, args)
+    if any(mem_ref(f) for f in loaded):
+        deny(why_mem)
+    if any(unq(f) == "-" or unq(f).startswith(("/dev/", "/proc/")) for f in loaded) and any(
+            mem_ref(f) for f in stdin):
+        deny(why_mem)                           # -f - or -f /dev/stdin reads the < file
     if ps and name in PS_WRITE:
         deny("`%s` writes or removes files." % words[0])
     if ps and any(a.lower() == "-outfile" for a in uargs):
         deny("`-OutFile` writes a file.")
-    if name in ("sed", "perl") and any(re.match(r"^-[A-Za-z]*i", a) or
+    if name in ("sed", "gsed") and any(re.match(r"^-[bnrsuzE]*i", a) or
                                        a.startswith("--in-place") for a in uargs):
         deny("`%s -i` edits files in place." % name)
+    # Only switches without a value come before i, so -Ilib and -MList::Util are not -i.
+    if name in ("perl", "ruby") and any(re.match(r"^-[acdlnpsStTuUvwW0-9]*i", a) for a in uargs):
+        deny("`%s -i` edits files in place." % name)
+    if name in SCRIPT_F - {"sed", "gsed", "make", "gmake"} and awk_inplace(uargs):
+        deny("`%s -i inplace` edits files in place." % name)
     check_pkg(name, uargs)
     if name == "git":
         check_git(args)
@@ -1351,15 +1441,28 @@ def check_command(cmd, ps):
     if ps and PS_SCRIPTBLOCK.search(text):
         deny("`[scriptblock]::Create` turns text into code.")
     toks = tokens(text)
-    seg, stdin, herestr = [], [], False
+    seg, stdin, herestr, held = [], [], False, False
     i = 0
     while i < len(toks):
         t = toks[i]
         if is_sep(t):
-            if herestr and t in ("|", "|&"):
-                deny("a here-string piped into another command may run as code.")
             check_segment(seg, ps, False, stdin, herestr)
-            seg, stdin, herestr = [], [], False; i += 1; continue
+            # Text piped on from a here-string reader reaches the next command, which must be
+            # a plain reader or filter as well. An empty segment (a newline or a parenthesis
+            # right after the |) does not end the pipe, and a subshell's output is held until
+            # the next separator shows whether it is piped. Merged tokens such as |( count.
+            pipe = "|" in t and "||" not in t
+            if seg:
+                if held and all(w.isdigit() for w in seg):
+                    herestr = True              # (...) 2>&1 | leaves only the fd number
+                held = herestr and set(t) <= set(")")
+                herestr = herestr and pipe
+            else:
+                if pipe:
+                    herestr = herestr or held
+                if not set(t) <= set(")"):
+                    held = False
+            seg, stdin = [], []; i += 1; continue
         if t and set(t) <= set("<>&|") and ">" in t:
             nxt = toks[i + 1] if i + 1 < len(toks) else ""
             if t in (">&", "&>") or t.endswith("&"):
