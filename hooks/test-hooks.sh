@@ -790,6 +790,10 @@ else
     expect "block-git-push: $1" "$2" "$(verdict $BGP "$3" "$4" "${5:-Bash}")"
   }
   push "control: a push to the blocked origin is blocked" block "$RP" 'git push origin main'
+  has_err "block-git-push: the block message names the blocked domain" 'internal\.example\.com'
+  push "git push -u origin is judged as a push to origin" block "$RP" 'git push -u origin main'
+  push "git push --set-upstream origin is judged as a push to origin" block "$RP" 'git push --set-upstream origin main'
+  push "git push -u gh targets gh, not origin" allow "$RP" 'git push -u gh main'
   push "a push to an allowed remote passes while origin is blocked" allow "$RP" 'git push gh main'
   push "control: a default push in a repo whose origin is allowed passes" allow "$RQ" 'git push'
   push "control: a default push follows origin to the blocked host" block "$RP" 'git push'
