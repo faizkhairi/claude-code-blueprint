@@ -1058,6 +1058,8 @@ FAKEEOF
   # ---- B6: review round 3. Command-supplied -c pairs, PowerShell escapes, dynamic subcommands, aliases,
   # PowerShell line endings, the fail-closed text check, an unknown commit directory, no Python.
   echo "  (B6: round 3 hardening)"
+  # Count parser temp files in a private directory, so another suite or a live Claude Code session using the same hooks cannot change the count.
+  PARSE_TMP="$T9/parse-tmp"; mkdir -p "$PARSE_TMP"; PARSE_TMPDIR_SAVED="${TMPDIR-}"; PARSE_TMPDIR_WAS_SET="${TMPDIR+x}"; export TMPDIR="$PARSE_TMP"
   PARSE_BEFORE=$("$PYTHON" -c "import glob,os,tempfile; print(len(glob.glob(os.path.join(tempfile.gettempdir(),'ccb-parse-*'))))")
   FSM=$T9/fsmon.sh; MARK=$T9/fsmon-marker; T2=$T9/trace2.log
   printf '#!/bin/bash\n: > "%s"\nexit 0\n' "$(winpath "$MARK")" > "$FSM"; chmod +x "$FSM"
@@ -1160,6 +1162,7 @@ FAKEEOF
   scan "control: with no usable temp directory the secret scan falls back to python -c and still blocks" block "$S1" 'git commit -m x' "TMPDIR=$T9/no/such/dir"
   PARSE_AFTER=$("$PYTHON" -c "import glob,os,tempfile; print(len(glob.glob(os.path.join(tempfile.gettempdir(),'ccb-parse-*'))))")
   expect "control: no parser temp file is left behind" "$PARSE_BEFORE" "$PARSE_AFTER"
+  if [ -n "$PARSE_TMPDIR_WAS_SET" ]; then export TMPDIR="$PARSE_TMPDIR_SAVED"; else unset TMPDIR; fi
 
   # ---- B3: the protect hooks normalise the path before matching it.
   echo "  (B3: path spellings)"
