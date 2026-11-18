@@ -185,6 +185,8 @@ bash tests/count-check.sh   # published component counts
 bash tests/pin-check.sh     # every workflow action pinned by commit SHA
 ```
 
+A no-argument `bash hooks/test-hooks.sh` runs every section. To run the section you are working on, pass `--section` or set `TEST_SECTIONS`: `bash hooks/test-hooks.sh --section 9`, or `TEST_SECTIONS=9,10 bash hooks/test-hooks.sh`. `--section` may be repeated, and one value may be a comma list (`--section 9,10`). When both the option and the variable are set, the run includes every section named by either. The section numbers are the numbered blocks in the header of `hooks/test-hooks.sh` (1 to 10). A partial run prints a `Sections run:` line in the summary, after PASS, FAIL and SKIP. The `hook-tests` job calls the script with no selector, so that job stays a full run.
+
 If you add or change a `uses:` line in a workflow, pin it as `owner/repo@<40-character sha> # v1.2.3`. Resolve the SHA with `git ls-remote https://github.com/<owner>/<repo> 'refs/tags/<tag>' 'refs/tags/<tag>^{}'`; when a `^{}` line is printed (an annotated tag), its SHA is the commit. Write every `uses:` block style, one per line; the guard fails flow-style forms. Dependabot keeps the workflow pins current.
 
 `tests/install-matrix.sh` exercises every installer preset. It is slower and also runs in CI, so run it when you have touched `setup.sh` or a preset array.
