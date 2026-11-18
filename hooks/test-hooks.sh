@@ -2,6 +2,9 @@
 # Smoke test for all hook scripts.
 # Verifies: syntax, Python detection, graceful handling of empty/malformed input.
 # Run: bash hooks/test-hooks.sh
+# One section: bash hooks/test-hooks.sh --section 9
+# Several:    TEST_SECTIONS=9,10 bash hooks/test-hooks.sh
+# With no selector, every section runs. A partial run names the sections in its summary.
 #
 # Sections 1 to 6 test that hooks don't crash, always exit 0, and handle bad input
 # gracefully. Section 7 also tests decisions: what the two PreToolUse guards
@@ -29,10 +32,176 @@ skip() { echo "  SKIP: $1"; SKIP=$((SKIP + 1)); }
 
 HOOKS_DIR="$(cd "$(dirname "$0")" && pwd)"
 
+# --section N (repeatable, or a comma list) and TEST_SECTIONS=N,N pick sections.
+# Either one is enough. When both are set, the run is their union. No selector
+# means every section, and the summary stays the PASS, FAIL and SKIP lines.
+# Sections 9 and 10 call helpers that used to be defined inside earlier sections
+# (json_field, guard_decision, expect, winpath, and the AWG / GENV / PY_HOME /
+# MEM setup). Those helpers are defined here so one later section can run alone.
+usage() {
+  echo "Usage: bash hooks/test-hooks.sh [--section N[,N...]]" >&2
+  echo "       TEST_SECTIONS=N[,N...] bash hooks/test-hooks.sh" >&2
+  echo "Sections are 1 to 10. With no selector, every section runs." >&2
+  exit 2
+}
+
+add_sections() {
+  local raw=$1 rest part n=0
+  rest=$raw
+  while [ -n "$rest" ]; do
+    part=${rest%%,*}
+    case "$rest" in
+      *,*) rest=${rest#*,} ;;
+      *) rest= ;;
+    esac
+    part=$(printf '%s' "$part" | tr -d '[:space:]')
+    [ -n "$part" ] || continue
+    n=$((n + 1))
+    case "$part" in
+      [1-9]|10) ;;
+      *)
+        echo "hooks/test-hooks.sh: no section $part (sections are 1 to 10)" >&2
+        exit 2
+        ;;
+    esac
+    case ",${TEST_SECTION_FILTER}," in
+      *",$part,"*) ;;
+      *)
+        if [ -n "$TEST_SECTION_FILTER" ]; then
+          TEST_SECTION_FILTER=$TEST_SECTION_FILTER,$part
+        else
+          TEST_SECTION_FILTER=$part
+        fi
+        ;;
+    esac
+  done
+  if [ "$n" -eq 0 ]; then
+    echo "hooks/test-hooks.sh: no section number in '$raw'" >&2
+    exit 2
+  fi
+}
+
+TEST_SECTION_FILTER=
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --section)
+      if [ "$#" -lt 2 ] || [ -z "${2:-}" ]; then
+        echo "hooks/test-hooks.sh: --section needs a section number" >&2
+        usage
+      fi
+      add_sections "$2"
+      shift 2
+      ;;
+    --section=*)
+      add_sections "${1#--section=}"
+      shift
+      ;;
+    --)
+      shift
+      if [ "$#" -gt 0 ]; then
+        echo "hooks/test-hooks.sh: unexpected argument '$1'" >&2
+        usage
+      fi
+      ;;
+    -*)
+      echo "hooks/test-hooks.sh: unknown option '$1'" >&2
+      usage
+      ;;
+    *)
+      echo "hooks/test-hooks.sh: unexpected argument '$1'" >&2
+      usage
+      ;;
+  esac
+done
+if [ -n "${TEST_SECTIONS:-}" ]; then
+  add_sections "$TEST_SECTIONS"
+fi
+if [ -n "$TEST_SECTION_FILTER" ]; then
+  _ordered=
+  for _n in 1 2 3 4 5 6 7 8 9 10; do
+    case ",$TEST_SECTION_FILTER," in
+      *",$_n,"*)
+        if [ -n "$_ordered" ]; then
+          _ordered=$_ordered,$_n
+        else
+          _ordered=$_n
+        fi
+        ;;
+    esac
+  done
+  TEST_SECTION_FILTER=$_ordered
+fi
+
+section_selected() {
+  [ -z "$TEST_SECTION_FILTER" ] && return 0
+  case ",$TEST_SECTION_FILTER," in
+    *",$1,"*) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+# python3 can be the Windows Store stub (under WindowsApps, exits 49): skip it unless it runs.
+# Chosen once, before any section, so a later section still has an interpreter when
+# section 2 itself is not selected. Section 2 records the pass or skip.
+PYTHON=""
+for _p in python3 python py; do
+  _c=$(command -v "$_p" 2>/dev/null) || continue
+  case "$_c" in *[Ww]indows[Aa]pps*) "$_c" -c '' >/dev/null 2>&1 || continue ;; esac
+  PYTHON=$_c; break
+done
+
+# json_field <json> <dotted.path>: prints the value at the path, or nothing.
+json_field() {
+  printf '%s' "$1" | "$PYTHON" -c "
+import sys, json
+try:
+    d = json.load(sys.stdin)
+    for k in sys.argv[1].split('.'):
+        d = d[k]
+    print(d)
+except Exception:
+    pass
+" "$2" 2>/dev/null
+}
+
+# guard_decision <hook> <json> [VAR=value ...]: prints the permissionDecision,
+# "silent" when the hook prints nothing, or MISSING when the hook does not exist.
+guard_decision() {
+  local hook="$HOOKS_DIR/$1" json="$2"; shift 2
+  [ -f "$hook" ] || { echo MISSING; return; }
+  local out
+  out=$(printf '%s' "$json" | env "$@" bash "$hook" 2>/dev/null)
+  if [ -z "$out" ]; then echo silent; return; fi
+  json_field "$out" hookSpecificOutput.permissionDecision
+}
+
+expect() {  # expect <name> <expected> <actual>
+  if [ "$2" = "$3" ]; then pass "$1"; else fail "$1 (expected $2, got ${3:-<empty>})"; fi
+}
+
+# winpath <path>: a path a Windows Python can open (identity on Linux and macOS).
+winpath() { cygpath -m "$1" 2>/dev/null || printf '%s' "$1"; }
+
+# A constant hook name. Assigned here, not inside a section, so section 7 and
+# section 10 can both call guard_decision with it. An empty
+# AGENT_WRITE_GUARD_AGENTS means the default list, so a list set in your own
+# environment does not leak in.
+AWG=agent-write-guard.sh
+GENV=(AGENT_WRITE_GUARD_AGENTS=)
+PY_HOME=
+MEM=
+if [ -n "$PYTHON" ]; then
+  # HOME as this Python sees it. Git Bash on Windows hands a Windows Python a
+  # path like C:/... . Section 7 and section 10 build memory-dir paths from it.
+  PY_HOME=$("$PYTHON" -c "import os; print((os.environ.get('HOME') or os.path.expanduser('~')).replace(chr(92), '/'))")
+  MEM=$PY_HOME/.claude/agent-memory/code-reviewer
+fi
+
 echo "=== Hook Smoke Tests ==="
 echo "Directory: $HOOKS_DIR"
 echo ""
 
+if section_selected 1; then
 # 1. Syntax check
 echo "--- Syntax Check ---"
 for f in "$HOOKS_DIR"/*.sh; do
@@ -45,23 +214,21 @@ for f in "$HOOKS_DIR"/*.sh; do
   fi
 done
 echo ""
+fi
 
+if section_selected 2; then
 # 2. Python detection (should not crash if Python missing)
 echo "--- Python Detection ---"
-# python3 can be the Windows Store stub (under WindowsApps, exits 49): skip it unless it runs.
-PYTHON=""
-for _p in python3 python py; do
-  _c=$(command -v "$_p" 2>/dev/null) || continue
-  case "$_c" in *[Ww]indows[Aa]pps*) "$_c" -c '' >/dev/null 2>&1 || continue ;; esac
-  PYTHON=$_c; break
-done
+# The interpreter was chosen above, before the sections, so this section only records it.
 if [ -n "$PYTHON" ]; then
   pass "Python found: $PYTHON"
 else
   skip "Python not found: hooks will skip JSON parsing (expected behavior)"
 fi
 echo ""
+fi
 
+if section_selected 3; then
 # 3. Empty input test (every hook should exit 0 on empty stdin)
 echo "--- Empty Input (exit 0 expected) ---"
 for f in "$HOOKS_DIR"/*.sh; do
@@ -78,7 +245,9 @@ for f in "$HOOKS_DIR"/*.sh; do
   fi
 done
 echo ""
+fi
 
+if section_selected 4; then
 # 4. Malformed JSON input test
 echo "--- Malformed JSON Input (exit 0 expected) ---"
 for f in "$HOOKS_DIR"/*.sh; do
@@ -95,7 +264,9 @@ for f in "$HOOKS_DIR"/*.sh; do
   fi
 done
 echo ""
+fi
 
+if section_selected 5; then
 # 5. Valid JSON but missing fields
 echo "--- Valid JSON, Missing Fields (exit 0 expected) ---"
 for f in "$HOOKS_DIR"/*.sh; do
@@ -112,7 +283,9 @@ for f in "$HOOKS_DIR"/*.sh; do
   fi
 done
 echo ""
+fi
 
+if section_selected 6; then
 # 6. Output contract for hooks whose output must reach Claude.
 # A synchronous hook's systemMessage is shown to the user only; Claude sees
 # hookSpecificOutput.additionalContext (PostToolUse, PostToolUseFailure) or plain
@@ -122,20 +295,6 @@ echo "--- Output Contract (what reaches Claude) ---"
 if [ -z "$PYTHON" ]; then
   skip "output contract checks need Python"
 else
-  # json_field <json> <dotted.path>: prints the value at the path, or nothing.
-  json_field() {
-    printf '%s' "$1" | "$PYTHON" -c "
-import sys, json
-try:
-    d = json.load(sys.stdin)
-    for k in sys.argv[1].split('.'):
-        d = d[k]
-    print(d)
-except Exception:
-    pass
-" "$2" 2>/dev/null
-  }
-
   # verify-subagent-findings.sh: synchronous, so its warning must travel as additionalContext.
   out=$(echo '{"tool_name":"Agent","tool_input":{"subagent_type":"code-reviewer"}}' | bash "$HOOKS_DIR/verify-subagent-findings.sh" 2>/dev/null)
   if [ "$(json_field "$out" hookSpecificOutput.hookEventName)" = "PostToolUse" ] \
@@ -192,7 +351,9 @@ except Exception:
   rm -rf "$TMP_HOME"
 fi
 echo ""
+fi
 
+if section_selected 7; then
 # 7. Guard decisions: what a PreToolUse guard decides, one named case per edge case.
 # A guard file that does not exist reports MISSING, so every case below fails (red)
 # until the hook is written, including the cases that expect silence.
@@ -200,28 +361,10 @@ echo "--- Guard Decisions (PreToolUse deny or silence) ---"
 if [ -z "$PYTHON" ]; then
   skip "guard decision checks need Python"
 else
-  # guard_decision <hook> <json> [VAR=value ...]: prints the permissionDecision,
-  # "silent" when the hook prints nothing, or MISSING when the hook does not exist.
-  guard_decision() {
-    local hook="$HOOKS_DIR/$1" json="$2"; shift 2
-    [ -f "$hook" ] || { echo MISSING; return; }
-    local out
-    out=$(printf '%s' "$json" | env "$@" bash "$hook" 2>/dev/null)
-    if [ -z "$out" ]; then echo silent; return; fi
-    json_field "$out" hookSpecificOutput.permissionDecision
-  }
-  expect() {  # expect <name> <expected> <actual>
-    if [ "$2" = "$3" ]; then pass "$1"; else fail "$1 (expected $2, got ${3:-<empty>})"; fi
-  }
-
   # agent-write-guard.sh. HOME and cwd are fixed strings: the hook only compares paths,
   # it never touches the filesystem, so no real directory is needed.
-  AWG=agent-write-guard.sh
   # The memory path is built from HOME exactly as the hook's Python sees it (Git Bash
-  # on Windows hands a Windows Python HOME as C:/...). An empty AGENT_WRITE_GUARD_AGENTS
-  # means the default list, so a list set in your own environment does not leak in.
-  GENV=(AGENT_WRITE_GUARD_AGENTS=)
-  PY_HOME=$("$PYTHON" -c "import os; print((os.environ.get('HOME') or os.path.expanduser('~')).replace(chr(92), '/'))")
+  # on Windows hands a Windows Python HOME as C:/...).
   MEM=$PY_HOME/.claude/agent-memory/code-reviewer
   expect "agent-write-guard: subagent not in the read-only list may write" silent \
     "$(guard_decision $AWG '{"agent_type":"backend-specialist","tool_name":"Write","cwd":"/work/proj","tool_input":{"file_path":"/work/proj/src/app.ts","content":"x"}}' "${GENV[@]}")"
@@ -396,7 +539,9 @@ print('ok')" 2>/dev/null
   done
 fi
 echo ""
+fi
 
+if section_selected 8; then
 # 8. Regressions: each group below was red before its fix and names the script it targets.
 # Cases labelled "control" pass before and after the fix: they pin the behaviour that
 # must not change. Everything runs in one temp dir, removed at the end of the section.
@@ -405,8 +550,6 @@ if [ -z "$PYTHON" ]; then
   skip "regression checks need Python"
 else
   T8=$(mktemp -d)
-  # winpath <path>: a path a Windows Python can open (identity on Linux and macOS).
-  winpath() { cygpath -m "$1" 2>/dev/null || printf '%s' "$1"; }
   # hook_out <hook> <json> [VAR=value ...]: the hook's stdout, CR removed.
   hook_out() {
     local hook="$HOOKS_DIR/$1" json="$2"; shift 2
@@ -736,7 +879,9 @@ with open(sys.argv[1], 'w') as f:
   rm -rf "$T8"
 fi
 echo ""
+fi
 
+if section_selected 9; then
 # 9. PR B: the git guards judge the command that actually runs, and the protect hooks
 # judge the file that is actually written. Each case runs a hook against a throwaway git
 # repo or a path spelling. A case labelled "control" passes before and after its fix.
@@ -1402,7 +1547,9 @@ print("ok" if not bad else "; ".join(bad))
   unset GIT_AUTHOR_NAME GIT_AUTHOR_EMAIL GIT_COMMITTER_NAME GIT_COMMITTER_EMAIL
 fi
 echo ""
+fi
 
+if section_selected 10; then
 # 10. PR C: agent-write-guard read-only gaps and false positives. Each case replays one
 # command (none of it is executed) as the read-only code-reviewer and checks the decision:
 # deny, or silent for an allowed call. A case labelled "control" passes before and after
@@ -2251,12 +2398,16 @@ sys.stdout.buffer.write(json.dumps({"agent_type":"code-reviewer","tool_name":sys
   c10n "a \$HOME note outside the memory dir is denied (control)" deny Bash $'cat > $HOME/notes.md <<\'EOF\'\nhi\nEOF'
 fi
 echo ""
+fi
 
 # Summary
 echo "=== Results ==="
 echo "PASS: $PASS"
 echo "FAIL: $FAIL"
 echo "SKIP: $SKIP"
+if [ -n "$TEST_SECTION_FILTER" ]; then
+  echo "Sections run: ${TEST_SECTION_FILTER//,/, }"
+fi
 echo ""
 
 if [ $FAIL -gt 0 ]; then
